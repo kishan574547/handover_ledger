@@ -15,6 +15,7 @@ import { ReviewApprovePage } from './pages/ReviewApprovePage';
 import { HandoverPage } from './pages/HandoverPage';
 import { ActivityPage } from './pages/ActivityPage';
 import { HowItWorksPage } from './pages/HowItWorksPage';
+import { SettingsPage } from './pages/SettingsPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,6 +45,7 @@ export const App: React.FC = () => {
                   <Route path="handover" element={<HandoverPage />} />
                   <Route path="activity" element={<ActivityPage />} />
                   <Route path="how-it-works" element={<HowItWorksPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
               </Routes>

@@ -106,15 +106,31 @@ export const HandoverPage: React.FC = () => {
     window.print();
   };
 
-  // 1. UNAPPROVED STATE FOR NON-LEAD ROLES
+  // 1. ROLE-AWARE UNAPPROVED STATE FOR NON-LEAD ROLES
   if (fetchError || (handover && handover.handover_status !== 'approved' && !canLead)) {
     return (
-      <Card className="p-12 text-center text-slate-500 max-w-2xl mx-auto my-12">
+      <Card className="p-8 sm:p-12 text-center text-text-muted max-w-2xl mx-auto my-8 sm:my-12">
         <Clock className="w-12 h-12 text-amber-500 mx-auto mb-3" />
-        <h3 className="text-lg font-bold text-slate-900">Waiting for Project Lead Approval</h3>
-        <p className="text-sm text-slate-500 mt-2 max-w-md mx-auto leading-relaxed">
-          The handover document is currently under review by Project Lead (Priya Nair). Incoming roles can view and acknowledge this document once formally approved.
+        <h3 className="text-lg font-bold text-text-main">
+          The lead has not released the handover yet
+        </h3>
+        <p className="text-sm text-text-muted mt-2 max-w-md mx-auto leading-relaxed">
+          {role === 'coordinator'
+            ? 'The Project Lead (Priya Nair) has not approved and released the handover yet. Once released, you will see general operational contacts, club decisions, and milestone records cleared for Level 1 (General).'
+            : role === 'developer'
+            ? 'The Project Lead (Priya Nair) has not approved and released the handover yet. Once released, you will see full technical runbooks, architecture decisions, open tasks, and dependencies cleared up to Level 2 (Technical).'
+            : 'The Project Lead is currently reviewing verified claims and resolving open conflicts. You can review current findings or answer open gap questions in the Exit Interview.'}
         </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          {role === 'departing' && (
+            <Button variant="primary" onClick={() => window.location.href = '/interview'}>
+              Go to Exit Interview
+            </Button>
+          )}
+          <Button variant="outline" onClick={() => window.location.href = '/'}>
+            Back to Dashboard
+          </Button>
+        </div>
       </Card>
     );
   }
