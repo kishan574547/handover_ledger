@@ -1,0 +1,36 @@
+[15/08/2026, 10:14:02] Arjun Mehta: Hey team, kicking off Campus Connect development this morning!
+[15/08/2026, 10:15:10] Priya Nair: Great, let's keep all updates in this channel. Remember Arjun is graduating in November so we need everything documented.
+[15/08/2026, 10:16:30] Sneha Iyer: I've created the student club WhatsApp group and started collecting event requirements.
+[15/08/2026, 10:18:05] Rahul Verma: Excited to join! Cloning the repo now.
+[15/08/2026, 10:20:12] Arjun Mehta: Welcome Rahul! Check out README.md first. It says we deploy on Render.
+[16/08/2026, 11:02:40] Arjun Mehta: Quick update: We had lots of gateway timeout errors on Render free tier yesterday.
+[16/08/2026, 11:05:15] Arjun Mehta: I moved our backend deployment to an AWS EC2 t3.medium instance under student credits so we have dedicated compute.
+[16/08/2026, 11:06:22] Priya Nair: Sounds good, just make sure the runbook is updated.
+[18/08/2026, 14:10:05] Sneha Iyer: Are students receiving OTPs when registering with their phone numbers?
+[18/08/2026, 14:12:30] Arjun Mehta: Yes, I integrated the MSG91 SMS gateway API last night for fast student OTP dispatch.
+[18/08/2026, 14:14:10] Rahul Verma: Nice! Is MSG91 documented in the README or runbook?
+[18/08/2026, 14:15:00] Arjun Mehta: Not yet, will document it later. Just using free promotional credits right now.
+[20/08/2026, 09:30:15] Priya Nair: In meeting notes we discussed keeping API timeout at 30 seconds.
+[20/08/2026, 09:32:00] Arjun Mehta: Actually in chat and production nginx config, I changed API timeout to 10s because slow campus wifi was holding open connections and crashing the server.
+[20/08/2026, 09:33:45] Rahul Verma: Got it, so API timeout is 10s now to prevent hanging requests.
+[22/08/2026, 16:45:10] Sneha Iyer: I noticed on GitHub issue #12 that payments integration is assigned to me on GitHub, but meeting notes said Arjun owns payments. Who is the actual owner?
+[22/08/2026, 16:47:00] Arjun Mehta: Let's discuss in next sync, right now both of us have partial code committed.
+[25/08/2026, 12:00:20] Arjun Mehta: Heads up: I accidentally pasted our temporary OpenAI sandbox test key here, don't share outside: token: "sk-fakeTestKeyInChatForMasking987654321"
+[25/08/2026, 12:01:10] Priya Nair: Arjun please don't paste credentials in chat! Also here is my personal number if emergency: +91 98765 12345 or email priya.nair@campus.edu.
+[28/08/2026, 15:30:00] Sneha Iyer: Why did we drop dark mode support for v1? Several club reps asked about it.
+[28/08/2026, 15:32:10] Arjun Mehta: We just dropped dark mode for v1, let's ship light mode first.
+[01/09/2026, 10:00:00] Rahul Verma: I'm looking at PR #9 for notification service refactor. Who owns this PR? It is currently unassigned.
+[01/09/2026, 10:05:30] Arjun Mehta: PR #9 is an unowned open PR that refactors notification dispatching. We need someone to adopt it.
+[05/09/2026, 11:20:00] Sneha Iyer: We had a call with Mr. Kapoor from hostel IT about opening port 8000 on the campus subnet.
+[05/09/2026, 11:22:15] Priya Nair: What is Mr. Kapoor's official title and office hours?
+[05/09/2026, 11:23:00] Sneha Iyer: Not sure about his exact role, he is just listed as contact Mr. Kapoor in the server room.
+[10/09/2026, 14:10:00] Rahul Verma: Also Dr. Rao stopped by the lab today.
+[10/09/2026, 14:12:00] Priya Nair: Dr. Rao is our faculty mentor, but we don't have his signoff escalation channel documented.
+[15/09/2026, 16:00:00] Arjun Mehta: Pushed commit 8a4b2c1 for student registration validation.
+[20/09/2026, 17:30:00] Priya Nair: Issue #14: Student badge QR code scanner fails on iOS Safari was opened today by Sneha.
+[20/09/2026, 17:35:10] Sneha Iyer: Yes, Issue #14 is opened.
+[25/09/2026, 10:00:00] Rahul Verma: Any update on Issue #14?
+[28/09/2026, 14:00:00] Priya Nair: No one has touched Issue #14 since September 20. It looks stalled.
+[05/10/2026, 09:15:00] Rahul Verma: Issue #14 is still completely untouched. Stalled for more than two weeks now.
+[10/10/2026, 11:00:00] Arjun Mehta: Starting to prepare my handover notes. Priya and Rahul, let's make sure we review all ledger claims.
+[12/10/2026, 15:30:00] Priya Nair: Yes, we need a verified handover with clearance checks so nothing confidential leaks to coordinators.

@@ -1,0 +1,1322 @@
+{
+  "metadata": {
+    "project_name": "Campus Connect",
+    "departing_member": "Arjun Mehta (Tech Lead)",
+    "lead_name": "Priya Nair (Club President)",
+    "successor_name": "Rahul Verma (Successor Developer)",
+    "coordinator_name": "Sneha Iyer (Club Coordinator)",
+    "handover_status": "draft",
+    "version": "1.0.0"
+  },
+  "sources": [
+    {
+      "id": "src-github-campus-connect",
+      "name": "GitHub (campus-club/campus-connect)",
+      "kind": "github",
+      "clearance": 1,
+      "raw_text": "{\"repository\": \"campus-club/campus-connect\", \"readme\": \"# Campus Connect\\n\\nA unified club event, registration, and ticketing platform for university campus student organizations.\\n\\n## Tech Stack\\n- Frontend: React 18 with TypeScript & Tailwind CSS\\n- Backend: FastAPI (Python 3.11+)\\n- Database: Supabase PostgreSQL (Production), SQLite (Local Dev)\\n- Deployment: Hosted on Render Web Services\\n\\n## Local Setup\\n```bash\\ngit clone https://github.com/campus-club/campus-connect.git\\ncd campus-connect\\npip install -r requirements.txt\\nuvicorn main:app --reload\\n```\\n\", \"commits\": [{\"sha\": \"c01a1b2\", \"author\": \"Arjun Mehta\", \"date\": \"2026-08-01T09:00:00Z\", \"message\": \"Initial project setup with FastAPI and React scaffold\"}, {\"sha\": \"c02b2c3\", \"author\": \"Arjun Mehta\", \"date\": \"2026-08-03T10:30:00Z\", \"message\": \"Configure PostgreSQL database models with SQLAlchemy 2\"}, {\"sha\": \"c03c3d4\", \"author\": \"Sneha Iyer\", \"date\": \"2026-08-05T14:15:00Z\", \"message\": \"Add club event registration models and schema definitions\"}, {\"sha\": \"c04d4e5\", \"author\": \"Arjun Mehta\", \"date\": \"2026-08-07T16:00:00Z\", \"message\": \"Set API timeout to 30s in production config for batch admin imports\"}, {\"sha\": \"c05e5f6\", \"author\": \"Priya Nair\", \"date\": \"2026-08-10T11:20:00Z\", \"message\": \"Add club president approval workflow for campus auditorium bookings\"}, {\"sha\": \"c06f6a7\", \"author\": \"Arjun Mehta\", \"date\": \"2026-08-12T13:45:00Z\", \"message\": \"Implement college SSO email domain validation (@campus.edu)\"}, {\"sha\": \"c07a7b8\", \"author\": \"Rahul Verma\", \"date\": \"2026-08-15T09:10:00Z\", \"message\": \"Add healthcheck endpoint and CORS configuration\"}, {\"sha\": \"c08b8c9\", \"author\": \"Arjun Mehta\", \"date\": \"2026-08-17T15:20:00Z\", \"message\": \"Add initial Razorpay payment gateway integration stubs\"}, {\"sha\": \"c09c9d0\", \"author\": \"Sneha Iyer\", \"date\": \"2026-08-19T10:40:00Z\", \"message\": \"Update student registration ticket types and early bird discounts\"}, {\"sha\": \"c10d0e1\", \"author\": \"Arjun Mehta\", \"date\": \"2026-08-21T18:00:00Z\", \"message\": \"Drop dark mode stylesheet in favor of default light theme\"}, {\"sha\": \"c11e1f2\", \"author\": \"Rahul Verma\", \"date\": \"2026-08-23T12:15:00Z\", \"message\": \"Add Alembic database migration runner\"}, {\"sha\": \"c12f2a3\", \"author\": \"Arjun Mehta\", \"date\": \"2026-08-25T14:30:00Z\", \"message\": \"Implement 15-minute memory cache for campus LDAP tokens\"}, {\"sha\": \"c13a3b4\", \"author\": \"Rahul Verma\", \"date\": \"2026-08-27T17:45:00Z\", \"message\": \"Refactor API router paths under /api/v1 prefix\"}, {\"sha\": \"c14b4c5\", \"author\": \"Sneha Iyer\", \"date\": \"2026-08-29T11:00:00Z\", \"message\": \"Add CSV export for club coordinators\"}, {\"sha\": \"c15c5d6\", \"author\": \"Arjun Mehta\", \"date\": \"2026-08-31T16:20:00Z\", \"message\": \"Add Dockerfile and docker-compose.yml for staging tests\"}, {\"sha\": \"c16d6e7\", \"author\": \"Rahul Verma\", \"date\": \"2026-09-02T10:15:00Z\", \"message\": \"Add unit tests for registration validation\"}, {\"sha\": \"c17e7f8\", \"author\": \"Arjun Mehta\", \"date\": \"2026-09-04T13:50:00Z\", \"message\": \"Integrate MSG91 SMS client for mobile OTP dispatch\"}, {\"sha\": \"c18f8a9\", \"author\": \"Priya Nair\", \"date\": \"2026-09-06T15:30:00Z\", \"message\": \"Update club terms and privacy policy text\"}, {\"sha\": \"c19a9b0\", \"author\": \"Sneha Iyer\", \"date\": \"2026-09-08T09:40:00Z\", \"message\": \"Add event poster image upload endpoint\"}, {\"sha\": \"c20b0c1\", \"author\": \"Rahul Verma\", \"date\": \"2026-09-10T11:25:00Z\", \"message\": \"Fix CORS header bug for local frontend preview\"}, {\"sha\": \"c21c1d2\", \"author\": \"Arjun Mehta\", \"date\": \"2026-09-12T14:00:00Z\", \"message\": \"Optimize database indices on student enrollment query\"}, {\"sha\": \"c22d2e3\", \"author\": \"Rahul Verma\", \"date\": \"2026-09-14T16:45:00Z\", \"message\": \"Add student ID card barcode validator\"}, {\"sha\": \"c23e3f4\", \"author\": \"Arjun Mehta\", \"date\": \"2026-09-16T10:10:00Z\", \"message\": \"Add rate limiter on authentication endpoints\"}, {\"sha\": \"c24f4a5\", \"author\": \"Priya Nair\", \"date\": \"2026-09-18T12:35:00Z\", \"message\": \"Add faculty mentor signoff model\"}, {\"sha\": \"c25a5b6\", \"author\": \"Sneha Iyer\", \"date\": \"2026-09-20T09:15:00Z\", \"message\": \"Fix badge printing template margins\"}, {\"sha\": \"c26b6c7\", \"author\": \"Rahul Verma\", \"date\": \"2026-09-22T14:50:00Z\", \"message\": \"Set up Let's Encrypt auto-renewal hook\"}, {\"sha\": \"c27c7d8\", \"author\": \"Arjun Mehta\", \"date\": \"2026-09-24T17:10:00Z\", \"message\": \"Add Redis connection pool manager\"}, {\"sha\": \"c28d8e9\", \"author\": \"Rahul Verma\", \"date\": \"2026-09-26T11:30:00Z\", \"message\": \"Update README with local dev environment setup\"}, {\"sha\": \"c29e9f0\", \"author\": \"Sneha Iyer\", \"date\": \"2026-09-28T15:20:00Z\", \"message\": \"Add RSVP status filters for club admins\"}, {\"sha\": \"c30f0a1\", \"author\": \"Arjun Mehta\", \"date\": \"2026-09-30T18:05:00Z\", \"message\": \"Add automated backup verification script\"}, {\"sha\": \"c31a1b2\", \"author\": \"Rahul Verma\", \"date\": \"2026-10-02T10:45:00Z\", \"message\": \"Fix timezone bug in event countdown banner\"}, {\"sha\": \"c32b2c3\", \"author\": \"Priya Nair\", \"date\": \"2026-10-04T13:20:00Z\", \"message\": \"Add feedback collection form for post-event surveys\"}, {\"sha\": \"c33c3d4\", \"author\": \"Arjun Mehta\", \"date\": \"2026-10-06T16:00:00Z\", \"message\": \"Add student profile photo avatar caching\"}, {\"sha\": \"c34d4e5\", \"author\": \"Rahul Verma\", \"date\": \"2026-10-08T11:15:00Z\", \"message\": \"Implement password reset with one-time tokens\"}, {\"sha\": \"c35e5f6\", \"author\": \"Sneha Iyer\", \"date\": \"2026-10-10T14:30:00Z\", \"message\": \"Add custom questions field to event registration\"}, {\"sha\": \"c36f6a7\", \"author\": \"Arjun Mehta\", \"date\": \"2026-10-12T17:00:00Z\", \"message\": \"Begin tech lead handover documentation preparation\"}, {\"sha\": \"c37a7b8\", \"author\": \"Rahul Verma\", \"date\": \"2026-10-14T09:50:00Z\", \"message\": \"Clean up unused dependencies in requirements.txt\"}, {\"sha\": \"c38b8c9\", \"author\": \"Priya Nair\", \"date\": \"2026-10-16T12:10:00Z\", \"message\": \"Review handover ledger checklists and milestones\"}, {\"sha\": \"c39c9d0\", \"author\": \"Arjun Mehta\", \"date\": \"2026-10-18T15:40:00Z\", \"message\": \"Finalize core system documentation for handover\"}, {\"sha\": \"c40d0e1\", \"author\": \"Rahul Verma\", \"date\": \"2026-10-20T11:00:00Z\", \"message\": \"Verify local SQLite compatibility and test suite\"}], \"issues\": [{\"number\": 1, \"title\": \"LDAP timeout during peak registration hours\", \"user\": \"arjunmehta\", \"assignee\": \"arjunmehta\", \"state\": \"closed\", \"created_at\": \"2026-08-04T10:00:00Z\", \"updated_at\": \"2026-08-25T15:00:00Z\", \"body\": \"During peak hours LDAP queries to campus server hang for 60s. Resolved by in-memory token caching.\", \"comments\": [{\"user\": \"arjunmehta\", \"created_at\": \"2026-08-25T14:50:00Z\", \"body\": \"Cached tokens in memory for 15 minutes.\"}]}, {\"number\": 2, \"title\": \"Add SSO login for @campus.edu\", \"user\": \"priyanair\", \"assignee\": \"arjunmehta\", \"state\": \"closed\", \"created_at\": \"2026-08-06T12:00:00Z\", \"updated_at\": \"2026-08-12T14:00:00Z\", \"body\": \"Enforce college domain validation.\", \"comments\": []}, {\"number\": 3, \"title\": \"CORS errors when running frontend locally\", \"user\": \"rahulverma\", \"assignee\": \"rahulverma\", \"state\": \"closed\", \"created_at\": \"2026-08-14T09:00:00Z\", \"updated_at\": \"2026-08-15T10:00:00Z\", \"body\": \"Browser blocks localhost:5173 requests to backend localhost:8000.\", \"comments\": []}, {\"number\": 4, \"title\": \"Database connection pooling on Supabase\", \"user\": \"arjunmehta\", \"assignee\": \"arjunmehta\", \"state\": \"closed\", \"created_at\": \"2026-08-18T11:00:00Z\", \"updated_at\": \"2026-08-22T16:00:00Z\", \"body\": \"Max client connections exceeded on Supabase free tier.\", \"comments\": []}, {\"number\": 5, \"title\": \"Drop dark mode support for v1\", \"user\": \"arjunmehta\", \"assignee\": \"arjunmehta\", \"state\": \"closed\", \"created_at\": \"2026-08-20T15:00:00Z\", \"updated_at\": \"2026-08-21T18:00:00Z\", \"body\": \"Decided to drop dark mode for initial launch.\", \"comments\": []}, {\"number\": 6, \"title\": \"Ticket PDF generator crashes on long club names\", \"user\": \"snehaiyer\", \"assignee\": \"rahulverma\", \"state\": \"closed\", \"created_at\": \"2026-08-26T14:00:00Z\", \"updated_at\": \"2026-08-28T10:00:00Z\", \"body\": \"ReportLab canvas overflowed on 60+ char club titles.\", \"comments\": []}, {\"number\": 7, \"title\": \"Implement SMS OTP login via MSG91\", \"user\": \"arjunmehta\", \"assignee\": \"arjunmehta\", \"state\": \"closed\", \"created_at\": \"2026-09-02T16:00:00Z\", \"updated_at\": \"2026-09-04T14:00:00Z\", \"body\": \"Added SMS gateway integration for student mobile numbers.\", \"comments\": []}, {\"number\": 8, \"title\": \"Hostel subnet firewall blocks port 8000\", \"user\": \"snehaiyer\", \"assignee\": \"arjunmehta\", \"state\": \"closed\", \"created_at\": \"2026-09-05T10:00:00Z\", \"updated_at\": \"2026-09-07T12:00:00Z\", \"body\": \"Spoke to Mr. Kapoor in hostel network office to whitelist port 8000.\", \"comments\": []}, {\"number\": 9, \"title\": \"Faculty mentor review checklist required\", \"user\": \"priyanair\", \"assignee\": \"priyanair\", \"state\": \"closed\", \"created_at\": \"2026-09-08T11:00:00Z\", \"updated_at\": \"2026-09-18T13:00:00Z\", \"body\": \"Dr. Rao must review student data privacy compliance.\", \"comments\": []}, {\"number\": 10, \"title\": \"Memory leak during 5000+ CSV roster import\", \"user\": \"rahulverma\", \"assignee\": \"arjunmehta\", \"state\": \"closed\", \"created_at\": \"2026-09-12T13:00:00Z\", \"updated_at\": \"2026-09-15T17:00:00Z\", \"body\": \"Fixed by chunking pandas dataframe imports to 500 records.\", \"comments\": []}, {\"number\": 11, \"title\": \"Let's Encrypt SSL certificate autorenewal setup\", \"user\": \"arjunmehta\", \"assignee\": \"rahulverma\", \"state\": \"closed\", \"created_at\": \"2026-09-16T15:00:00Z\", \"updated_at\": \"2026-09-22T15:00:00Z\", \"body\": \"Certbot cron scheduled for Mondays 03:00 UTC.\", \"comments\": []}, {\"number\": 12, \"title\": \"Complete Razorpay Payments Integration and Webhooks\", \"user\": \"arjunmehta\", \"assignee\": \"snehaiyer\", \"state\": \"open\", \"created_at\": \"2026-08-22T16:30:00Z\", \"updated_at\": \"2026-09-28T14:00:00Z\", \"body\": \"Payments integration on GitHub is assigned to Sneha Iyer for webhook validation and ticket confirmation.\", \"comments\": [{\"user\": \"snehaiyer\", \"created_at\": \"2026-08-23T10:00:00Z\", \"body\": \"I am working on webhook signature verification.\"}]}, {\"number\": 13, \"title\": \"Add disaster recovery backup test script\", \"user\": \"priyanair\", \"assignee\": \"arjunmehta\", \"state\": \"open\", \"created_at\": \"2026-09-18T10:00:00Z\", \"updated_at\": \"2026-09-30T18:00:00Z\", \"body\": \"Verify backup recovery steps in staging before handover.\", \"comments\": []}, {\"number\": 14, \"title\": \"Student badge QR code scanner fails on iOS Safari\", \"user\": \"snehaiyer\", \"assignee\": null, \"state\": \"open\", \"created_at\": \"2026-09-20T17:25:00Z\", \"updated_at\": \"2026-09-20T17:25:00Z\", \"body\": \"Camera permissions fail on iOS Safari during event check-in testing. Stalled with zero updates since September 20.\", \"comments\": []}], \"pull_requests\": [{\"number\": 1, \"title\": \"Initial FastAPI backend and models\", \"user\": \"arjunmehta\", \"state\": \"closed\", \"merged\": true, \"created_at\": \"2026-08-02T10:00:00Z\"}, {\"number\": 2, \"title\": \"Add college SSO authentication\", \"user\": \"arjunmehta\", \"state\": \"closed\", \"merged\": true, \"created_at\": \"2026-08-12T14:00:00Z\"}, {\"number\": 3, \"title\": \"Add CORS headers and healthcheck\", \"user\": \"rahulverma\", \"state\": \"closed\", \"merged\": true, \"created_at\": \"2026-08-15T11:00:00Z\"}, {\"number\": 4, \"title\": \"Set up Alembic migrations and database models\", \"user\": \"rahulverma\", \"state\": \"closed\", \"merged\": true, \"created_at\": \"2026-08-23T14:00:00Z\"}, {\"number\": 5, \"title\": \"Add in-memory LDAP token caching\", \"user\": \"arjunmehta\", \"state\": \"closed\", \"merged\": true, \"created_at\": \"2026-08-25T16:00:00Z\"}, {\"number\": 6, \"title\": \"Add MSG91 SMS OTP dispatch integration\", \"user\": \"arjunmehta\", \"state\": \"closed\", \"merged\": true, \"created_at\": \"2026-09-04T15:00:00Z\"}, {\"number\": 7, \"title\": \"Add Docker Compose staging configuration\", \"user\": \"arjunmehta\", \"state\": \"closed\", \"merged\": true, \"created_at\": \"2026-09-14T17:00:00Z\"}, {\"number\": 8, \"title\": \"Add SSL certificate autorenewal cron hook\", \"user\": \"rahulverma\", \"state\": \"closed\", \"merged\": true, \"created_at\": \"2026-09-22T16:00:00Z\"}, {\"number\": 9, \"title\": \"Refactor notification service to async task queue\", \"user\": \"rahulverma\", \"state\": \"open\", \"merged\": false, \"created_at\": \"2026-09-01T10:00:00Z\", \"assignee\": null, \"body\": \"Refactors event notification dispatching into Celery/async queue. Unassigned and unowned open pull request.\"}]}",
+      "item_count": 39,
+      "masked_count": 0,
+      "content_hash": "3c2eb094e157e82e45532d24dc2bc8974af3afabdcebd18ec46c6c403da3f67f",
+      "chunks": [
+        {
+          "location_label": "README.md",
+          "text": "# Campus Connect\n\nA unified club event, registration, and ticketing platform for university campus student organizations.\n\n## Tech Stack\n- Frontend: React 18 with TypeScript & Tailwind CSS\n- Backend: FastAPI (Python 3.11+)\n- Database: Supabase PostgreSQL (Production), SQLite (Local Dev)\n- Deployment: Hosted on Render Web Services\n\n## Local Setup\n```bash\ngit clone https://github.com/campus-club/campus-connect.git\ncd campus-connect\npip install -r requirements.txt\nuvicorn main:app --reload\n```\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-0c146241cb35"
+        },
+        {
+          "location_label": "Commit c01a1b2 by Arjun Mehta (2026-08-01)",
+          "text": "Commit c01a1b2: Initial project setup with FastAPI and React scaffold\nAuthor: Arjun Mehta\nDate: 2026-08-01T09:00:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-8717e99ced1c"
+        },
+        {
+          "location_label": "Commit c02b2c3 by Arjun Mehta (2026-08-03)",
+          "text": "Commit c02b2c3: Configure PostgreSQL database models with SQLAlchemy 2\nAuthor: Arjun Mehta\nDate: 2026-08-03T10:30:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-bc53a6a50535"
+        },
+        {
+          "location_label": "Commit c03c3d4 by Sneha Iyer (2026-08-05)",
+          "text": "Commit c03c3d4: Add club event registration models and schema definitions\nAuthor: Sneha Iyer\nDate: 2026-08-05T14:15:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-5fc2af85981f"
+        },
+        {
+          "location_label": "Commit c04d4e5 by Arjun Mehta (2026-08-07)",
+          "text": "Commit c04d4e5: Set API timeout to 30s in production config for batch admin imports\nAuthor: Arjun Mehta\nDate: 2026-08-07T16:00:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-b1b8ea532257"
+        },
+        {
+          "location_label": "Commit c05e5f6 by Priya Nair (2026-08-10)",
+          "text": "Commit c05e5f6: Add club president approval workflow for campus auditorium bookings\nAuthor: Priya Nair\nDate: 2026-08-10T11:20:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-6d1875737fc1"
+        },
+        {
+          "location_label": "Commit c06f6a7 by Arjun Mehta (2026-08-12)",
+          "text": "Commit c06f6a7: Implement college SSO email domain validation (@campus.edu)\nAuthor: Arjun Mehta\nDate: 2026-08-12T13:45:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-4258b60c1319"
+        },
+        {
+          "location_label": "Commit c07a7b8 by Rahul Verma (2026-08-15)",
+          "text": "Commit c07a7b8: Add healthcheck endpoint and CORS configuration\nAuthor: Rahul Verma\nDate: 2026-08-15T09:10:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-08dc70767d92"
+        },
+        {
+          "location_label": "Commit c08b8c9 by Arjun Mehta (2026-08-17)",
+          "text": "Commit c08b8c9: Add initial Razorpay payment gateway integration stubs\nAuthor: Arjun Mehta\nDate: 2026-08-17T15:20:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-bfa5f0d57138"
+        },
+        {
+          "location_label": "Commit c09c9d0 by Sneha Iyer (2026-08-19)",
+          "text": "Commit c09c9d0: Update student registration ticket types and early bird discounts\nAuthor: Sneha Iyer\nDate: 2026-08-19T10:40:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-31b951a21841"
+        },
+        {
+          "location_label": "Commit c10d0e1 by Arjun Mehta (2026-08-21)",
+          "text": "Commit c10d0e1: Drop dark mode stylesheet in favor of default light theme\nAuthor: Arjun Mehta\nDate: 2026-08-21T18:00:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-06089c0479a5"
+        },
+        {
+          "location_label": "Commit c11e1f2 by Rahul Verma (2026-08-23)",
+          "text": "Commit c11e1f2: Add Alembic database migration runner\nAuthor: Rahul Verma\nDate: 2026-08-23T12:15:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-a7e13f233030"
+        },
+        {
+          "location_label": "Commit c12f2a3 by Arjun Mehta (2026-08-25)",
+          "text": "Commit c12f2a3: Implement 15-minute memory cache for campus LDAP tokens\nAuthor: Arjun Mehta\nDate: 2026-08-25T14:30:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-404b045ce6ad"
+        },
+        {
+          "location_label": "Commit c13a3b4 by Rahul Verma (2026-08-27)",
+          "text": "Commit c13a3b4: Refactor API router paths under /api/v1 prefix\nAuthor: Rahul Verma\nDate: 2026-08-27T17:45:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-238610940f17"
+        },
+        {
+          "location_label": "Commit c14b4c5 by Sneha Iyer (2026-08-29)",
+          "text": "Commit c14b4c5: Add CSV export for club coordinators\nAuthor: Sneha Iyer\nDate: 2026-08-29T11:00:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-84b4bdd83dda"
+        },
+        {
+          "location_label": "Commit c15c5d6 by Arjun Mehta (2026-08-31)",
+          "text": "Commit c15c5d6: Add Dockerfile and docker-compose.yml for staging tests\nAuthor: Arjun Mehta\nDate: 2026-08-31T16:20:00Z",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-d4d5e7764a47"
+        },
+        {
+          "location_label": "Issue #1: LDAP timeout during peak registration hours",
+          "text": "Issue #1 [CLOSED] - LDAP timeout during peak registration hours\nAssignee: arjunmehta\nCreated: 2026-08-04T10:00:00Z\nUpdated: 2026-08-25T15:00:00Z\nDuring peak hours LDAP queries to campus server hang for 60s. Resolved by in-memory token caching.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-69e702408580"
+        },
+        {
+          "location_label": "Issue #2: Add SSO login for @campus.edu",
+          "text": "Issue #2 [CLOSED] - Add SSO login for @campus.edu\nAssignee: arjunmehta\nCreated: 2026-08-06T12:00:00Z\nUpdated: 2026-08-12T14:00:00Z\nEnforce college domain validation.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-76b23eaaa924"
+        },
+        {
+          "location_label": "Issue #3: CORS errors when running frontend locally",
+          "text": "Issue #3 [CLOSED] - CORS errors when running frontend locally\nAssignee: rahulverma\nCreated: 2026-08-14T09:00:00Z\nUpdated: 2026-08-15T10:00:00Z\nBrowser blocks localhost:5173 requests to backend localhost:8000.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-b6f1012d138f"
+        },
+        {
+          "location_label": "Issue #4: Database connection pooling on Supabase",
+          "text": "Issue #4 [CLOSED] - Database connection pooling on Supabase\nAssignee: arjunmehta\nCreated: 2026-08-18T11:00:00Z\nUpdated: 2026-08-22T16:00:00Z\nMax client connections exceeded on Supabase free tier.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-91c7cacbe386"
+        },
+        {
+          "location_label": "Issue #5: Drop dark mode support for v1",
+          "text": "Issue #5 [CLOSED] - Drop dark mode support for v1\nAssignee: arjunmehta\nCreated: 2026-08-20T15:00:00Z\nUpdated: 2026-08-21T18:00:00Z\nDecided to drop dark mode for initial launch.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-70f0567c912e"
+        },
+        {
+          "location_label": "Issue #6: Ticket PDF generator crashes on long club names",
+          "text": "Issue #6 [CLOSED] - Ticket PDF generator crashes on long club names\nAssignee: rahulverma\nCreated: 2026-08-26T14:00:00Z\nUpdated: 2026-08-28T10:00:00Z\nReportLab canvas overflowed on 60+ char club titles.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-4e99881892ea"
+        },
+        {
+          "location_label": "Issue #7: Implement SMS OTP login via MSG91",
+          "text": "Issue #7 [CLOSED] - Implement SMS OTP login via MSG91\nAssignee: arjunmehta\nCreated: 2026-09-02T16:00:00Z\nUpdated: 2026-09-04T14:00:00Z\nAdded SMS gateway integration for student mobile numbers.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-35e570062cdc"
+        },
+        {
+          "location_label": "Issue #8: Hostel subnet firewall blocks port 8000",
+          "text": "Issue #8 [CLOSED] - Hostel subnet firewall blocks port 8000\nAssignee: arjunmehta\nCreated: 2026-09-05T10:00:00Z\nUpdated: 2026-09-07T12:00:00Z\nSpoke to Mr. Kapoor in hostel network office to whitelist port 8000.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-d82cfcafd24d"
+        },
+        {
+          "location_label": "Issue #9: Faculty mentor review checklist required",
+          "text": "Issue #9 [CLOSED] - Faculty mentor review checklist required\nAssignee: priyanair\nCreated: 2026-09-08T11:00:00Z\nUpdated: 2026-09-18T13:00:00Z\nDr. Rao must review student data privacy compliance.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-cc73d254cc88"
+        },
+        {
+          "location_label": "Issue #10: Memory leak during 5000+ CSV roster import",
+          "text": "Issue #10 [CLOSED] - Memory leak during 5000+ CSV roster import\nAssignee: arjunmehta\nCreated: 2026-09-12T13:00:00Z\nUpdated: 2026-09-15T17:00:00Z\nFixed by chunking pandas dataframe imports to 500 records.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-0065d778af3b"
+        },
+        {
+          "location_label": "Issue #11: Let's Encrypt SSL certificate autorenewal setup",
+          "text": "Issue #11 [CLOSED] - Let's Encrypt SSL certificate autorenewal setup\nAssignee: rahulverma\nCreated: 2026-09-16T15:00:00Z\nUpdated: 2026-09-22T15:00:00Z\nCertbot cron scheduled for Mondays 03:00 UTC.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-a0fe3dc590df"
+        },
+        {
+          "location_label": "Issue #12: Complete Razorpay Payments Integration and Webhooks",
+          "text": "Issue #12 [OPEN] - Complete Razorpay Payments Integration and Webhooks\nAssignee: snehaiyer\nCreated: 2026-08-22T16:30:00Z\nUpdated: 2026-09-28T14:00:00Z\nPayments integration on GitHub is assigned to Sneha Iyer for webhook validation and ticket confirmation.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-86acbff5fb64"
+        },
+        {
+          "location_label": "Issue #13: Add disaster recovery backup test script",
+          "text": "Issue #13 [OPEN] - Add disaster recovery backup test script\nAssignee: arjunmehta\nCreated: 2026-09-18T10:00:00Z\nUpdated: 2026-09-30T18:00:00Z\nVerify backup recovery steps in staging before handover.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-72e445faf62f"
+        },
+        {
+          "location_label": "Issue #14: Student badge QR code scanner fails on iOS Safari",
+          "text": "Issue #14 [OPEN] - Student badge QR code scanner fails on iOS Safari\nAssignee: None\nCreated: 2026-09-20T17:25:00Z\nUpdated: 2026-09-20T17:25:00Z\nCamera permissions fail on iOS Safari during event check-in testing. Stalled with zero updates since September 20.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-53c1091a3934"
+        },
+        {
+          "location_label": "PR #1: Initial FastAPI backend and models",
+          "text": "PR #1 [CLOSED] - Initial FastAPI backend and models\nAuthor: arjunmehta\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-5ce305f72c7b"
+        },
+        {
+          "location_label": "PR #2: Add college SSO authentication",
+          "text": "PR #2 [CLOSED] - Add college SSO authentication\nAuthor: arjunmehta\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-87c1577c50f4"
+        },
+        {
+          "location_label": "PR #3: Add CORS headers and healthcheck",
+          "text": "PR #3 [CLOSED] - Add CORS headers and healthcheck\nAuthor: rahulverma\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-e59370b4b5eb"
+        },
+        {
+          "location_label": "PR #4: Set up Alembic migrations and database models",
+          "text": "PR #4 [CLOSED] - Set up Alembic migrations and database models\nAuthor: rahulverma\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-0785cba2555c"
+        },
+        {
+          "location_label": "PR #5: Add in-memory LDAP token caching",
+          "text": "PR #5 [CLOSED] - Add in-memory LDAP token caching\nAuthor: arjunmehta\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-7401ff7af128"
+        },
+        {
+          "location_label": "PR #6: Add MSG91 SMS OTP dispatch integration",
+          "text": "PR #6 [CLOSED] - Add MSG91 SMS OTP dispatch integration\nAuthor: arjunmehta\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-7d9f84f55752"
+        },
+        {
+          "location_label": "PR #7: Add Docker Compose staging configuration",
+          "text": "PR #7 [CLOSED] - Add Docker Compose staging configuration\nAuthor: arjunmehta\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-1ea4f681ab56"
+        },
+        {
+          "location_label": "PR #8: Add SSL certificate autorenewal cron hook",
+          "text": "PR #8 [CLOSED] - Add SSL certificate autorenewal cron hook\nAuthor: rahulverma\n",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-ba474f380641"
+        },
+        {
+          "location_label": "PR #9: Refactor notification service to async task queue",
+          "text": "PR #9 [OPEN] - Refactor notification service to async task queue\nAuthor: rahulverma\nRefactors event notification dispatching into Celery/async queue. Unassigned and unowned open pull request.",
+          "source_id": "src-github-campus-connect",
+          "source_name": "GitHub (campus-club/campus-connect)",
+          "source_clearance": 1,
+          "id": "chunk-f0fb785c278c"
+        }
+      ]
+    },
+    {
+      "id": "src-meeting-notes-1",
+      "name": "Meeting Notes #1 (Core Team)",
+      "kind": "notes",
+      "clearance": 1,
+      "raw_text": "# Campus Connect - Core Team Sync 1\n**Date**: 2026-08-10  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer (Coordinator)  \n**Clearance**: General  \n\n## Agenda & Discussion\n1. **Architecture Blueprint**:\n   - Agreed to build Campus Connect using FastAPI for backend and React Vite on frontend.\n   - Core database schema will use PostgreSQL hosted on Supabase in cloud.\n2. **Backend Configuration**:\n   - Production API timeout is configured to 30s in backend settings to allow batch roster uploads from campus admins.\n3. **Module Ownership**:\n   - Payments integration and ticketing module is officially assigned to Arjun Mehta as lead owner.\n   - Sneha Iyer will handle club event registration workflows and coordination.\n4. **Design Decisions**:\n   - Dropped dark mode support for v1 release.\n   - Initial authentication will use college SSO email domain validation (@campus.edu).\n",
+      "item_count": 3,
+      "masked_count": 0,
+      "content_hash": "3631d17a23026eb5ceb23fb2ba25e409c2eddbf79f85e5c32977cc6b71344057",
+      "chunks": [
+        {
+          "location_label": "meeting_notes_1.md lines 1-8",
+          "text": "# Campus Connect - Core Team Sync 1\n**Date**: 2026-08-10  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer (Coordinator)  \n**Clearance**: General  \n\n## Agenda & Discussion\n1. **Architecture Blueprint**:\n   - Agreed to build Campus Connect using FastAPI for backend and React Vite on frontend.",
+          "source_id": "src-meeting-notes-1",
+          "source_name": "Meeting Notes #1 (Core Team)",
+          "source_clearance": 1,
+          "id": "chunk-879ef82701cd"
+        },
+        {
+          "location_label": "meeting_notes_1.md lines 9-16",
+          "text": "   - Core database schema will use PostgreSQL hosted on Supabase in cloud.\n2. **Backend Configuration**:\n   - Production API timeout is configured to 30s in backend settings to allow batch roster uploads from campus admins.\n3. **Module Ownership**:\n   - Payments integration and ticketing module is officially assigned to Arjun Mehta as lead owner.\n   - Sneha Iyer will handle club event registration workflows and coordination.\n4. **Design Decisions**:\n   - Dropped dark mode support for v1 release.",
+          "source_id": "src-meeting-notes-1",
+          "source_name": "Meeting Notes #1 (Core Team)",
+          "source_clearance": 1,
+          "id": "chunk-8359ec069386"
+        },
+        {
+          "location_label": "meeting_notes_1.md lines 17-17",
+          "text": "   - Initial authentication will use college SSO email domain validation (@campus.edu).",
+          "source_id": "src-meeting-notes-1",
+          "source_name": "Meeting Notes #1 (Core Team)",
+          "source_clearance": 1,
+          "id": "chunk-0d855c75f5d7"
+        }
+      ]
+    },
+    {
+      "id": "src-meeting-notes-2",
+      "name": "Meeting Notes #2 (Core Team)",
+      "kind": "notes",
+      "clearance": 1,
+      "raw_text": "# Campus Connect - Mid-Sprint Architecture Review\n**Date**: 2026-08-25  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Rahul Verma (Successor Developer)  \n**Clearance**: General  \n\n## Key Updates & Decisions\n1. **Onboarding Rahul Verma**:\n   - Rahul Verma joined as junior developer and will shadow Arjun during graduation handover.\n2. **Database Migrations**:\n   - Alembic migration scripts are set up in `/migrations`.\n   - All migrations must run before backend startup via entrypoint script.\n3. **Recurring Problems**:\n   - Recurring socket timeout when polling campus LDAP server during peak registration hours (10 AM to 12 PM).\n   - Temporary mitigation: cached LDAP tokens for 15 minutes in memory.\n4. **Third Party Integrations**:\n   - Razorpay payment gateway sandbox credentials verified.\n   - External faculty mentor: Dr. Rao will review club compliance requirements before launch.\n",
+      "item_count": 3,
+      "masked_count": 0,
+      "content_hash": "a3a54777c92a97f7dd079ba960f25f8b0a2775808de4ac6c9f21f470353184b0",
+      "chunks": [
+        {
+          "location_label": "meeting_notes_2.md lines 1-8",
+          "text": "# Campus Connect - Mid-Sprint Architecture Review\n**Date**: 2026-08-25  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Rahul Verma (Successor Developer)  \n**Clearance**: General  \n\n## Key Updates & Decisions\n1. **Onboarding Rahul Verma**:\n   - Rahul Verma joined as junior developer and will shadow Arjun during graduation handover.",
+          "source_id": "src-meeting-notes-2",
+          "source_name": "Meeting Notes #2 (Core Team)",
+          "source_clearance": 1,
+          "id": "chunk-11bd3f1fde25"
+        },
+        {
+          "location_label": "meeting_notes_2.md lines 9-16",
+          "text": "2. **Database Migrations**:\n   - Alembic migration scripts are set up in `/migrations`.\n   - All migrations must run before backend startup via entrypoint script.\n3. **Recurring Problems**:\n   - Recurring socket timeout when polling campus LDAP server during peak registration hours (10 AM to 12 PM).\n   - Temporary mitigation: cached LDAP tokens for 15 minutes in memory.\n4. **Third Party Integrations**:\n   - Razorpay payment gateway sandbox credentials verified.",
+          "source_id": "src-meeting-notes-2",
+          "source_name": "Meeting Notes #2 (Core Team)",
+          "source_clearance": 1,
+          "id": "chunk-c457bd67f038"
+        },
+        {
+          "location_label": "meeting_notes_2.md lines 17-17",
+          "text": "   - External faculty mentor: Dr. Rao will review club compliance requirements before launch.",
+          "source_id": "src-meeting-notes-2",
+          "source_name": "Meeting Notes #2 (Core Team)",
+          "source_clearance": 1,
+          "id": "chunk-d5d5d50ddf14"
+        }
+      ]
+    },
+    {
+      "id": "src-meeting-notes-3",
+      "name": "Meeting Notes #3 (Core Team)",
+      "kind": "notes",
+      "clearance": 1,
+      "raw_text": "# Campus Connect - Pre-Release Handover Sync\n**Date**: 2026-09-18  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer, Rahul Verma  \n**Clearance**: General  \n\n## Operational Decisions & Action Items\n1. **Next Actions for Launch**:\n   - Rahul Verma must verify SSL certificate autorenewal with Let's Encrypt before October 15.\n   - Run disaster recovery mock test on SQLite backup restoration.\n2. **Infrastructure Contacts**:\n   - Hostel IT contact person: Mr. Kapoor (hostel network office).\n3. **Open Work**:\n   - Need to finalize student council announcement banner API.\n   - Complete end-to-end load testing on registration check-in scanner.\n",
+      "item_count": 2,
+      "masked_count": 0,
+      "content_hash": "6bd901129e053c774c26fb9d9037f9f007017d253b60f638659eff57e8042ba1",
+      "chunks": [
+        {
+          "location_label": "meeting_notes_3.md lines 1-8",
+          "text": "# Campus Connect - Pre-Release Handover Sync\n**Date**: 2026-09-18  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer, Rahul Verma  \n**Clearance**: General  \n\n## Operational Decisions & Action Items\n1. **Next Actions for Launch**:\n   - Rahul Verma must verify SSL certificate autorenewal with Let's Encrypt before October 15.",
+          "source_id": "src-meeting-notes-3",
+          "source_name": "Meeting Notes #3 (Core Team)",
+          "source_clearance": 1,
+          "id": "chunk-60b574060a1d"
+        },
+        {
+          "location_label": "meeting_notes_3.md lines 9-14",
+          "text": "   - Run disaster recovery mock test on SQLite backup restoration.\n2. **Infrastructure Contacts**:\n   - Hostel IT contact person: Mr. Kapoor (hostel network office).\n3. **Open Work**:\n   - Need to finalize student council announcement banner API.\n   - Complete end-to-end load testing on registration check-in scanner.",
+          "source_id": "src-meeting-notes-3",
+          "source_name": "Meeting Notes #3 (Core Team)",
+          "source_clearance": 1,
+          "id": "chunk-67fc68b0ae2d"
+        }
+      ]
+    },
+    {
+      "id": "src-chat-export",
+      "name": "Team Slack/WhatsApp Export",
+      "kind": "chat",
+      "clearance": 1,
+      "raw_text": "[15/08/2026, 10:14:02] Arjun Mehta: Hey team, kicking off Campus Connect development this morning!\n[15/08/2026, 10:15:10] Priya Nair: Great, let's keep all updates in this channel. Remember Arjun is graduating in November so we need everything documented.\n[15/08/2026, 10:16:30] Sneha Iyer: I've created the student club WhatsApp group and started collecting event requirements.\n[15/08/2026, 10:18:05] Rahul Verma: Excited to join! Cloning the repo now.\n[15/08/2026, 10:20:12] Arjun Mehta: Welcome Rahul! Check out README.md first. It says we deploy on Render.\n[16/08/2026, 11:02:40] Arjun Mehta: Quick update: We had lots of gateway timeout errors on Render free tier yesterday.\n[16/08/2026, 11:05:15] Arjun Mehta: I moved our backend deployment to an AWS EC2 t3.medium instance under student credits so we have dedicated compute.\n[16/08/2026, 11:06:22] Priya Nair: Sounds good, just make sure the runbook is updated.\n[18/08/2026, 14:10:05] Sneha Iyer: Are students receiving OTPs when registering with their phone numbers?\n[18/08/2026, 14:12:30] Arjun Mehta: Yes, I integrated the MSG91 SMS gateway API last night for fast student OTP dispatch.\n[18/08/2026, 14:14:10] Rahul Verma: Nice! Is MSG91 documented in the README or runbook?\n[18/08/2026, 14:15:00] Arjun Mehta: Not yet, will document it later. Just using free promotional credits right now.\n[20/08/2026, 09:30:15] Priya Nair: In meeting notes we discussed keeping API timeout at 30 seconds.\n[20/08/2026, 09:32:00] Arjun Mehta: Actually in chat and production nginx config, I changed API timeout to 10s because slow campus wifi was holding open connections and crashing the server.\n[20/08/2026, 09:33:45] Rahul Verma: Got it, so API timeout is 10s now to prevent hanging requests.\n[22/08/2026, 16:45:10] Sneha Iyer: I noticed on GitHub issue #12 that payments integration is assigned to me on GitHub, but meeting notes said Arjun owns payments. Who is the actual owner?\n[22/08/2026, 16:47:00] Arjun Mehta: Let's discuss in next sync, right now both of us have partial code committed.\n[25/08/2026, 12:00:20] Arjun Mehta: Heads up: I accidentally pasted our temporary OpenAI sandbox test key here, don't share outside: token:[MASKED:token]\n[25/08/2026, 12:01:10] Priya Nair: Arjun please don't paste credentials in chat! Also here is my personal number if emergency: [MASKED:phone] or email [MASKED:email].\n[28/08/2026, 15:30:00] Sneha Iyer: Why did we drop dark mode support for v1? Several club reps asked about it.\n[28/08/2026, 15:32:10] Arjun Mehta: We just dropped dark mode for v1, let's ship light mode first.\n[01/09/2026, 10:00:00] Rahul Verma: I'm looking at PR #9 for notification service refactor. Who owns this PR? It is currently unassigned.\n[01/09/2026, 10:05:30] Arjun Mehta: PR #9 is an unowned open PR that refactors notification dispatching. We need someone to adopt it.\n[05/09/2026, 11:20:00] Sneha Iyer: We had a call with Mr. Kapoor from hostel IT about opening port 8000 on the campus subnet.\n[05/09/2026, 11:22:15] Priya Nair: What is Mr. Kapoor's official title and office hours?\n[05/09/2026, 11:23:00] Sneha Iyer: Not sure about his exact role, he is just listed as contact Mr. Kapoor in the server room.\n[10/09/2026, 14:10:00] Rahul Verma: Also Dr. Rao stopped by the lab today.\n[10/09/2026, 14:12:00] Priya Nair: Dr. Rao is our faculty mentor, but we don't have his signoff escalation channel documented.\n[15/09/2026, 16:00:00] Arjun Mehta: Pushed commit 8a4b2c1 for student registration validation.\n[20/09/2026, 17:30:00] Priya Nair: Issue #14: Student badge QR code scanner fails on iOS Safari was opened today by Sneha.\n[20/09/2026, 17:35:10] Sneha Iyer: Yes, Issue #14 is opened.\n[25/09/2026, 10:00:00] Rahul Verma: Any update on Issue #14?\n[28/09/2026, 14:00:00] Priya Nair: No one has touched Issue #14 since September 20. It looks stalled.\n[05/10/2026, 09:15:00] Rahul Verma: Issue #14 is still completely untouched. Stalled for more than two weeks now.\n[10/10/2026, 11:00:00] Arjun Mehta: Starting to prepare my handover notes. Priya and Rahul, let's make sure we review all ledger claims.\n[12/10/2026, 15:30:00] Priya Nair: Yes, we need a verified handover with clearance checks so nothing confidential leaks to coordinators.\n",
+      "item_count": 6,
+      "masked_count": 4,
+      "content_hash": "1fa77249322e818dab0aa5907987853858d810b44bc407255737b1c1f99080e2",
+      "chunks": [
+        {
+          "location_label": "Chat [15/08/2026, 10:14:02 - 16/08/2026, 11:02:40] (Arjun Mehta, Priya Nair, Rahul Verma)",
+          "text": "[15/08/2026, 10:14:02] Arjun Mehta: Hey team, kicking off Campus Connect development this morning!\n[15/08/2026, 10:15:10] Priya Nair: Great, let's keep all updates in this channel. Remember Arjun is graduating in November so we need everything documented.\n[15/08/2026, 10:16:30] Sneha Iyer: I've created the student club WhatsApp group and started collecting event requirements.\n[15/08/2026, 10:18:05] Rahul Verma: Excited to join! Cloning the repo now.\n[15/08/2026, 10:20:12] Arjun Mehta: Welcome Rahul! Check out README.md first. It says we deploy on Render.\n[16/08/2026, 11:02:40] Arjun Mehta: Quick update: We had lots of gateway timeout errors on Render free tier yesterday.",
+          "source_id": "src-chat-export",
+          "source_name": "Team Slack/WhatsApp Export",
+          "source_clearance": 1,
+          "id": "chunk-a3c585d50b79"
+        },
+        {
+          "location_label": "Chat [16/08/2026, 11:05:15 - 18/08/2026, 14:15:00] (Arjun Mehta, Priya Nair, Rahul Verma)",
+          "text": "[16/08/2026, 11:05:15] Arjun Mehta: I moved our backend deployment to an AWS EC2 t3.medium instance under student credits so we have dedicated compute.\n[16/08/2026, 11:06:22] Priya Nair: Sounds good, just make sure the runbook is updated.\n[18/08/2026, 14:10:05] Sneha Iyer: Are students receiving OTPs when registering with their phone numbers?\n[18/08/2026, 14:12:30] Arjun Mehta: Yes, I integrated the MSG91 SMS gateway API last night for fast student OTP dispatch.\n[18/08/2026, 14:14:10] Rahul Verma: Nice! Is MSG91 documented in the README or runbook?\n[18/08/2026, 14:15:00] Arjun Mehta: Not yet, will document it later. Just using free promotional credits right now.",
+          "source_id": "src-chat-export",
+          "source_name": "Team Slack/WhatsApp Export",
+          "source_clearance": 1,
+          "id": "chunk-a18c304b6525"
+        },
+        {
+          "location_label": "Chat [20/08/2026, 09:30:15 - 25/08/2026, 12:00:20] (Arjun Mehta, Priya Nair, Rahul Verma)",
+          "text": "[20/08/2026, 09:30:15] Priya Nair: In meeting notes we discussed keeping API timeout at 30 seconds.\n[20/08/2026, 09:32:00] Arjun Mehta: Actually in chat and production nginx config, I changed API timeout to 10s because slow campus wifi was holding open connections and crashing the server.\n[20/08/2026, 09:33:45] Rahul Verma: Got it, so API timeout is 10s now to prevent hanging requests.\n[22/08/2026, 16:45:10] Sneha Iyer: I noticed on GitHub issue #12 that payments integration is assigned to me on GitHub, but meeting notes said Arjun owns payments. Who is the actual owner?\n[22/08/2026, 16:47:00] Arjun Mehta: Let's discuss in next sync, right now both of us have partial code committed.\n[25/08/2026, 12:00:20] Arjun Mehta: Heads up: I accidentally pasted our temporary OpenAI sandbox test key here, don't share outside: token:[MASKED:token]",
+          "source_id": "src-chat-export",
+          "source_name": "Team Slack/WhatsApp Export",
+          "source_clearance": 1,
+          "id": "chunk-d4227317ffec"
+        },
+        {
+          "location_label": "Chat [25/08/2026, 12:01:10 - 05/09/2026, 11:20:00] (Arjun Mehta, Priya Nair, Rahul Verma)",
+          "text": "[25/08/2026, 12:01:10] Priya Nair: Arjun please don't paste credentials in chat! Also here is my personal number if emergency: [MASKED:phone] or email [MASKED:email].\n[28/08/2026, 15:30:00] Sneha Iyer: Why did we drop dark mode support for v1? Several club reps asked about it.\n[28/08/2026, 15:32:10] Arjun Mehta: We just dropped dark mode for v1, let's ship light mode first.\n[01/09/2026, 10:00:00] Rahul Verma: I'm looking at PR #9 for notification service refactor. Who owns this PR? It is currently unassigned.\n[01/09/2026, 10:05:30] Arjun Mehta: PR #9 is an unowned open PR that refactors notification dispatching. We need someone to adopt it.\n[05/09/2026, 11:20:00] Sneha Iyer: We had a call with Mr. Kapoor from hostel IT about opening port 8000 on the campus subnet.",
+          "source_id": "src-chat-export",
+          "source_name": "Team Slack/WhatsApp Export",
+          "source_clearance": 1,
+          "id": "chunk-cee4c508af32"
+        },
+        {
+          "location_label": "Chat [05/09/2026, 11:22:15 - 20/09/2026, 17:30:00] (Arjun Mehta, Priya Nair, Rahul Verma)",
+          "text": "[05/09/2026, 11:22:15] Priya Nair: What is Mr. Kapoor's official title and office hours?\n[05/09/2026, 11:23:00] Sneha Iyer: Not sure about his exact role, he is just listed as contact Mr. Kapoor in the server room.\n[10/09/2026, 14:10:00] Rahul Verma: Also Dr. Rao stopped by the lab today.\n[10/09/2026, 14:12:00] Priya Nair: Dr. Rao is our faculty mentor, but we don't have his signoff escalation channel documented.\n[15/09/2026, 16:00:00] Arjun Mehta: Pushed commit 8a4b2c1 for student registration validation.\n[20/09/2026, 17:30:00] Priya Nair: Issue #14: Student badge QR code scanner fails on iOS Safari was opened today by Sneha.",
+          "source_id": "src-chat-export",
+          "source_name": "Team Slack/WhatsApp Export",
+          "source_clearance": 1,
+          "id": "chunk-30c66d1f067f"
+        },
+        {
+          "location_label": "Chat [20/09/2026, 17:35:10 - 12/10/2026, 15:30:00] (Arjun Mehta, Priya Nair, Rahul Verma)",
+          "text": "[20/09/2026, 17:35:10] Sneha Iyer: Yes, Issue #14 is opened.\n[25/09/2026, 10:00:00] Rahul Verma: Any update on Issue #14?\n[28/09/2026, 14:00:00] Priya Nair: No one has touched Issue #14 since September 20. It looks stalled.\n[05/10/2026, 09:15:00] Rahul Verma: Issue #14 is still completely untouched. Stalled for more than two weeks now.\n[10/10/2026, 11:00:00] Arjun Mehta: Starting to prepare my handover notes. Priya and Rahul, let's make sure we review all ledger claims.\n[12/10/2026, 15:30:00] Priya Nair: Yes, we need a verified handover with clearance checks so nothing confidential leaks to coordinators.",
+          "source_id": "src-chat-export",
+          "source_name": "Team Slack/WhatsApp Export",
+          "source_clearance": 1,
+          "id": "chunk-f0376aa9b74c"
+        }
+      ]
+    },
+    {
+      "id": "src-deployment-runbook",
+      "name": "Deployment & Operations Runbook",
+      "kind": "notes",
+      "clearance": 2,
+      "raw_text": "# Campus Connect - Deployment & Operations Runbook\n**Classification**: Technical (Clearance Level 2)  \n**Last Updated**: 2026-09-22 by Arjun Mehta  \n\n## 1. Architecture Overview\n- Web Frontend: React 18 SPA served via Nginx static container.\n- Backend API: Python FastAPI with Uvicorn ASGI server.\n- Database: PostgreSQL on Supabase (managed) with local SQLite fallback.\n\n## 2. Server Deployment\n- Production server setup runs inside Docker Compose.\n- Systemd service `campusconnect-api.service` restarts automatically on server reboot.\n- Port bindings: 8000 for backend API, 5173 / 80 for frontend web client.\n\n## 3. Recurring Issues & Mitigations\n- Background task memory bloat during CSV roster uploads:\n  - Worker process is restricted to 512MB RAM with automatic recycling.\n- SSL renew cron:\n  - Executes every Monday at 03:00 UTC via Certbot.\n\n## 4. Dependencies\n- Supabase PostgreSQL v15\n- Redis v7 for session cache\n- Docker 24.0+\n",
+      "item_count": 3,
+      "masked_count": 0,
+      "content_hash": "9e991bdb33c9bd1d418dc52167bdb49905cf5c40d9a4d513012322a1cbf7414b",
+      "chunks": [
+        {
+          "location_label": "deployment_runbook.md lines 1-8",
+          "text": "# Campus Connect - Deployment & Operations Runbook\n**Classification**: Technical (Clearance Level 2)  \n**Last Updated**: 2026-09-22 by Arjun Mehta  \n\n## 1. Architecture Overview\n- Web Frontend: React 18 SPA served via Nginx static container.\n- Backend API: Python FastAPI with Uvicorn ASGI server.\n- Database: PostgreSQL on Supabase (managed) with local SQLite fallback.",
+          "source_id": "src-deployment-runbook",
+          "source_name": "Deployment & Operations Runbook",
+          "source_clearance": 2,
+          "id": "chunk-98f546094ebc"
+        },
+        {
+          "location_label": "deployment_runbook.md lines 9-16",
+          "text": "\n## 2. Server Deployment\n- Production server setup runs inside Docker Compose.\n- Systemd service `campusconnect-api.service` restarts automatically on server reboot.\n- Port bindings: 8000 for backend API, 5173 / 80 for frontend web client.\n\n## 3. Recurring Issues & Mitigations\n- Background task memory bloat during CSV roster uploads:",
+          "source_id": "src-deployment-runbook",
+          "source_name": "Deployment & Operations Runbook",
+          "source_clearance": 2,
+          "id": "chunk-4b5801fede66"
+        },
+        {
+          "location_label": "deployment_runbook.md lines 17-24",
+          "text": "  - Worker process is restricted to 512MB RAM with automatic recycling.\n- SSL renew cron:\n  - Executes every Monday at 03:00 UTC via Certbot.\n\n## 4. Dependencies\n- Supabase PostgreSQL v15\n- Redis v7 for session cache\n- Docker 24.0+",
+          "source_id": "src-deployment-runbook",
+          "source_name": "Deployment & Operations Runbook",
+          "source_clearance": 2,
+          "id": "chunk-39784f4b9a0d"
+        }
+      ]
+    },
+    {
+      "id": "src-admin-notes",
+      "name": "Admin Notes & Secrets Runbook",
+      "kind": "notes",
+      "clearance": 3,
+      "raw_text": "# Campus Connect - Confidential Administrative & Secrets Runbook\n**Classification**: CONFIDENTIAL (Clearance Level 3 - Lead Only)  \n**Maintained by**: Arjun Mehta & Priya Nair  \n**Created**: 2026-08-12  \n\n> WARNING: This document contains sensitive administrative disaster recovery protocols and fake demo keys.\n\n## 1. Master Emergency Credentials (DEMO / SYNTHETIC ONLY)\n- Production DB Root Connection:\n  - Host: db.campusconnect.internal\n  - User: postgres_admin\n  - Password:[MASKED:password]\n- Master Backup Encryption Key:\n  - Token:[MASKED:token] \"[MASKED:api_key]\"\n- Synthetic Google Maps API Key for campus geolocation:\n  - Key: [MASKED:api_key]\n- GitHub Deployment Webhook Secret:[MASKED:token] Secret:[MASKED:token]\n\n## 2. Emergency Escalation Contacts\n- Hostel IT Infrastructure Head:\n  - Mr. Kapoor: phone: [MASKED:phone]\n  - Email: [MASKED:email]\n- Faculty Mentor & Compliance:\n  - Dr. Rao: phone: [MASKED:phone]\n  - Email: [MASKED:email]\n\n## 3. Disciplinary Escalation & Data Deletion\n- Student council bypass procedure requires written signoff from Priya Nair.\n- Emergency DB purge token stored in physical safe in Student Activity Center room 204.\n",
+      "item_count": 4,
+      "masked_count": 11,
+      "content_hash": "9d503444759f8bb68a291cd754c1d97cd121fe2be1e78fc97759ceb65c56b0c7",
+      "chunks": [
+        {
+          "location_label": "admin_notes.md lines 1-8",
+          "text": "# Campus Connect - Confidential Administrative & Secrets Runbook\n**Classification**: CONFIDENTIAL (Clearance Level 3 - Lead Only)  \n**Maintained by**: Arjun Mehta & Priya Nair  \n**Created**: 2026-08-12  \n\n> WARNING: This document contains sensitive administrative disaster recovery protocols and fake demo keys.\n\n## 1. Master Emergency Credentials (DEMO / SYNTHETIC ONLY)",
+          "source_id": "src-admin-notes",
+          "source_name": "Admin Notes & Secrets Runbook",
+          "source_clearance": 3,
+          "id": "chunk-b4a8563260ff"
+        },
+        {
+          "location_label": "admin_notes.md lines 9-16",
+          "text": "- Production DB Root Connection:\n  - Host: db.campusconnect.internal\n  - User: postgres_admin\n  - Password:[MASKED:password]\n- Master Backup Encryption Key:\n  - Token:[MASKED:token] \"[MASKED:api_key]\"\n- Synthetic Google Maps API Key for campus geolocation:\n  - Key: [MASKED:api_key]",
+          "source_id": "src-admin-notes",
+          "source_name": "Admin Notes & Secrets Runbook",
+          "source_clearance": 3,
+          "id": "chunk-f1a268feb7dc"
+        },
+        {
+          "location_label": "admin_notes.md lines 17-24",
+          "text": "- GitHub Deployment Webhook Secret:[MASKED:token] Secret:[MASKED:token]\n\n## 2. Emergency Escalation Contacts\n- Hostel IT Infrastructure Head:\n  - Mr. Kapoor: phone: [MASKED:phone]\n  - Email: [MASKED:email]\n- Faculty Mentor & Compliance:\n  - Dr. Rao: phone: [MASKED:phone]",
+          "source_id": "src-admin-notes",
+          "source_name": "Admin Notes & Secrets Runbook",
+          "source_clearance": 3,
+          "id": "chunk-f02075a1d4b5"
+        },
+        {
+          "location_label": "admin_notes.md lines 25-29",
+          "text": "  - Email: [MASKED:email]\n\n## 3. Disciplinary Escalation & Data Deletion\n- Student council bypass procedure requires written signoff from Priya Nair.\n- Emergency DB purge token stored in physical safe in Student Activity Center room 204.",
+          "source_id": "src-admin-notes",
+          "source_name": "Admin Notes & Secrets Runbook",
+          "source_clearance": 3,
+          "id": "chunk-38637f896075"
+        }
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "id": "claim-dec-stack",
+      "type": "decision",
+      "text": "Campus Connect uses FastAPI for backend API and React Vite with Tailwind CSS for frontend",
+      "status": "verified",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-10",
+      "subject_key": "tech_stack_selection",
+      "review_state": "approved",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-dec-sso",
+      "type": "decision",
+      "text": "Initial user authentication enforces college SSO email domain validation (@campus.edu)",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-10",
+      "subject_key": "authentication_domain",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-dec-dark-mode",
+      "type": "decision",
+      "text": "Dropped dark mode support for v1 release without recorded technical rationale",
+      "status": "verified",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-10",
+      "subject_key": "dark_mode_feature",
+      "review_state": "approved",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-timeout-notes",
+      "type": "decision",
+      "text": "Production API timeout is configured to 30s in backend settings for batch roster uploads",
+      "status": "conflicting",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-10",
+      "subject_key": "api_timeout",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-timeout-chat",
+      "type": "change",
+      "text": "API timeout was changed to 10s in production config to prevent hanging connections",
+      "status": "conflicting",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-20",
+      "subject_key": "api_timeout",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-payments-arjun",
+      "type": "owner",
+      "text": "Payments integration and ticketing module is officially assigned to Arjun Mehta as lead owner",
+      "status": "conflicting",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-10",
+      "subject_key": "payments_integration_owner",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-payments-sneha",
+      "type": "owner",
+      "text": "Sneha Iyer is assigned as the owner of payments integration on GitHub Issue #12",
+      "status": "conflicting",
+      "clearance": 1,
+      "owner_name": "Sneha Iyer",
+      "event_date": "2026-08-22",
+      "subject_key": "payments_integration_owner",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-host-readme",
+      "type": "decision",
+      "text": "Campus Connect backend is deployed and hosted on Render Web Services",
+      "status": "conflicting",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-01",
+      "subject_key": "deployment_host",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-host-chat",
+      "type": "change",
+      "text": "Backend deployment was moved to an AWS EC2 t3.medium instance under student credits",
+      "status": "conflicting",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-16",
+      "subject_key": "deployment_host",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-rec-ldap",
+      "type": "recurring_problem",
+      "text": "Recurring socket timeout when polling campus LDAP server during peak registration hours (10 AM to 12 PM)",
+      "status": "verified",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-25",
+      "subject_key": "ldap_polling_timeout",
+      "review_state": "approved",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-rec-memory",
+      "type": "recurring_problem",
+      "text": "Background task memory bloat during CSV roster uploads mitigated by restricting worker to 512MB RAM",
+      "status": "inferred",
+      "clearance": 2,
+      "owner_name": "Rahul Verma",
+      "event_date": "2026-09-22",
+      "subject_key": "csv_memory_bloat",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-risk-ssl",
+      "type": "risk",
+      "text": "SSL certificate expiration risk requiring manual verification of Certbot auto-renewal before October 15",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Rahul Verma",
+      "event_date": "2026-09-18",
+      "subject_key": "ssl_renewal_risk",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-dep-alembic",
+      "type": "dependency",
+      "text": "Alembic migration scripts must run before backend startup via entrypoint script",
+      "status": "verified",
+      "clearance": 1,
+      "owner_name": "Rahul Verma",
+      "event_date": "2026-08-25",
+      "subject_key": "alembic_migrations",
+      "review_state": "approved",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-dep-sms",
+      "type": "dependency",
+      "text": "Integration of MSG91 SMS gateway client for student mobile OTP dispatch",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-18",
+      "subject_key": "sms_gateway_dependency",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-open-pr9",
+      "type": "open_work",
+      "text": "PR #9: Refactor notification service to async task queue is open and unassigned",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Unassigned",
+      "event_date": "2026-09-01",
+      "subject_key": "notification_service_queue",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-open-iss14",
+      "type": "open_work",
+      "text": "Issue #14: Student badge QR code scanner fails on iOS Safari, stalled with zero progress since 20 Sep",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Sneha Iyer",
+      "event_date": "2026-09-20",
+      "subject_key": "qr_scanner_issue_14",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-contact-kapoor",
+      "type": "contact",
+      "text": "Hostel IT infrastructure contact: Mr. Kapoor in hostel network office for campus port access",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Mr. Kapoor",
+      "event_date": "2026-09-18",
+      "subject_key": "hostel_it_kapoor",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-contact-rao",
+      "type": "contact",
+      "text": "Faculty mentor Dr. Rao provides club compliance and student data privacy oversight",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Dr. Rao",
+      "event_date": "2026-08-25",
+      "subject_key": "faculty_mentor_rao",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-action-dr",
+      "type": "next_action",
+      "text": "Execute disaster recovery mock test on SQLite backup restoration before tech lead handover",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-09-18",
+      "subject_key": "disaster_recovery_test",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-action-banner",
+      "type": "next_action",
+      "text": "Finalize student council announcement banner API and check-in scanner load test",
+      "status": "inferred",
+      "clearance": 1,
+      "owner_name": "Rahul Verma",
+      "event_date": "2026-09-18",
+      "subject_key": "announcement_banner_api",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-conf-db",
+      "type": "risk",
+      "text": "Production database root disaster recovery password stored in confidential runbook",
+      "status": "inferred",
+      "clearance": 3,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-12",
+      "subject_key": "production_db_credentials",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-conf-purge",
+      "type": "decision",
+      "text": "Emergency DB purge token requires written signoff from Priya Nair and safe key retrieval",
+      "status": "inferred",
+      "clearance": 3,
+      "owner_name": "Priya Nair",
+      "event_date": "2026-08-12",
+      "subject_key": "db_purge_protocol",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-gap-dark-mode",
+      "type": "decision",
+      "text": "Missing documented rationale for decision: 'Dropped dark mode support for v1 release'",
+      "status": "missing",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-10",
+      "subject_key": "dark_mode_feature",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-gap-pr9-owner",
+      "type": "open_work",
+      "text": "Missing assigned owner for pending work: 'PR #9: Refactor notification service to async task queue'",
+      "status": "missing",
+      "clearance": 1,
+      "owner_name": null,
+      "event_date": "2026-09-01",
+      "subject_key": "notification_service_queue",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-gap-iss14-stalled",
+      "type": "open_work",
+      "text": "Missing blocker diagnosis for Issue #14: inactive for over 14 days without resolution",
+      "status": "missing",
+      "clearance": 1,
+      "owner_name": "Sneha Iyer",
+      "event_date": "2026-09-20",
+      "subject_key": "qr_scanner_issue_14",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-gap-kapoor-role",
+      "type": "contact",
+      "text": "Missing role, office hours, and escalation procedure for hostel contact Mr. Kapoor",
+      "status": "missing",
+      "clearance": 1,
+      "owner_name": "Mr. Kapoor",
+      "event_date": "2026-09-18",
+      "subject_key": "hostel_it_kapoor",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-gap-sms-doc",
+      "type": "dependency",
+      "text": "Undocumented third-party dependency: MSG91 SMS gateway client added in chat without runbook documentation",
+      "status": "missing",
+      "clearance": 1,
+      "owner_name": "Arjun Mehta",
+      "event_date": "2026-08-18",
+      "subject_key": "sms_gateway_dependency",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    },
+    {
+      "id": "claim-gap-payments-dispute",
+      "type": "owner",
+      "text": "Unresolved ownership dispute for Payments Integration between Meeting Notes and GitHub assignee",
+      "status": "missing",
+      "clearance": 1,
+      "owner_name": null,
+      "event_date": "2026-08-22",
+      "subject_key": "payments_integration_owner",
+      "review_state": "pending",
+      "created_by": "system",
+      "evidence_count": 1
+    }
+  ],
+  "evidence": [
+    {
+      "id": "ev-claim-dec-stack",
+      "claim_id": "claim-dec-stack",
+      "chunk_id": "chunk-879ef82701cd",
+      "source_id": "src-meeting-notes-1",
+      "source_name": "Meeting Notes #1 (Core Team)",
+      "location_label": "meeting_notes_1.md lines 1-8",
+      "quote": "Agreed to build Campus Connect using FastAPI for backend and React Vite on frontend.",
+      "match_score": 100.0,
+      "support": "supported",
+      "reason": "Quote contains direct textual support for the claim (heuristic evaluation).",
+      "surrounding_text": "# Campus Connect - Core Team Sync 1\n**Date**: 2026-08-10  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer (Coordinator)  \n**Clearance**: General  \n\n## Agenda & Discussion\n1. **Architecture Blueprint**:\n   - Agreed to build Campus Connect using FastAPI for backend and React Vite on frontend."
+    },
+    {
+      "id": "ev-claim-dec-sso",
+      "claim_id": "claim-dec-sso",
+      "chunk_id": "chunk-8359ec069386",
+      "source_id": "src-meeting-notes-1",
+      "source_name": "Meeting Notes #1 (Core Team)",
+      "location_label": "meeting_notes_1.md lines 9-16",
+      "quote": "Initial authentication will use college SSO email domain validation (@campus.edu).",
+      "match_score": 45.751633986928105,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "   - Core database schema will use PostgreSQL hosted on Supabase in cloud.\n2. **Backend Configuration**:\n   - Production API timeout is configured to 30s in backend settings to allow batch roster uploads from campus admins.\n3. **Module Ownership**:\n   - Payments integration and ticketing module is officially assigned to Arjun Mehta as lead owner.\n   - Sneha Iyer will handle club event registration workflows and coordination.\n4. **Design Decisions**:\n   - Dropped dark mode support for v1 release."
+    },
+    {
+      "id": "ev-claim-dec-dark-mode",
+      "claim_id": "claim-dec-dark-mode",
+      "chunk_id": "chunk-8359ec069386",
+      "source_id": "src-meeting-notes-1",
+      "source_name": "Meeting Notes #1 (Core Team)",
+      "location_label": "meeting_notes_1.md lines 9-16",
+      "quote": "Dropped dark mode support for v1 release.",
+      "match_score": 100.0,
+      "support": "supported",
+      "reason": "Quote contains direct textual support for the claim (heuristic evaluation).",
+      "surrounding_text": "   - Core database schema will use PostgreSQL hosted on Supabase in cloud.\n2. **Backend Configuration**:\n   - Production API timeout is configured to 30s in backend settings to allow batch roster uploads from campus admins.\n3. **Module Ownership**:\n   - Payments integration and ticketing module is officially assigned to Arjun Mehta as lead owner.\n   - Sneha Iyer will handle club event registration workflows and coordination.\n4. **Design Decisions**:\n   - Dropped dark mode support for v1 release."
+    },
+    {
+      "id": "ev-claim-timeout-notes",
+      "claim_id": "claim-timeout-notes",
+      "chunk_id": "chunk-879ef82701cd",
+      "source_id": "src-meeting-notes-1",
+      "source_name": "Meeting Notes #1 (Core Team)",
+      "location_label": "meeting_notes_1.md lines 1-8",
+      "quote": "Production API timeout is configured to 30s in backend settings to allow batch roster uploads",
+      "match_score": 46.857142857142854,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "# Campus Connect - Core Team Sync 1\n**Date**: 2026-08-10  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer (Coordinator)  \n**Clearance**: General  \n\n## Agenda & Discussion\n1. **Architecture Blueprint**:\n   - Agreed to build Campus Connect using FastAPI for backend and React Vite on frontend."
+    },
+    {
+      "id": "ev-claim-timeout-chat",
+      "claim_id": "claim-timeout-chat",
+      "chunk_id": "chunk-a3c585d50b79",
+      "source_id": "src-chat-export",
+      "source_name": "Team Slack/WhatsApp Export",
+      "location_label": "Chat [15/08/2026, 10:14:02 - 16/08/2026, 11:02:40] (Arjun Mehta, Priya Nair, Rahul Verma)",
+      "quote": "I changed API timeout to 10s because slow campus wifi was holding open connections",
+      "match_score": 42.6829268292683,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "[15/08/2026, 10:14:02] Arjun Mehta: Hey team, kicking off Campus Connect development this morning!\n[15/08/2026, 10:15:10] Priya Nair: Great, let's keep all updates in this channel. Remember Arjun is graduating in November so we need everything documented.\n[15/08/2026, 10:16:30] Sneha Iyer: I've created the student club WhatsApp group and started collecting event requirements.\n[15/08/2026, 10:18:05] Rahul Verma: Excited to join! Cloning the repo now.\n[15/08/2026, 10:20:12] Arjun Mehta: Welcome Rahul! Check out README.md first. It says we deploy on Render.\n[16/08/2026, 11:02:40] Arjun Mehta: Quick update: We had lots of gateway timeout errors on Render free tier yesterday."
+    },
+    {
+      "id": "ev-claim-payments-arjun",
+      "claim_id": "claim-payments-arjun",
+      "chunk_id": "chunk-879ef82701cd",
+      "source_id": "src-meeting-notes-1",
+      "source_name": "Meeting Notes #1 (Core Team)",
+      "location_label": "meeting_notes_1.md lines 1-8",
+      "quote": "Payments integration and ticketing module is officially assigned to Arjun Mehta as lead owner.",
+      "match_score": 42.553191489361694,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "# Campus Connect - Core Team Sync 1\n**Date**: 2026-08-10  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer (Coordinator)  \n**Clearance**: General  \n\n## Agenda & Discussion\n1. **Architecture Blueprint**:\n   - Agreed to build Campus Connect using FastAPI for backend and React Vite on frontend."
+    },
+    {
+      "id": "ev-claim-payments-sneha",
+      "claim_id": "claim-payments-sneha",
+      "chunk_id": "chunk-86acbff5fb64",
+      "source_id": "src-github-campus-connect",
+      "source_name": "GitHub (campus-club/campus-connect)",
+      "location_label": "Issue #12: Complete Razorpay Payments Integration and Webhooks",
+      "quote": "Payments integration on GitHub is assigned to Sneha Iyer for webhook validation and ticket confirmation.",
+      "match_score": 100.0,
+      "support": "supported",
+      "reason": "Quote contains direct textual support for the claim (heuristic evaluation).",
+      "surrounding_text": "Issue #12 [OPEN] - Complete Razorpay Payments Integration and Webhooks\nAssignee: snehaiyer\nCreated: 2026-08-22T16:30:00Z\nUpdated: 2026-09-28T14:00:00Z\nPayments integration on GitHub is assigned to Sneha Iyer for webhook validation and ticket confirmation."
+    },
+    {
+      "id": "ev-claim-host-readme",
+      "claim_id": "claim-host-readme",
+      "chunk_id": "chunk-0c146241cb35",
+      "source_id": "src-github-campus-connect",
+      "source_name": "GitHub (campus-club/campus-connect)",
+      "location_label": "README.md",
+      "quote": "Deployment: Hosted on Render Web Services",
+      "match_score": 100.0,
+      "support": "supported",
+      "reason": "Quote contains direct textual support for the claim (heuristic evaluation).",
+      "surrounding_text": "# Campus Connect\n\nA unified club event, registration, and ticketing platform for university campus student organizations.\n\n## Tech Stack\n- Frontend: React 18 with TypeScript & Tailwind CSS\n- Backend: FastAPI (Python 3.11+)\n- Database: Supabase PostgreSQL (Production), SQLite (Local Dev)\n- Deployment: Hosted on Render Web Services\n\n## Local Setup\n```bash\ngit clone https://github.com/campus-club/campus-connect.git\ncd campus-connect\npip install -r requirements.txt\nuvicorn main:app --reload\n```\n"
+    },
+    {
+      "id": "ev-claim-host-chat",
+      "claim_id": "claim-host-chat",
+      "chunk_id": "chunk-a3c585d50b79",
+      "source_id": "src-chat-export",
+      "source_name": "Team Slack/WhatsApp Export",
+      "location_label": "Chat [15/08/2026, 10:14:02 - 16/08/2026, 11:02:40] (Arjun Mehta, Priya Nair, Rahul Verma)",
+      "quote": "I moved our backend deployment to an AWS EC2 t3.medium instance under student credits so we have dedicated compute.",
+      "match_score": 42.391304347826086,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "[15/08/2026, 10:14:02] Arjun Mehta: Hey team, kicking off Campus Connect development this morning!\n[15/08/2026, 10:15:10] Priya Nair: Great, let's keep all updates in this channel. Remember Arjun is graduating in November so we need everything documented.\n[15/08/2026, 10:16:30] Sneha Iyer: I've created the student club WhatsApp group and started collecting event requirements.\n[15/08/2026, 10:18:05] Rahul Verma: Excited to join! Cloning the repo now.\n[15/08/2026, 10:20:12] Arjun Mehta: Welcome Rahul! Check out README.md first. It says we deploy on Render.\n[16/08/2026, 11:02:40] Arjun Mehta: Quick update: We had lots of gateway timeout errors on Render free tier yesterday."
+    },
+    {
+      "id": "ev-claim-rec-ldap",
+      "claim_id": "claim-rec-ldap",
+      "chunk_id": "chunk-c457bd67f038",
+      "source_id": "src-meeting-notes-2",
+      "source_name": "Meeting Notes #2 (Core Team)",
+      "location_label": "meeting_notes_2.md lines 9-16",
+      "quote": "Recurring socket timeout when polling campus LDAP server during peak registration hours (10 AM to 12 PM).",
+      "match_score": 100.0,
+      "support": "supported",
+      "reason": "Quote contains direct textual support for the claim (heuristic evaluation).",
+      "surrounding_text": "2. **Database Migrations**:\n   - Alembic migration scripts are set up in `/migrations`.\n   - All migrations must run before backend startup via entrypoint script.\n3. **Recurring Problems**:\n   - Recurring socket timeout when polling campus LDAP server during peak registration hours (10 AM to 12 PM).\n   - Temporary mitigation: cached LDAP tokens for 15 minutes in memory.\n4. **Third Party Integrations**:\n   - Razorpay payment gateway sandbox credentials verified."
+    },
+    {
+      "id": "ev-claim-rec-memory",
+      "claim_id": "claim-rec-memory",
+      "chunk_id": "chunk-4b5801fede66",
+      "source_id": "src-deployment-runbook",
+      "source_name": "Deployment & Operations Runbook",
+      "location_label": "deployment_runbook.md lines 9-16",
+      "quote": "Background task memory bloat during CSV roster uploads: Worker process is restricted to 512MB RAM",
+      "match_score": 72.36842105263158,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "\n## 2. Server Deployment\n- Production server setup runs inside Docker Compose.\n- Systemd service `campusconnect-api.service` restarts automatically on server reboot.\n- Port bindings: 8000 for backend API, 5173 / 80 for frontend web client.\n\n## 3. Recurring Issues & Mitigations\n- Background task memory bloat during CSV roster uploads:"
+    },
+    {
+      "id": "ev-claim-risk-ssl",
+      "claim_id": "claim-risk-ssl",
+      "chunk_id": "chunk-60b574060a1d",
+      "source_id": "src-meeting-notes-3",
+      "source_name": "Meeting Notes #3 (Core Team)",
+      "location_label": "meeting_notes_3.md lines 1-8",
+      "quote": "Rahul Verma must verify SSL certificate autorenewal with Let's Encrypt before October 15.",
+      "match_score": 100.0,
+      "support": "partial",
+      "reason": "Quote provides partial or related context for the claim.",
+      "surrounding_text": "# Campus Connect - Pre-Release Handover Sync\n**Date**: 2026-09-18  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer, Rahul Verma  \n**Clearance**: General  \n\n## Operational Decisions & Action Items\n1. **Next Actions for Launch**:\n   - Rahul Verma must verify SSL certificate autorenewal with Let's Encrypt before October 15."
+    },
+    {
+      "id": "ev-claim-dep-alembic",
+      "claim_id": "claim-dep-alembic",
+      "chunk_id": "chunk-c457bd67f038",
+      "source_id": "src-meeting-notes-2",
+      "source_name": "Meeting Notes #2 (Core Team)",
+      "location_label": "meeting_notes_2.md lines 9-16",
+      "quote": "Alembic migration scripts are set up in /migrations. All migrations must run before backend startup",
+      "match_score": 95.95959595959596,
+      "support": "supported",
+      "reason": "Quote contains direct textual support for the claim (heuristic evaluation).",
+      "surrounding_text": "2. **Database Migrations**:\n   - Alembic migration scripts are set up in `/migrations`.\n   - All migrations must run before backend startup via entrypoint script.\n3. **Recurring Problems**:\n   - Recurring socket timeout when polling campus LDAP server during peak registration hours (10 AM to 12 PM).\n   - Temporary mitigation: cached LDAP tokens for 15 minutes in memory.\n4. **Third Party Integrations**:\n   - Razorpay payment gateway sandbox credentials verified."
+    },
+    {
+      "id": "ev-claim-dep-sms",
+      "claim_id": "claim-dep-sms",
+      "chunk_id": "chunk-a3c585d50b79",
+      "source_id": "src-chat-export",
+      "source_name": "Team Slack/WhatsApp Export",
+      "location_label": "Chat [15/08/2026, 10:14:02 - 16/08/2026, 11:02:40] (Arjun Mehta, Priya Nair, Rahul Verma)",
+      "quote": "I integrated the MSG91 SMS gateway API last night for fast student OTP dispatch.",
+      "match_score": 45.63758389261745,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "[15/08/2026, 10:14:02] Arjun Mehta: Hey team, kicking off Campus Connect development this morning!\n[15/08/2026, 10:15:10] Priya Nair: Great, let's keep all updates in this channel. Remember Arjun is graduating in November so we need everything documented.\n[15/08/2026, 10:16:30] Sneha Iyer: I've created the student club WhatsApp group and started collecting event requirements.\n[15/08/2026, 10:18:05] Rahul Verma: Excited to join! Cloning the repo now.\n[15/08/2026, 10:20:12] Arjun Mehta: Welcome Rahul! Check out README.md first. It says we deploy on Render.\n[16/08/2026, 11:02:40] Arjun Mehta: Quick update: We had lots of gateway timeout errors on Render free tier yesterday."
+    },
+    {
+      "id": "ev-claim-open-pr9",
+      "claim_id": "claim-open-pr9",
+      "chunk_id": "chunk-a3c585d50b79",
+      "source_id": "src-chat-export",
+      "source_name": "Team Slack/WhatsApp Export",
+      "location_label": "Chat [15/08/2026, 10:14:02 - 16/08/2026, 11:02:40] (Arjun Mehta, Priya Nair, Rahul Verma)",
+      "quote": "PR #9 is an unowned open PR that refactors notification dispatching. We need someone to adopt it.",
+      "match_score": 44.329896907216494,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "[15/08/2026, 10:14:02] Arjun Mehta: Hey team, kicking off Campus Connect development this morning!\n[15/08/2026, 10:15:10] Priya Nair: Great, let's keep all updates in this channel. Remember Arjun is graduating in November so we need everything documented.\n[15/08/2026, 10:16:30] Sneha Iyer: I've created the student club WhatsApp group and started collecting event requirements.\n[15/08/2026, 10:18:05] Rahul Verma: Excited to join! Cloning the repo now.\n[15/08/2026, 10:20:12] Arjun Mehta: Welcome Rahul! Check out README.md first. It says we deploy on Render.\n[16/08/2026, 11:02:40] Arjun Mehta: Quick update: We had lots of gateway timeout errors on Render free tier yesterday."
+    },
+    {
+      "id": "ev-claim-open-iss14",
+      "claim_id": "claim-open-iss14",
+      "chunk_id": "chunk-a3c585d50b79",
+      "source_id": "src-chat-export",
+      "source_name": "Team Slack/WhatsApp Export",
+      "location_label": "Chat [15/08/2026, 10:14:02 - 16/08/2026, 11:02:40] (Arjun Mehta, Priya Nair, Rahul Verma)",
+      "quote": "Issue #14 is still completely untouched. Stalled for more than two weeks now.",
+      "match_score": 40.25974025974026,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "[15/08/2026, 10:14:02] Arjun Mehta: Hey team, kicking off Campus Connect development this morning!\n[15/08/2026, 10:15:10] Priya Nair: Great, let's keep all updates in this channel. Remember Arjun is graduating in November so we need everything documented.\n[15/08/2026, 10:16:30] Sneha Iyer: I've created the student club WhatsApp group and started collecting event requirements.\n[15/08/2026, 10:18:05] Rahul Verma: Excited to join! Cloning the repo now.\n[15/08/2026, 10:20:12] Arjun Mehta: Welcome Rahul! Check out README.md first. It says we deploy on Render.\n[16/08/2026, 11:02:40] Arjun Mehta: Quick update: We had lots of gateway timeout errors on Render free tier yesterday."
+    },
+    {
+      "id": "ev-claim-contact-kapoor",
+      "claim_id": "claim-contact-kapoor",
+      "chunk_id": "chunk-60b574060a1d",
+      "source_id": "src-meeting-notes-3",
+      "source_name": "Meeting Notes #3 (Core Team)",
+      "location_label": "meeting_notes_3.md lines 1-8",
+      "quote": "Hostel IT contact person: Mr. Kapoor (hostel network office).",
+      "match_score": 42.990654205607484,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "# Campus Connect - Pre-Release Handover Sync\n**Date**: 2026-09-18  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer, Rahul Verma  \n**Clearance**: General  \n\n## Operational Decisions & Action Items\n1. **Next Actions for Launch**:\n   - Rahul Verma must verify SSL certificate autorenewal with Let's Encrypt before October 15."
+    },
+    {
+      "id": "ev-claim-contact-rao",
+      "claim_id": "claim-contact-rao",
+      "chunk_id": "chunk-c457bd67f038",
+      "source_id": "src-meeting-notes-2",
+      "source_name": "Meeting Notes #2 (Core Team)",
+      "location_label": "meeting_notes_2.md lines 9-16",
+      "quote": "External faculty mentor: Dr. Rao will review club compliance requirements before launch.",
+      "match_score": 40.69767441860465,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "2. **Database Migrations**:\n   - Alembic migration scripts are set up in `/migrations`.\n   - All migrations must run before backend startup via entrypoint script.\n3. **Recurring Problems**:\n   - Recurring socket timeout when polling campus LDAP server during peak registration hours (10 AM to 12 PM).\n   - Temporary mitigation: cached LDAP tokens for 15 minutes in memory.\n4. **Third Party Integrations**:\n   - Razorpay payment gateway sandbox credentials verified."
+    },
+    {
+      "id": "ev-claim-action-dr",
+      "claim_id": "claim-action-dr",
+      "chunk_id": "chunk-60b574060a1d",
+      "source_id": "src-meeting-notes-3",
+      "source_name": "Meeting Notes #3 (Core Team)",
+      "location_label": "meeting_notes_3.md lines 1-8",
+      "quote": "Run disaster recovery mock test on SQLite backup restoration.",
+      "match_score": 44.26229508196722,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "# Campus Connect - Pre-Release Handover Sync\n**Date**: 2026-09-18  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer, Rahul Verma  \n**Clearance**: General  \n\n## Operational Decisions & Action Items\n1. **Next Actions for Launch**:\n   - Rahul Verma must verify SSL certificate autorenewal with Let's Encrypt before October 15."
+    },
+    {
+      "id": "ev-claim-action-banner",
+      "claim_id": "claim-action-banner",
+      "chunk_id": "chunk-60b574060a1d",
+      "source_id": "src-meeting-notes-3",
+      "source_name": "Meeting Notes #3 (Core Team)",
+      "location_label": "meeting_notes_3.md lines 1-8",
+      "quote": "Need to finalize student council announcement banner API. Complete end-to-end load testing on registration check-in scanner.",
+      "match_score": 42.74193548387096,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "# Campus Connect - Pre-Release Handover Sync\n**Date**: 2026-09-18  \n**Attendees**: Arjun Mehta (Tech Lead), Priya Nair (Club President), Sneha Iyer, Rahul Verma  \n**Clearance**: General  \n\n## Operational Decisions & Action Items\n1. **Next Actions for Launch**:\n   - Rahul Verma must verify SSL certificate autorenewal with Let's Encrypt before October 15."
+    },
+    {
+      "id": "ev-claim-conf-db",
+      "claim_id": "claim-conf-db",
+      "chunk_id": "chunk-b4a8563260ff",
+      "source_id": "src-admin-notes",
+      "source_name": "Admin Notes & Secrets Runbook",
+      "location_label": "admin_notes.md lines 1-8",
+      "quote": "Host: db.campusconnect.internal User: postgres_admin",
+      "match_score": 56.17977528089888,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "# Campus Connect - Confidential Administrative & Secrets Runbook\n**Classification**: CONFIDENTIAL (Clearance Level 3 - Lead Only)  \n**Maintained by**: Arjun Mehta & Priya Nair  \n**Created**: 2026-08-12  \n\n> WARNING: This document contains sensitive administrative disaster recovery protocols and fake demo keys.\n\n## 1. Master Emergency Credentials (DEMO / SYNTHETIC ONLY)"
+    },
+    {
+      "id": "ev-claim-conf-purge",
+      "claim_id": "claim-conf-purge",
+      "chunk_id": "chunk-f02075a1d4b5",
+      "source_id": "src-admin-notes",
+      "source_name": "Admin Notes & Secrets Runbook",
+      "location_label": "admin_notes.md lines 17-24",
+      "quote": "Emergency DB purge token stored in physical safe in Student Activity Center room 204.",
+      "match_score": 43.529411764705884,
+      "support": "not_supported",
+      "reason": "Passage not found: quote fuzzy match score below required 90% threshold.",
+      "surrounding_text": "- GitHub Deployment Webhook Secret:[MASKED:token] Secret:[MASKED:token]\n\n## 2. Emergency Escalation Contacts\n- Hostel IT Infrastructure Head:\n  - Mr. Kapoor: phone: [MASKED:phone]\n  - Email: [MASKED:email]\n- Faculty Mentor & Compliance:\n  - Dr. Rao: phone: [MASKED:phone]"
+    }
+  ],
+  "conflict_links": [
+    {
+      "id": "conf-api-timeout",
+      "claim_a_id": "claim-timeout-notes",
+      "claim_b_id": "claim-timeout-chat",
+      "resolution": null,
+      "topic": "API Timeout Configuration (30s vs 10s)"
+    },
+    {
+      "id": "conf-payments-owner",
+      "claim_a_id": "claim-payments-arjun",
+      "claim_b_id": "claim-payments-sneha",
+      "resolution": null,
+      "topic": "Payments Integration Ownership (Arjun Mehta vs Sneha Iyer)"
+    },
+    {
+      "id": "conf-deployment-host",
+      "claim_a_id": "claim-host-readme",
+      "claim_b_id": "claim-host-chat",
+      "resolution": null,
+      "topic": "Deployment Host Platform (Render vs AWS EC2)"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q-dark-mode-rationale",
+      "text": "What was the technical or product rationale for dropping dark mode in v1?",
+      "why_we_ask": "Meeting Notes 1 states 'Dropped dark mode support for v1 release' without documenting whether this was due to Tailwind theming bugs or time constraints.",
+      "claim_id": "claim-gap-dark-mode",
+      "priority": "high",
+      "state": "open",
+      "answer": null,
+      "linked_quote": "Dropped dark mode support for v1 release.",
+      "linked_source": "Meeting Notes #1 (Core Team)"
+    },
+    {
+      "id": "q-pr9-owner",
+      "text": "Who should take over ownership of open PR #9 (Refactor notification service)?",
+      "why_we_ask": "From chat: 'PR #9 is an unowned open PR that refactors notification dispatching. We need someone to adopt it.'",
+      "claim_id": "claim-gap-pr9-owner",
+      "priority": "high",
+      "state": "open",
+      "answer": null,
+      "linked_quote": "PR #9 is an unowned open PR that refactors notification dispatching.",
+      "linked_source": "Team Slack/WhatsApp Export"
+    },
+    {
+      "id": "q-iss14-stalled",
+      "text": "Issue #14 (iOS Safari QR scanner failure) has been inactive since September 20. What is blocking it?",
+      "why_we_ask": "Activity stalled on Issue #14 for over 14 days. The successor developer needs to know if this is an iOS permissions limitation or unverified camera stream.",
+      "claim_id": "claim-gap-iss14-stalled",
+      "priority": "high",
+      "state": "open",
+      "answer": null,
+      "linked_quote": "Issue #14 is still completely untouched. Stalled for more than two weeks now.",
+      "linked_source": "Team Slack/WhatsApp Export"
+    },
+    {
+      "id": "q-kapoor-role",
+      "text": "What is the exact official role, department, and emergency escalation procedure for Mr. Kapoor?",
+      "why_we_ask": "In notes and chat, Mr. Kapoor is referenced for hostel network port access, but no department contact or office hours are listed for the incoming team.",
+      "claim_id": "claim-gap-kapoor-role",
+      "priority": "medium",
+      "state": "open",
+      "answer": null,
+      "linked_quote": "Hostel IT contact person: Mr. Kapoor (hostel network office).",
+      "linked_source": "Meeting Notes #3 (Core Team)"
+    },
+    {
+      "id": "q-sms-gateway",
+      "text": "How is the MSG91 SMS gateway dependency configured, funded, and managed in production?",
+      "why_we_ask": "From chat: 'I integrated the MSG91 SMS gateway API last night... Not yet documented.' The incoming developer needs credentials rotation and budget info.",
+      "claim_id": "claim-gap-sms-doc",
+      "priority": "high",
+      "state": "open",
+      "answer": null,
+      "linked_quote": "I integrated the MSG91 SMS gateway API last night for fast student OTP dispatch.",
+      "linked_source": "Team Slack/WhatsApp Export"
+    },
+    {
+      "id": "q-payments-owner",
+      "text": "Meeting notes assign Payments to Arjun, while GitHub Issue #12 assigns it to Sneha. Who is the designated lead owner?",
+      "why_we_ask": "Discrepancy detected between meeting records and GitHub issue assignments regarding who owns webhook security and reconciliation.",
+      "claim_id": "claim-gap-payments-dispute",
+      "priority": "high",
+      "state": "open",
+      "answer": null,
+      "linked_quote": "I noticed on GitHub issue #12 that payments integration is assigned to me on GitHub, but meeting notes said Arjun owns payments.",
+      "linked_source": "Team Slack/WhatsApp Export"
+    }
+  ]
+}
