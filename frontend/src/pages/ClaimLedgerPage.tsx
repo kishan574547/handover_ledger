@@ -23,6 +23,8 @@ import { Modal } from '../components/common/Modal';
 import { ClaimRow } from '../components/ledger/ClaimRow';
 import { EvidenceDrawer } from '../components/ledger/EvidenceDrawer';
 import { TableRowSkeleton } from '../components/common/Skeleton';
+import { StatusBadge, ClearanceBadge } from '../components/common/Badge';
+import { TrustLens, TrustLensMode, filterClaimsByTrustLens } from '../components/common/TrustLens';
 
 export const ClaimLedgerPage: React.FC = () => {
   const navigate = useNavigate();
@@ -44,6 +46,7 @@ export const ClaimLedgerPage: React.FC = () => {
   const [rejectClaimId, setRejectClaimId] = useState<string | null>(null);
   const [rejectReason, setRejectReason] = useState('');
   const [showApproveAllModal, setShowApproveAllModal] = useState(false);
+  const [trustMode, setTrustMode] = useState<TrustLensMode>('everything');
 
   // Fetch claims with database query layer clearance enforcement
   const { data: claims, isLoading } = useQuery<ClaimItem[]>({
@@ -59,6 +62,12 @@ export const ClaimLedgerPage: React.FC = () => {
         include_restricted: true,
       }),
   });
+
+  // Filter claims through Trust Lens
+  const visibleClaims = useMemo(() => {
+    if (!claims) return [];
+    return filterClaimsByTrustLens(claims, trustMode);
+  }, [claims, trustMode]);
 
   // Count verified pending claims for "Approve all verified" button
   const verifiedPendingCount = useMemo(() => {
@@ -255,46 +264,98 @@ export const ClaimLedgerPage: React.FC = () => {
         </div>
       </Card>
 
-      {/* Claims Table */}
+      {/* Trust Lens */}
+      <TrustLens
+        mode={trustMode}
+        onChange={setTrustMode}
+        totalCount={claims?.length || 0}
+        filteredCount={visibleClaims.length}
+      />
+
+      {/* Claims Table (Desktop) & Stacked Cards (Mobile) */}
       <Card>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
-                <th className="py-3 px-4">Type</th>
-                <th className="py-3 px-4">Claim Statement</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-4">Clearance</th>
-                <th className="py-3 px-4">Owner</th>
-                <th className="py-3 px-4">Evidence</th>
-                <th className="py-3 px-4">Review State</th>
-                <th className="py-3 px-4 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {isLoading ? (
-                Array.from({ length: 6 }).map((_, i) => <TableRowSkeleton key={i} cols={8} />)
-              ) : !claims || claims.length === 0 ? (
-                <tr>
-                  <td colSpan={8} className="py-12 text-center text-slate-400">
-                    <FileSpreadsheet className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm font-medium text-slate-600">No claims match the selected filters.</p>
-                    <p className="text-xs text-slate-400 mt-1">Try clearing or adjusting search and filters.</p>
-                  </td>
+        <CardContent className="p-0">
+          {/* Mobile Stacked Cards (< 768px) */}
+          <div className="md:hidden p-3 space-y-3">
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="p-4 rounded-card border border-border animate-pulse space-y-2">
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 w-1/3 rounded" />
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 w-5/6 rounded" />
+                </div>
+              ))
+            ) : visibleClaims.length === 0 ? (
+              <div className="py-8 text-center text-text-muted">
+                <FileSpreadsheet className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-medium text-text-main">No claims match the Trust Lens or filters.</p>
+              </div>
+            ) : (
+              visibleClaims.map((claim) => (
+                <div key={claim.id} className="p-4 rounded-card border border-border bg-surface shadow-soft space-y-2.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <StatusBadge status={claim.status} size="sm" isLeaverAttested={claim.created_by === 'leaver'} />
+                      <ClearanceBadge clearance={claim.clearance} size="sm" />
+                    </div>
+                    <span className="text-[10px] font-mono text-text-muted">#{claim.id.slice(0, 6)}</span>
+                  </div>
+                  <p className="text-xs text-text-main font-medium leading-relaxed">{claim.text}</p>
+                  <div className="flex items-center justify-between text-[11px] text-text-muted pt-2 border-t border-border">
+                    <span>Owner: {claim.owner_name || 'Unassigned'}</span>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setSelectedClaimId(claim.id)}
+                      className="text-xs h-8 px-2"
+                    >
+                      Evidence ({claim.evidence_count})
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table (>= 768px) */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-border text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+                  <th className="py-3 px-4">Type</th>
+                  <th className="py-3 px-4">Claim Statement</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-4">Clearance</th>
+                  <th className="py-3 px-4">Owner</th>
+                  <th className="py-3 px-4">Evidence</th>
+                  <th className="py-3 px-4">Review State</th>
+                  <th className="py-3 px-4 text-right">Actions</th>
                 </tr>
-              ) : (
-                claims.map((claim) => (
-                  <ClaimRow
-                    key={claim.id}
-                    claim={claim}
-                    onViewEvidence={(id) => setSelectedClaimId(id)}
-                    onApprove={(id) => updateClaimMutation.mutate({ id, data: { review_state: 'approved' } })}
-                    onReject={(id) => setRejectClaimId(id)}
-                  />
-                ))
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  Array.from({ length: 6 }).map((_, i) => <TableRowSkeleton key={i} cols={8} />)
+                ) : visibleClaims.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-text-muted">
+                      <FileSpreadsheet className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm font-medium text-text-main">No claims match the selected filters or Trust Lens.</p>
+                      <p className="text-xs text-text-muted mt-1">Try switching to &quot;Everything&quot; mode.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  visibleClaims.map((claim) => (
+                    <ClaimRow
+                      key={claim.id}
+                      claim={claim}
+                      onViewEvidence={(id) => setSelectedClaimId(id)}
+                      onApprove={(id) => updateClaimMutation.mutate({ id, data: { review_state: 'approved' } })}
+                      onReject={(id) => setRejectClaimId(id)}
+                    />
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 

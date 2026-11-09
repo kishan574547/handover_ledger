@@ -184,5 +184,17 @@ export const api = {
     const qs = role ? `?role=${role}` : '';
     return request<any>(`/activity${qs}`);
   },
+
+  // Ask the Handover
+  askHandover: (question: string) =>
+    request<any>('/ask', {
+      method: 'POST',
+      body: JSON.stringify({ question }),
+    }),
+  sendQuestionToLeaver: (question: string, why_we_ask?: string) =>
+    request<any>('/ask/send-to-leaver', {
+      method: 'POST',
+      body: JSON.stringify({ question, why_we_ask }),
+    }),
 };
 

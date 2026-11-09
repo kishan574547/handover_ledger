@@ -25,6 +25,7 @@ import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Drawer } from '../components/common/Drawer';
 import { StatusBadge, ClearanceBadge } from '../components/common/Badge';
+import { TrustLens, TrustLensMode, filterClaimsByTrustLens } from '../components/common/TrustLens';
 
 export const HandoverPage: React.FC = () => {
   const { role, canLead, canAcknowledge, roleConfig } = useRole();
@@ -33,6 +34,7 @@ export const HandoverPage: React.FC = () => {
 
   // Lead preview role selector
   const [previewRole, setPreviewRole] = useState<DemoRole>(role);
+  const [trustMode, setTrustMode] = useState<TrustLensMode>('everything');
 
   // Modals & Drawers state
   const [isLeakCheckOpen, setIsLeakCheckOpen] = useState(false);
@@ -216,6 +218,20 @@ export const HandoverPage: React.FC = () => {
           )}
         </div>
       </div>
+
+      {/* Trust Lens */}
+      <TrustLens
+        mode={trustMode}
+        onChange={setTrustMode}
+        totalCount={Object.values(sections || {}).flatMap((s: any) => s.claims || []).length}
+        filteredCount={
+          filterClaimsByTrustLens(
+            Object.values(sections || {}).flatMap((s: any) => s.claims || []),
+            trustMode
+          ).length
+        }
+        className="no-print"
+      />
 
       {/* Printable Document Container */}
       <div className="space-y-6">

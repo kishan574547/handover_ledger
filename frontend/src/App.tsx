@@ -16,6 +16,7 @@ import { HandoverPage } from './pages/HandoverPage';
 import { ActivityPage } from './pages/ActivityPage';
 import { HowItWorksPage } from './pages/HowItWorksPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { AskHandoverPage } from './pages/AskHandoverPage';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -43,6 +44,7 @@ export const App: React.FC = () => {
                   <Route path="interview" element={<ExitInterviewPage />} />
                   <Route path="review" element={<ReviewApprovePage />} />
                   <Route path="handover" element={<HandoverPage />} />
+                  <Route path="ask" element={<AskHandoverPage />} />
                   <Route path="activity" element={<ActivityPage />} />
                   <Route path="how-it-works" element={<HowItWorksPage />} />
                   <Route path="settings" element={<SettingsPage />} />

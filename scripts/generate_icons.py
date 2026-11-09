@@ -124,3 +124,4 @@ manifest_content = '''{
 with open(PUBLIC_DIR / "site.webmanifest", "w", encoding="utf-8") as f:
     f.write(manifest_content)
 print("Generated site.webmanifest")
+

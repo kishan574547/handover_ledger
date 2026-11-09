@@ -20,14 +20,14 @@ try:
     from backend.database import engine, Base
     from backend.routers import (
         demo, sources, analysis, claims, timeline,
-        questions, review, handover, activity, dashboard
+        questions, review, handover, activity, dashboard, ask
     )
 except ImportError:
     from config import settings
     from database import engine, Base
     from routers import (
         demo, sources, analysis, claims, timeline,
-        questions, review, handover, activity, dashboard
+        questions, review, handover, activity, dashboard, ask
     )
 
 logging.basicConfig(
@@ -88,6 +88,7 @@ app.include_router(review.router, prefix=api_prefix)
 app.include_router(handover.router, prefix=api_prefix)
 app.include_router(activity.router, prefix=api_prefix)
 app.include_router(dashboard.router, prefix=api_prefix)
+app.include_router(ask.router, prefix=api_prefix)
 
 if __name__ == "__main__":
     import uvicorn

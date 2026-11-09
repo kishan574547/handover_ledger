@@ -255,3 +255,30 @@ class VerifierJudgement(BaseModel):
     support: str = Field(description="supported | partial | not_supported")
     reason: str = Field(description="One-line objective reasoning for the judgement")
 
+# --- Ask the Handover Schemas ---
+class AskRequest(BaseModel):
+    question: str = Field(..., min_length=2, max_length=1000)
+
+class CitedClaim(BaseModel):
+    id: str
+    status: str
+    short_text: str
+
+class SentenceCitation(BaseModel):
+    text: str
+    claim_ids: List[str]
+
+class AskResponse(BaseModel):
+    found: bool
+    answer: str
+    sentences: List[SentenceCitation] = []
+    cited_claims: List[CitedClaim] = []
+    verification_summary: str = "No evidence found"
+    restricted_notice: Optional[str] = None
+    question_created_id: Optional[str] = None
+
+class CreateQuestionFromAsk(BaseModel):
+    question: str
+    why_we_ask: Optional[str] = None
+
+

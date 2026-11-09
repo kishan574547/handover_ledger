@@ -233,3 +233,25 @@ export interface ReviewSummary {
   version_count: number;
 }
 
+// --- Ask the Handover Types ---
+export interface CitedClaimItem {
+  id: string;
+  status: ClaimStatus;
+  short_text: string;
+}
+
+export interface SentenceCitationItem {
+  text: string;
+  claim_ids: string[];
+}
+
+export interface AskResponseData {
+  found: boolean;
+  answer: string;
+  sentences: SentenceCitationItem[];
+  cited_claims: CitedClaimItem[];
+  verification_summary: string;
+  restricted_notice?: string | null;
+  question_created_id?: string | null;
+}
+

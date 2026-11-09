@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   ChevronDown,
   Lock,
+  Search,
 } from 'lucide-react';
 import { useRole, ROLE_DETAILS } from '../../context/RoleContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -222,6 +223,16 @@ export const Topbar: React.FC<TopbarProps> = ({
             </select>
             <ChevronDown className="w-3.5 h-3.5 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-muted" />
           </div>
+
+          {/* Search / Command Palette Button */}
+          <button
+            onClick={onOpenCommandPalette}
+            className="p-2 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-navy"
+            title="Search & Command Palette (Ctrl+K)"
+            aria-label="Open command palette"
+          >
+            <Search className="w-4 h-4" />
+          </button>
 
           {/* Theme Toggle Button (Light -> Dark -> System) */}
           <button

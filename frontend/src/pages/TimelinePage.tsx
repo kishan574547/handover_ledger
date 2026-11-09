@@ -17,10 +17,12 @@ import { Card, CardHeader, CardTitle, CardContent } from '../components/common/C
 import { Button } from '../components/common/Button';
 import { StatusBadge, ClearanceBadge } from '../components/common/Badge';
 import { EvidenceDrawer } from '../components/ledger/EvidenceDrawer';
+import { TrustLens, TrustLensMode, filterClaimsByTrustLens } from '../components/common/TrustLens';
 
 export const TimelinePage: React.FC = () => {
   const { roleConfig } = useRole();
   const [filterType, setFilterType] = useState<string>('all'); // all, decision, change, unresolved
+  const [trustMode, setTrustMode] = useState<TrustLensMode>('everything');
   const [selectedClaimId, setSelectedClaimId] = useState<string | null>(null);
 
   const { data: timelineItems, isLoading } = useQuery<TimelineItem[]>({
@@ -28,13 +30,17 @@ export const TimelinePage: React.FC = () => {
     queryFn: api.getTimeline,
   });
 
-  // Filter items
+  // Filter items by type and trust lens
   const filteredItems = useMemo(() => {
     if (!timelineItems) return [];
-    if (filterType === 'all') return timelineItems;
-    if (filterType === 'unresolved') return timelineItems.filter((i) => i.is_unresolved);
-    return timelineItems.filter((i) => i.type === filterType);
-  }, [timelineItems, filterType]);
+    let items = timelineItems;
+    if (filterType === 'unresolved') {
+      items = items.filter((i) => i.is_unresolved);
+    } else if (filterType !== 'all') {
+      items = items.filter((i) => i.type === filterType);
+    }
+    return filterClaimsByTrustLens(items, trustMode);
+  }, [timelineItems, filterType, trustMode]);
 
   // Group items by Month-Year
   const groupedByMonth = useMemo(() => {
@@ -93,6 +99,14 @@ export const TimelinePage: React.FC = () => {
           })}
         </div>
       </div>
+
+      {/* Trust Lens */}
+      <TrustLens
+        mode={trustMode}
+        onChange={setTrustMode}
+        totalCount={timelineItems?.length || 0}
+        filteredCount={filteredItems.length}
+      />
 
       {/* Timeline Stream */}
       {isLoading ? (
