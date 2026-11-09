@@ -1,15 +1,34 @@
+import sys
+from pathlib import Path
+
+# Ensure repository root is in sys.path so 'import backend' works from any working directory
+CURRENT_DIR = Path(__file__).resolve().parent
+REPO_ROOT = CURRENT_DIR.parent
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
+
 import logging
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from backend.config import settings
-from backend.database import engine, Base
-from backend.routers import (
-    demo, sources, analysis, claims, timeline,
-    questions, review, handover, activity, dashboard
-)
+try:
+    from backend.config import settings
+    from backend.database import engine, Base
+    from backend.routers import (
+        demo, sources, analysis, claims, timeline,
+        questions, review, handover, activity, dashboard
+    )
+except ImportError:
+    from config import settings
+    from database import engine, Base
+    from routers import (
+        demo, sources, analysis, claims, timeline,
+        questions, review, handover, activity, dashboard
+    )
 
 logging.basicConfig(
     level=logging.INFO,
@@ -72,5 +91,6 @@ app.include_router(dashboard.router, prefix=api_prefix)
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("backend.main:app", host="0.0.0.0", port=8000, reload=True)
+    app_target = "main:app" if Path("main.py").exists() else "backend.main:app"
+    uvicorn.run(app_target, host="0.0.0.0", port=8000, reload=True)
 
