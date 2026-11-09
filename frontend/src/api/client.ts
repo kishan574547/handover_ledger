@@ -1,4 +1,5 @@
 import { DemoRole, AIHealthData, ProjectData } from '../types';
+import { sanitizeSecrets } from '../utils/sanitize';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -37,12 +38,14 @@ async function request<T>(
     try {
       const errJson = await response.json();
       if (errJson && errJson.detail) {
-        errorDetail = errJson.detail;
+        errorDetail = typeof errJson.detail === 'string'
+          ? errJson.detail
+          : JSON.stringify(errJson.detail);
       }
     } catch {
       // response is not JSON
     }
-    throw new Error(errorDetail);
+    throw new Error(sanitizeSecrets(errorDetail));
   }
 
   // Handle blob/text downloads like export

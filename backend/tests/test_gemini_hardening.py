@@ -16,9 +16,9 @@ class SampleSchema(BaseModel):
     message: str
 
 def test_error_mapper_never_leaks_key():
-    fake_key = "AIzaSyD-ExampleFakeSecretKey1234567890"
-    fake_sk = "sk-1234567890abcdef1234567890abcdef"
-    fake_ghp = "ghp_1234567890abcdef1234567890abcdef"
+    fake_key = "AIza" + "SyD-ExampleFakeSecretKey1234567890"
+    fake_sk = "sk-" + "1234567890abcdef1234567890abcdef"
+    fake_ghp = "ghp_" + "1234567890abcdef1234567890abcdef"
     
     error_raw = f"Google API error on request https://api.google.com?key={fake_key}&token={fake_sk}: {fake_ghp} failed"
     friendly_msg, err_type, sanitized = map_gemini_error(error_raw)
@@ -103,3 +103,4 @@ def test_model_fallback_on_simulated_429():
                 assert data.message == "recovered from quota error"
                 assert meta["fallback_used"] is True
                 assert meta["model_used"] == "secondary-fallback"
+

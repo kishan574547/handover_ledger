@@ -28,6 +28,7 @@ import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { Stepper } from '../components/common/Stepper';
 import { TableRowSkeleton } from '../components/common/Skeleton';
+import { sanitizeSecrets } from '../utils/sanitize';
 
 export const SourcesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -690,7 +691,7 @@ export const SourcesPage: React.FC = () => {
                     Analysis Incomplete
                   </strong>
                   <p className="mt-0.5 text-xs text-rose-800 dark:text-rose-200">
-                    {analysisStatus.error}
+                    {sanitizeSecrets(analysisStatus.error)}
                   </p>
                 </div>
               </div>
@@ -701,10 +702,7 @@ export const SourcesPage: React.FC = () => {
                   Show technical details
                 </summary>
                 <div className="mt-2 p-2.5 rounded bg-rose-100/60 dark:bg-rose-950/80 font-mono text-[10px] break-all max-h-32 overflow-y-auto text-rose-900 dark:text-rose-300">
-                  {(analysisStatus.error_details || analysisStatus.error)
-                    ?.replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED_KEY]')
-                    .replace(/sk-[a-zA-Z0-9]{20,}/g, '[REDACTED_KEY]')
-                    .slice(0, 300)}
+                  {sanitizeSecrets(analysisStatus.error_details || analysisStatus.error).slice(0, 300)}
                 </div>
               </details>
             </div>

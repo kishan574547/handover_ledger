@@ -17,13 +17,10 @@ logger = logging.getLogger(__name__)
 
 T = TypeVar("T", bound=BaseModel)
 
-# Regex patterns to detect and scrub API keys and sensitive tokens
-SECRET_PATTERNS = [
-    re.compile(r"AIza[0-9A-Za-z-_]{35}"),
-    re.compile(r"sk-[a-zA-Z0-9]{20,}"),
-    re.compile(r"ghp_[a-zA-Z0-9]{20,}"),
-    re.compile(r"(key|api_key|token|secret)=['\"]?([a-zA-Z0-9_\-]{16,})['\"]?", re.IGNORECASE),
-]
+try:
+    from backend.sanitizer import sanitize_text, sanitize_obj, SECRET_PATTERNS, POSTGRES_URL_PATTERN
+except ImportError:
+    from sanitizer import sanitize_text, sanitize_obj, SECRET_PATTERNS, POSTGRES_URL_PATTERN
 
 class GeminiServiceError(Exception):
     """Structured, sanitized Gemini exception that never leaks keys."""
@@ -32,17 +29,6 @@ class GeminiServiceError(Exception):
         self.friendly_message = friendly_message
         self.error_type = error_type
         self.sanitized_details = sanitized_details
-
-def sanitize_text(text: str) -> str:
-    """Removes API keys or credentials from text."""
-    if not text:
-        return ""
-    sanitized = text
-    if settings.GEMINI_API_KEY and settings.GEMINI_API_KEY in sanitized:
-        sanitized = sanitized.replace(settings.GEMINI_API_KEY, "[REDACTED_API_KEY]")
-    for pat in SECRET_PATTERNS:
-        sanitized = pat.sub("[REDACTED_KEY]", sanitized)
-    return sanitized
 
 def map_gemini_error(exc: Exception | str) -> Tuple[str, str, str]:
     """

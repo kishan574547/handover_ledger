@@ -1,6 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import { Button } from './Button';
+import { sanitizeSecrets } from '../../utils/sanitize';
 
 interface Props {
   children: ReactNode;
@@ -32,8 +33,8 @@ export class ErrorBoundary extends Component<Props, State> {
             <AlertTriangle className="w-7 h-7" />
           </div>
           <h2 className="text-xl font-bold text-text-main">An unexpected interface error occurred</h2>
-          <p className="text-xs text-text-muted mt-1.5 max-w-md">
-            {this.state.error?.message || 'Something went wrong rendering this component.'}
+          <p className="text-xs text-text-muted mt-1.5 max-w-md font-mono bg-bg-surface px-2 py-1 rounded border border-border-subtle break-all">
+            {sanitizeSecrets(this.state.error?.message) || 'Something went wrong rendering this component.'}
           </p>
           <div className="mt-5">
             <Button

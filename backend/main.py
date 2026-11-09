@@ -14,10 +14,18 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 try:
     from backend.config import settings
     from backend.database import engine, Base
+    from backend.sanitizer import (
+        sanitize_text,
+        sanitize_obj,
+        install_logging_sanitizer,
+    )
+    from backend.gemini_client import GeminiServiceError
     from backend.routers import (
         demo, sources, analysis, claims, timeline,
         questions, review, handover, activity, dashboard, ask
@@ -25,6 +33,12 @@ try:
 except ImportError:
     from config import settings
     from database import engine, Base
+    from sanitizer import (
+        sanitize_text,
+        sanitize_obj,
+        install_logging_sanitizer,
+    )
+    from gemini_client import GeminiServiceError
     from routers import (
         demo, sources, analysis, claims, timeline,
         questions, review, handover, activity, dashboard, ask
@@ -34,6 +48,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
+install_logging_sanitizer()
 logger = logging.getLogger("handoverledger")
 
 @asynccontextmanager
@@ -72,14 +87,43 @@ app.add_middleware(
 )
 
 # Sanitize exceptions so secrets / tokens are NEVER leaked in error responses
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    detail = exc.detail
+    if isinstance(detail, str):
+        sanitized_detail = sanitize_text(detail)
+    elif isinstance(detail, (dict, list)):
+        sanitized_detail = sanitize_obj(detail)
+    else:
+        sanitized_detail = sanitize_text(str(detail))
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": sanitized_detail},
+        headers=exc.headers
+    )
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    sanitized_errors = sanitize_obj(exc.errors())
+    return JSONResponse(
+        status_code=422,
+        content={"detail": sanitized_errors}
+    )
+
+@app.exception_handler(GeminiServiceError)
+async def gemini_service_error_handler(request: Request, exc: GeminiServiceError):
+    return JSONResponse(
+        status_code=502,
+        content={
+            "detail": sanitize_text(exc.friendly_message),
+            "error_type": exc.error_type,
+            "technical_detail": sanitize_text(exc.sanitized_details)
+        }
+    )
+
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
-    err_msg = str(exc)
-    # Mask any potential secret tokens from the error message string
-    for secret in [settings.GEMINI_API_KEY, settings.GITHUB_TOKEN, settings.SUPABASE_SERVICE_ROLE_KEY]:
-        if secret and secret in err_msg:
-            err_msg = err_msg.replace(secret, "[REDACTED_SECRET]")
-
+    err_msg = sanitize_text(str(exc))
     logger.error(f"Unhandled server error on {request.url.path}: {err_msg}")
     return JSONResponse(
         status_code=500,
