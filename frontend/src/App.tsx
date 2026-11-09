@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { RoleProvider } from './context/RoleContext';
 import { Layout } from './components/layout/Layout';
@@ -28,27 +29,28 @@ const queryClient = new QueryClient({
 export const App: React.FC = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <ToastProvider>
-        <RoleProvider>
+      <ThemeProvider>
+        <ToastProvider>
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<DashboardPage />} />
-                <Route path="sources" element={<SourcesPage />} />
-                <Route path="ledger" element={<ClaimLedgerPage />} />
-                <Route path="timeline" element={<TimelinePage />} />
-                <Route path="interview" element={<ExitInterviewPage />} />
-                <Route path="review" element={<ReviewApprovePage />} />
-                <Route path="handover" element={<HandoverPage />} />
-                <Route path="activity" element={<ActivityPage />} />
-                <Route path="how-it-works" element={<HowItWorksPage />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Route>
-            </Routes>
+            <RoleProvider>
+              <Routes>
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<DashboardPage />} />
+                  <Route path="sources" element={<SourcesPage />} />
+                  <Route path="ledger" element={<ClaimLedgerPage />} />
+                  <Route path="timeline" element={<TimelinePage />} />
+                  <Route path="interview" element={<ExitInterviewPage />} />
+                  <Route path="review" element={<ReviewApprovePage />} />
+                  <Route path="handover" element={<HandoverPage />} />
+                  <Route path="activity" element={<ActivityPage />} />
+                  <Route path="how-it-works" element={<HowItWorksPage />} />
+                  <Route path="*" element={<Navigate to="/" replace />} />
+                </Route>
+              </Routes>
+            </RoleProvider>
           </BrowserRouter>
-        </RoleProvider>
-      </ToastProvider>
+        </ToastProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 };
-

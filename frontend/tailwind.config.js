@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -7,68 +8,74 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#F8FAFC',
-        navy: {
-          DEFAULT: '#1F3864',
-          hover: '#2A4B85',
-          dark: '#142544',
-          light: '#28477D',
+        background: 'var(--color-bg)',
+        surface: {
+          DEFAULT: 'var(--color-surface)',
+          hover: 'var(--color-surface-hover)',
         },
+        border: 'var(--color-border)',
+        navy: {
+          DEFAULT: 'var(--color-primary)',
+          hover: 'var(--color-primary-hover)',
+          dark: 'var(--color-sidebar)',
+          light: 'var(--color-primary-light)',
+        },
+        sidebar: 'var(--color-sidebar)',
         teal: {
-          DEFAULT: '#0F766E',
-          hover: '#115E59',
-          light: '#CCFBF1',
+          DEFAULT: 'var(--color-accent)',
+          hover: 'var(--color-accent-hover)',
+          light: 'var(--color-accent-light)',
         },
         text: {
-          main: '#0F172A',
-          muted: '#64748B',
+          main: 'var(--color-text)',
+          muted: 'var(--color-muted)',
         },
         status: {
           verified: {
-            text: '#15803D',
-            bg: '#DCFCE7',
-            border: '#86EFAC',
+            text: 'var(--status-verified-text)',
+            bg: 'var(--status-verified-bg)',
+            border: 'var(--status-verified-border)',
           },
           inferred: {
-            text: '#B45309',
-            bg: '#FEF3C7',
-            border: '#FCD34D',
+            text: 'var(--status-inferred-text)',
+            bg: 'var(--status-inferred-bg)',
+            border: 'var(--status-inferred-border)',
           },
           conflicting: {
-            text: '#B91C1C',
-            bg: '#FEE2E2',
-            border: '#FCA5A5',
+            text: 'var(--status-conflicting-text)',
+            bg: 'var(--status-conflicting-bg)',
+            border: 'var(--status-conflicting-border)',
           },
           missing: {
-            text: '#475569',
-            bg: '#E2E8F0',
-            border: '#CBD5E1',
+            text: 'var(--status-missing-text)',
+            bg: 'var(--status-missing-bg)',
+            border: 'var(--status-missing-border)',
           },
           leaver: {
-            text: '#6D28D9',
-            bg: '#EDE9FE',
-            border: '#C4B5FD',
+            text: 'var(--status-leaver-text)',
+            bg: 'var(--status-leaver-bg)',
+            border: 'var(--status-leaver-border)',
           },
         },
         clearance: {
-          general: '#16A34A',
-          technical: '#2563EB',
-          confidential: '#DC2626',
+          general: 'var(--clearance-general)',
+          technical: 'var(--clearance-technical)',
+          confidential: 'var(--clearance-confidential)',
         }
       },
       fontFamily: {
-        sans: ['Inter', 'sans-serif'],
+        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       borderRadius: {
         card: '12px',
+        btn: '10px',
       },
       boxShadow: {
-        soft: '0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03)',
-        card: '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03)',
+        soft: 'var(--shadow-soft)',
+        card: 'var(--shadow-card)',
       }
     },
   },
   plugins: [],
 }
-

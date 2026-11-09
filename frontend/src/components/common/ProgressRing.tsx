@@ -13,7 +13,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   size = 80,
   strokeWidth = 8,
   className = '',
-  color = '#1F3864',
+  color = 'currentColor',
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -22,16 +22,16 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   return (
     <div className={`relative inline-flex items-center justify-center ${className}`}>
       <svg width={size} height={size} className="transform -rotate-90">
-        {/* Background circle */}
+        {/* Background track */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="#E2E8F0"
+          className="stroke-slate-200 dark:stroke-slate-800"
           strokeWidth={strokeWidth}
           fill="transparent"
         />
-        {/* Progress circle */}
+        {/* Progress arc */}
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -46,9 +46,8 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
         />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-base font-bold text-slate-800">{Math.round(progress)}%</span>
+        <span className="text-base font-bold text-text-main">{Math.round(progress)}%</span>
       </div>
     </div>
   );
 };
-

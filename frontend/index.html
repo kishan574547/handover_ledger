@@ -2,13 +2,41 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HandoverLedger - Verifiable Project Handover & Knowledge Ledger</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#F8FAFC" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0B1220" />
+    <meta name="description" content="HandoverLedger - Verifiable project handover and factual knowledge ledger." />
+    <meta property="og:title" content="HandoverLedger | Verifiable project handover" />
+    <meta property="og:description" content="Reconstruct project state into a factual, verified ledger of claims backed by exact source citations." />
+    <meta property="og:type" content="website" />
+    <title>HandoverLedger | Verifiable project handover</title>
+
+    <!-- Theme flash prevention script: runs synchronously before DOM paint -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('handover_theme') || 'system';
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (stored === 'dark' || (stored === 'system' && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+          // Restore text size preference if set
+          var storedSize = localStorage.getItem('handover_text_size');
+          if (storedSize) {
+            document.documentElement.style.fontSize = storedSize + '%';
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
-  <body class="bg-background text-text-main font-sans antialiased min-h-screen">
+  <body class="bg-background text-text-main font-sans antialiased min-h-[100dvh] w-full overflow-x-hidden selection:bg-teal selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-

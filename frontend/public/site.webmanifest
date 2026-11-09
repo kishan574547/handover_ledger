@@ -1,0 +1,20 @@
+{
+  "name": "HandoverLedger",
+  "short_name": "HandoverLedger",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#1F3864",
+  "background_color": "#F8FAFC"
+}
