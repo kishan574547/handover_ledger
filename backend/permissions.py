@@ -58,3 +58,9 @@ def require_can_view_handover(role: str, handover_status: str) -> None:
             detail="Handover has not been approved and released by the Project Lead yet. Waiting for approval."
         )
 
+def get_workspace_id(x_workspace_id: Optional[str] = Header(default="default")) -> str:
+    """Extract and validate workspace id from X-Workspace-Id header. Defaults to 'default'."""
+    val = (x_workspace_id or "default").strip()
+    return val if val else "default"
+
+

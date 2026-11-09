@@ -116,6 +116,10 @@ async def cors_and_error_boundary_middleware(request: Request, call_next):
         response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Demo-Role, X-Workspace-Id, Authorization, Accept, Origin, User-Agent, X-Requested-With"
         response.headers["Access-Control-Expose-Headers"] = "Content-Disposition, Content-Type, X-Demo-Role, X-Workspace-Id"
 
+    ws_id = request.headers.get("x-workspace-id")
+    if ws_id:
+        response.headers["X-Workspace-Id"] = ws_id
+
     return response
 
 # CORS configuration outermost
