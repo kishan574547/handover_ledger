@@ -70,4 +70,5 @@ def test_coordinator_strict_clearance_isolation(client, db_session):
     assert "Clearance Level**: 1" in export_text
     assert "fake_prod_pg_pass" not in export_text
     assert "AIza" not in export_text
-    assert "sk-" not in export_text
+    # Ensure no secret tokens (sk- keys) leaked (excluding claim-risk-ssl identifier)
+    assert "sk-" not in export_text.replace("claim-risk-ssl", "")

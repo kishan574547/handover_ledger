@@ -269,6 +269,11 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ question }),
     }),
+  askHelp: (question: string) =>
+    request<{ answer: string; suggested_steps: string[] }>('/ask/help', {
+      method: 'POST',
+      body: JSON.stringify({ question }),
+    }),
   sendQuestionToLeaver: (question: string, why_we_ask?: string) =>
     request<any>('/ask/send-to-leaver', {
       method: 'POST',

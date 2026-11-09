@@ -35,9 +35,14 @@ export const AskHandoverPage: React.FC = () => {
     document.title = 'Ask the Handover | HandoverLedger';
   }, []);
 
+  const [activeTab, setActiveTab] = useState<'handover' | 'help'>('handover');
   const [question, setQuestion] = useState('');
+  const [helpQuestion, setHelpQuestion] = useState('');
   const [history, setHistory] = useState<
     { q: string; response?: AskResponseData; error?: string; loading?: boolean }[]
+  >([]);
+  const [helpHistory, setHelpHistory] = useState<
+    { q: string; answer?: string; suggestedSteps?: string[]; error?: string; loading?: boolean }[]
   >([]);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
 
@@ -53,7 +58,14 @@ export const AskHandoverPage: React.FC = () => {
     { label: 'Stalled Issues & Blockers', q: 'Are there any stalled issues or open blockers?' },
   ];
 
-  // Ask Mutation
+  const helpStarterChips = [
+    { label: 'Clearances & Roles', q: 'What are the 3 clearance levels and what does each role see?' },
+    { label: 'Dual-Check Verification', q: 'How does evidence verification enforce verbatim quotes (>= 90%)?' },
+    { label: 'Leak Check Security', q: 'How does the Pre-Export Leak Check block credential and clearance leaks?' },
+    { label: 'Analysis Pipeline', q: 'What are the 6 stages of the automated analysis pipeline?' },
+  ];
+
+  // Ask Mutation (Grounded Handover Q&A)
   const askMutation = useMutation({
     mutationFn: (qText: string) => api.askHandover(qText),
     onSuccess: (data: AskResponseData, variables) => {
@@ -71,6 +83,28 @@ export const AskHandoverPage: React.FC = () => {
         )
       );
       error('Q&A Error', err.message);
+    },
+  });
+
+  // Help Mutation (How to Use This App)
+  const helpMutation = useMutation({
+    mutationFn: (qText: string) => api.askHelp(qText),
+    onSuccess: (data, variables) => {
+      setHelpHistory((prev) =>
+        prev.map((item) =>
+          item.q === variables
+            ? { ...item, answer: data.answer, suggestedSteps: data.suggested_steps, loading: false }
+            : item
+        )
+      );
+    },
+    onError: (err: any, variables) => {
+      setHelpHistory((prev) =>
+        prev.map((item) =>
+          item.q === variables ? { ...item, error: err.message, loading: false } : item
+        )
+      );
+      error('Guide Error', err.message);
     },
   });
 
@@ -119,39 +153,69 @@ export const AskHandoverPage: React.FC = () => {
       {/* Page Header */}
       <div>
         <div className="flex items-center gap-2">
-          <h2 className="page-title text-text-main">Ask the Handover</h2>
+          <h2 className="page-title text-text-main">
+            {activeTab === 'handover' ? 'Ask the Handover' : 'How to Use This App'}
+          </h2>
           <span className="px-2 py-0.5 rounded-full bg-teal/10 text-teal text-xs font-semibold">
-            Strictly Grounded Q&A
+            {activeTab === 'handover' ? 'Strictly Grounded Q&A' : 'AI User Guide'}
           </span>
         </div>
         <p className="text-sm text-text-muted mt-1 leading-relaxed">
-          Ask questions in natural language. Answers are constructed strictly using verified claims
-          within your role clearance ({role}). Every sentence includes exact citations.
+          {activeTab === 'handover'
+            ? `Ask questions in natural language. Answers are constructed strictly using verified claims within your role clearance (${role}). Every sentence includes exact citations.`
+            : 'Interactive user guide for HandoverLedger. Ask anything about clearances, verification rules, roles, leak checks, or features.'}
         </p>
-      </div>
 
-      {/* Starter Suggestions */}
-      <div>
-        <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2">
-          Recommended Questions
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {starterChips.map((chip, idx) => (
-            <button
-              key={idx}
-              onClick={() => handleAsk(chip.q)}
-              disabled={askMutation.isPending}
-              className="p-3 rounded-card border border-border bg-surface hover:border-slate-300 dark:hover:border-slate-700 text-left transition-all text-xs flex items-center justify-between gap-2 group min-h-[44px]"
-            >
-              <div>
-                <span className="font-semibold text-navy dark:text-teal block">{chip.label}</span>
-                <span className="text-text-muted mt-0.5 block truncate max-w-xs">{chip.q}</span>
-              </div>
-              <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-text-main flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
-            </button>
-          ))}
+        {/* Tab Switcher */}
+        <div className="flex items-center gap-1.5 mt-4 p-1 bg-bg-surface border border-border-subtle rounded-lg w-fit">
+          <button
+            onClick={() => setActiveTab('handover')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+              activeTab === 'handover'
+                ? 'bg-navy dark:bg-teal text-white dark:text-slate-900 shadow-sm'
+                : 'text-text-muted hover:text-text-main'
+            }`}
+          >
+            Ask the Handover
+          </button>
+          <button
+            onClick={() => setActiveTab('help')}
+            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
+              activeTab === 'help'
+                ? 'bg-navy dark:bg-teal text-white dark:text-slate-900 shadow-sm'
+                : 'text-text-muted hover:text-text-main'
+            }`}
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>How to use this app</span>
+          </button>
         </div>
       </div>
+
+      {activeTab === 'handover' ? (
+        <>
+          {/* Starter Suggestions */}
+          <div>
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2">
+              Recommended Questions
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {starterChips.map((chip, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleAsk(chip.q)}
+                  disabled={askMutation.isPending}
+                  className="p-3 rounded-card border border-border bg-surface hover:border-slate-300 dark:hover:border-slate-700 text-left transition-all text-xs flex items-center justify-between gap-2 group min-h-[44px]"
+                >
+                  <div>
+                    <span className="font-semibold text-navy dark:text-teal block">{chip.label}</span>
+                    <span className="text-text-muted mt-0.5 block truncate max-w-xs">{chip.q}</span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-text-main flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
+                </button>
+              ))}
+            </div>
+          </div>
 
       {/* Question Input Card */}
       <Card>
@@ -337,6 +401,126 @@ export const AskHandoverPage: React.FC = () => {
           </Card>
         ))}
       </div>
+        </>
+      ) : (
+        /* How to Use This App Guide Tab */
+        <div className="space-y-6">
+          {/* Guide Starter Chips */}
+          <div>
+            <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2">
+              Common App Questions
+            </label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {helpStarterChips.map((chip, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setHelpHistory((prev) => [...prev, { q: chip.q, loading: true }]);
+                    helpMutation.mutate(chip.q);
+                  }}
+                  disabled={helpMutation.isPending}
+                  className="p-3 rounded-card border border-border bg-surface hover:border-slate-300 dark:hover:border-slate-700 text-left transition-all text-xs flex items-center justify-between gap-2 group min-h-[44px]"
+                >
+                  <div>
+                    <span className="font-semibold text-navy dark:text-teal block">{chip.label}</span>
+                    <span className="text-text-muted mt-0.5 block truncate max-w-xs">{chip.q}</span>
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-text-muted group-hover:text-text-main flex-shrink-0 transition-transform group-hover:translate-x-0.5" />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Guide Question Input */}
+          <Card>
+            <CardContent className="p-3 sm:p-4">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (!helpQuestion.trim() || helpMutation.isPending) return;
+                  const q = helpQuestion.trim();
+                  setHelpQuestion('');
+                  setHelpHistory((prev) => [...prev, { q, loading: true }]);
+                  helpMutation.mutate(q);
+                }}
+                className="flex flex-col sm:flex-row gap-2"
+              >
+                <input
+                  type="text"
+                  value={helpQuestion}
+                  onChange={(e) => setHelpQuestion(e.target.value)}
+                  placeholder="Ask anything about using HandoverLedger, clearances, or features..."
+                  className="flex-1 bg-surface border border-border rounded-btn px-4 py-2.5 text-sm text-text-main placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-navy dark:focus:ring-teal min-h-[44px]"
+                />
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={!helpQuestion.trim() || helpMutation.isPending}
+                  isLoading={helpMutation.isPending}
+                  leftIcon={<Send className="w-4 h-4" />}
+                >
+                  Ask Guide
+                </Button>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Guide History */}
+          <div className="space-y-4">
+            {helpHistory.map((item, idx) => (
+              <Card key={idx} className="overflow-hidden">
+                <CardHeader className="bg-slate-50 dark:bg-slate-900/50 border-b border-border py-3 px-4">
+                  <div className="flex items-center gap-2">
+                    <HelpCircle className="w-4 h-4 text-teal" />
+                    <span className="font-semibold text-sm text-text-main">{item.q}</span>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 space-y-3">
+                  {item.loading && (
+                    <div className="space-y-2 py-2">
+                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-4/5" />
+                    </div>
+                  )}
+
+                  {item.error && (
+                    <div className="p-3 rounded-card bg-rose-50 border border-rose-200 text-xs text-rose-800">
+                      {item.error}
+                    </div>
+                  )}
+
+                  {item.answer && (
+                    <>
+                      <p className="text-sm text-text-main leading-relaxed">
+                        {item.answer}
+                      </p>
+
+                      {item.suggestedSteps && item.suggestedSteps.length > 0 && (
+                        <div className="pt-2 border-t border-border-subtle">
+                          <label className="text-[11px] font-semibold text-text-muted block mb-1.5">
+                            Recommended Next Steps:
+                          </label>
+                          <div className="flex flex-wrap gap-1.5">
+                            {item.suggestedSteps.map((step, sIdx) => (
+                              <span
+                                key={sIdx}
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs bg-slate-100 dark:bg-slate-800 text-text-main border border-border"
+                              >
+                                <ArrowRight className="w-3 h-3 text-teal" />
+                                <span>{step}</span>
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Evidence Drawer */}
       <Drawer

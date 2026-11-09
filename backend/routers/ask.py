@@ -3,6 +3,7 @@ import json
 import logging
 from typing import Dict, List, Tuple, Optional
 from collections import defaultdict
+from pydantic import BaseModel
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 from rapidfuzz import fuzz
@@ -41,8 +42,87 @@ def check_rate_limit(key: str) -> None:
         )
     _rate_limits[key].append(now)
 
-from pydantic import BaseModel
-from backend.gemini_client import gemini_client
+class HelpRequest(BaseModel):
+    question: str
+
+class HelpResponse(BaseModel):
+    answer: str
+    suggested_steps: List[str] = []
+
+@router.post("/help", response_model=HelpResponse)
+def ask_how_to_use_app(payload: HelpRequest):
+    """
+    AI-powered or guided Q&A answering questions about 'How to use this app'
+    (roles, clearances, leak check, analysis pipeline, verification scores, and export).
+    """
+    q_norm = payload.question.lower().strip()
+
+    APP_GUIDE_PROMPT = """
+You are the built-in AI Guide for HandoverLedger, an enterprise-grade handover platform.
+Explain how to use the app clearly, concisely, and accurately based on its core architecture:
+1. Connect Sources: Ingest public GitHub repos, meeting notes (.md, .txt, .pdf), or chat logs. Automatic pre-ingestion masking of credentials.
+2. Reconstruct & Verify: AI extracts atomic claims; rapidfuzz validates quote >= 90% and support judge checks evidence.
+3. Review & Resolve: Leads approve/reject claims, resolve conflicts, and departing members answer exit interview questions.
+4. Handover & Clearances: Clearances Level 1 (General/Business), Level 2 (Technical/Developer), Level 3 (Confidential/Lead). Pre-export Leak Check guarantees no secret or clearance breaches.
+5. Ask the Handover: Grounded Q&A that cites specific claim IDs.
+
+Return a JSON object:
+{"answer": "<Clear answer>", "suggested_steps": ["<Next recommended action 1>", "<Next recommended action 2>"]}
+"""
+
+    if settings.GEMINI_API_KEY:
+        try:
+            class HelpSchema(BaseModel):
+                answer: str
+                suggested_steps: List[str] = []
+
+            data, _ = gemini_client.generate_json(
+                contents=f"User question about using HandoverLedger: {payload.question}",
+                system_instruction=APP_GUIDE_PROMPT,
+                schema_cls=HelpSchema,
+                temperature=0.2
+            )
+            return HelpResponse(answer=data.answer, suggested_steps=data.suggested_steps)
+        except Exception as exc:
+            logger.warning(f"AI help call failed: {exc}")
+
+    # Fallback deterministic guide responses
+    if "clearance" in q_norm or "role" in q_norm:
+        return HelpResponse(
+            answer=(
+                "HandoverLedger enforces 3 clearance levels: Level 1 (General/Coordinator) sees business context; "
+                "Level 2 (Technical/Developer) sees code, architecture, and runbooks; Level 3 (Confidential/Lead) "
+                "sees credentials and full administrative records. Switch roles in the top-right bar to preview each view."
+            ),
+            suggested_steps=["Switch roles in the top navigation bar", "Visit the Handover page to view clearance masking"]
+        )
+    elif "leak" in q_norm or "export" in q_norm:
+        return HelpResponse(
+            answer=(
+                "Before exporting any handover document, run the 'Leak Check' on the Handover page. "
+                "It performs regex token scans and verifies that no claim exceeds the target role's clearance level. "
+                "Export is strictly blocked if any violation is found."
+            ),
+            suggested_steps=["Go to Handover page", "Click 'Run Leak Check'", "Download handover markdown"]
+        )
+    elif "analysis" in q_norm or "pipeline" in q_norm or "verify" in q_norm:
+        return HelpResponse(
+            answer=(
+                "The analysis pipeline runs in 6 automated steps: 1) Mask sensitive data, 2) Extract claims, "
+                "3) Verify evidence (verbatim passage fuzzy match >= 90% + independent support check), "
+                "4) Detect conflicts, 5) Find gaps & generate questions, 6) Build timeline."
+            ),
+            suggested_steps=["Go to Sources page", "Click 'Run Analysis Pipeline'"]
+        )
+    else:
+        return HelpResponse(
+            answer=(
+                "HandoverLedger turns fragmented project sources into a verifiable, factual handover ledger. "
+                "Start by connecting sources on the Connect Sources page, run the analysis pipeline, review and approve "
+                "claims, and generate your role-filtered handover document."
+            ),
+            suggested_steps=["Add a GitHub repository or document on the Sources page", "Review extracted claims in the Claim Ledger"]
+        )
 
 class QASentence(BaseModel):
     text: str

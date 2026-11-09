@@ -112,3 +112,18 @@ def test_send_to_leaver_creates_question():
     assert "Asked by developer" in q.why_we_ask
     db.close()
 
+def test_ask_how_to_use_app_help():
+    """Verify the 'How to use this app' assistant returns guide info and suggested steps."""
+    response = client.post(
+        "/api/ask/help",
+        json={"question": "How do clearance levels work?"}
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "answer" in data
+    assert len(data["answer"]) > 20
+    assert "clearance" in data["answer"].lower()
+    assert "suggested_steps" in data
+    assert isinstance(data["suggested_steps"], list)
+
+

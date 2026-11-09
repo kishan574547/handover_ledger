@@ -492,7 +492,8 @@ def export_handover(
             for idx, c in enumerate(sec.claims, 1):
                 owner_tag = f" `[{c.owner_name}]`" if c.owner_name else ""
                 status_tag = f" `({c.status.upper()})`"
-                lines.append(f"- **[{idx}]** {c.text}{owner_tag}{status_tag}")
+                claim_id_tag = f" `[{c.id}]`"
+                lines.append(f"- **[{idx}]** {c.text}{owner_tag}{status_tag}{claim_id_tag}")
             lines.append("")
 
     content = "\n".join(lines)
