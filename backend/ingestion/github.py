@@ -405,3 +405,52 @@ async def fetch_github_repository(url: str) -> Tuple[List[Dict[str, str]], Impor
 
         report.total_chunks = len(chunks)
         return chunks, report
+
+async def check_github_health() -> Dict[str, Any]:
+    """
+    Makes a lightweight health check against api.github.com/zen.
+    Returns:
+    {
+        "reachable": bool,
+        "token_configured": bool,
+        "remaining_rate_limit": int | None,
+        "reset_time": str | None
+    }
+    """
+    token_configured = bool(settings.GITHUB_TOKEN and settings.GITHUB_TOKEN.strip())
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "HandoverLedger-HealthCheck/1.0"
+    }
+    if token_configured:
+        headers["Authorization"] = f"Bearer {settings.GITHUB_TOKEN.strip()}"
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            resp = await client.get("https://api.github.com/zen", headers=headers)
+            remaining = resp.headers.get("x-ratelimit-remaining")
+            reset = resp.headers.get("x-ratelimit-reset")
+
+            remaining_int = int(remaining) if remaining and remaining.isdigit() else None
+            reset_str = None
+            if reset and reset.isdigit():
+                try:
+                    reset_str = datetime.fromtimestamp(int(reset), tz=timezone.utc).isoformat()
+                except Exception:
+                    reset_str = reset
+
+            # Status 200 or 403 (rate limit) both mean GitHub API is reachable
+            is_reachable = resp.status_code in (200, 403)
+            return {
+                "reachable": is_reachable,
+                "token_configured": token_configured,
+                "remaining_rate_limit": remaining_int,
+                "reset_time": reset_str
+            }
+    except Exception as exc:
+        return {
+            "reachable": False,
+            "token_configured": token_configured,
+            "remaining_rate_limit": None,
+            "reset_time": None
+        }

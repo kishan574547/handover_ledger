@@ -1,4 +1,4 @@
-import { DemoRole, AIHealthData, ProjectData } from '../types';
+import { DemoRole, AIHealthData, BackendHealthData, GitHubHealthData, ProjectData } from '../types';
 import { sanitizeSecrets } from '../utils/sanitize';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
@@ -135,8 +135,9 @@ async function request<T>(
 export const api = {
   // Project & Demo
   getProject: () => request<ProjectData>('/project'),
-  healthCheck: () => request<any>('/health'),
+  healthCheck: () => request<BackendHealthData>('/health'),
   getAIHealth: () => request<AIHealthData>('/health/ai'),
+  getGitHubHealth: () => request<GitHubHealthData>('/health/github'),
   loadDemo: () => request<any>('/demo/load', { method: 'POST' }),
   resetDemo: () => request<any>('/demo/reset', { method: 'POST' }),
 

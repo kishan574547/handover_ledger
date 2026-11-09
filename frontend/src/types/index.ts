@@ -200,6 +200,21 @@ export interface AIHealthData {
   error_type: string | null;
 }
 
+export interface BackendHealthData {
+  status: string;
+  app: string;
+  database: 'sqlite' | 'postgresql';
+  service?: string;
+  version?: string;
+}
+
+export interface GitHubHealthData {
+  reachable: boolean;
+  token_configured: boolean;
+  remaining_rate_limit: number | null;
+  reset_time: string | null;
+}
+
 export interface ActivityItem {
   id: string;
   role: string;

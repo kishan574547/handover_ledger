@@ -4,7 +4,8 @@ def test_full_api_lifecycle(client):
     # 1. Health
     res = client.get("/api/health")
     assert res.status_code == 200
-    assert res.json()["status"] == "healthy"
+    assert res.json()["status"] in ("ok", "healthy")
+    assert res.json()["app"] == "HandoverLedger"
 
     # 2. Demo Load
     res_load = client.post("/api/demo/load", headers={"X-Demo-Role": "lead"})

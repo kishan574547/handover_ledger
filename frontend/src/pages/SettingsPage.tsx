@@ -16,11 +16,18 @@ import {
   Sliders,
   Database,
   Cpu,
+  Server,
+  Activity,
+  Copy,
+  CheckCircle2,
+  AlertCircle,
+  GitBranch,
 } from 'lucide-react';
 import { useTheme, Theme } from '../context/ThemeContext';
 import { useRole, ROLE_DETAILS } from '../context/RoleContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../api/client';
+import { sanitizeSecrets } from '../utils/sanitize';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
@@ -126,6 +133,18 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => error('Reset Failed', err.message),
   });
 
+  // Fetch Backend health status
+  const {
+    data: backendHealth,
+    isLoading: isBackendHealthLoading,
+    refetch: refetchBackendHealth,
+    isFetching: isBackendHealthFetching,
+  } = useQuery({
+    queryKey: ['backend-health'],
+    queryFn: api.healthCheck,
+    staleTime: 15000,
+  });
+
   // Fetch AI health status
   const {
     data: aiHealth,
@@ -137,6 +156,43 @@ export const SettingsPage: React.FC = () => {
     queryFn: api.getAIHealth,
     staleTime: 15000,
   });
+
+  // Fetch GitHub health status
+  const {
+    data: githubHealth,
+    isLoading: isGitHubHealthLoading,
+    refetch: refetchGitHubHealth,
+    isFetching: isGitHubHealthFetching,
+  } = useQuery({
+    queryKey: ['github-health'],
+    queryFn: api.getGitHubHealth,
+    staleTime: 15000,
+  });
+
+  const [copiedDiagnostics, setCopiedDiagnostics] = useState(false);
+  const handleCopyDiagnostics = () => {
+    const rawDiag = {
+      timestamp: new Date().toISOString(),
+      backend: backendHealth || { status: 'unknown' },
+      ai: aiHealth || { ok: false },
+      github: githubHealth || { reachable: false },
+      database: backendHealth?.database || 'sqlite',
+      userAgent: navigator.userAgent,
+      screen: `${window.innerWidth}x${window.innerHeight}`,
+    };
+    const sanitized = sanitizeSecrets(JSON.stringify(rawDiag, null, 2));
+    navigator.clipboard.writeText(sanitized);
+    setCopiedDiagnostics(true);
+    success('Diagnostics Copied', 'Scrubbed system diagnostic payload copied to clipboard.');
+    setTimeout(() => setCopiedDiagnostics(false), 2500);
+  };
+
+  const handleRefreshAllHealth = () => {
+    refetchBackendHealth();
+    refetchAIHealth();
+    refetchGitHubHealth();
+    info('Status Refreshed', 'Refreshed live status across Backend, AI, Database, and GitHub.');
+  };
 
   const handleClearSettings = () => {
     localStorage.removeItem('handover_theme');
@@ -423,67 +479,159 @@ export const SettingsPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 5. AI Service & Model Integration */}
+      {/* 5. System Status & Health Diagnostics */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-navy dark:text-teal" />
-              <span>AI Service &amp; Model Integration</span>
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => refetchAIHealth()}
-              isLoading={isAIHealthFetching}
-              leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
-              title="Test AI connection"
-            >
-              Test Connection
-            </Button>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Activity className="w-4 h-4 text-navy dark:text-teal" />
+                <span>System Status &amp; Diagnostics</span>
+              </CardTitle>
+              <CardDescription>
+                Live operational status across Backend, Database, AI Engine, and GitHub APIs.
+              </CardDescription>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopyDiagnostics}
+                leftIcon={copiedDiagnostics ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                title="Copy sanitized JSON diagnostics payload"
+              >
+                {copiedDiagnostics ? 'Copied' : 'Copy Diagnostics'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRefreshAllHealth}
+                isLoading={isBackendHealthFetching || isAIHealthFetching || isGitHubHealthFetching}
+                leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+                title="Refresh all health checks"
+              >
+                Refresh
+              </Button>
+            </div>
           </div>
-          <CardDescription>
-            Live status of Google GenAI Gemini connection, active model, and dynamic fallback routing.
-          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-btn border border-border bg-slate-50/50 dark:bg-slate-900/40">
-            <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-text-muted font-semibold uppercase text-[10px]">Status:</span>
-                {isAIHealthLoading ? (
-                  <span className="text-text-muted">Checking connection...</span>
-                ) : aiHealth?.ok ? (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    Connected
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
-                    <span className="w-2 h-2 rounded-full bg-rose-500" />
-                    Problem
-                  </span>
-                )}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {/* Backend API */}
+            <div className="p-3.5 rounded-btn border border-border bg-slate-50/50 dark:bg-slate-900/40 flex items-start gap-3">
+              <div className="mt-0.5">
+                <Server className="w-4 h-4 text-navy dark:text-teal" />
               </div>
-              <div className="text-text-muted text-[11px]">
-                {aiHealth?.ok ? (
-                  <span>
-                    Model in use: <strong className="text-text-main font-mono">{aiHealth.model_in_use}</strong>{' '}
-                    {aiHealth.fallback_used && (
-                      <span className="text-amber-600 dark:text-amber-400 font-semibold">(Fallback Model)</span>
-                    )}
-                  </span>
-                ) : (
-                  <span className="text-rose-700 dark:text-rose-300">
-                    Error: {aiHealth?.error_type === 'missing_api_key' ? 'GEMINI_API_KEY is not configured' : aiHealth?.error_type || 'Unable to reach AI service'}
-                  </span>
-                )}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-text-main">Backend API</span>
+                  {isBackendHealthLoading ? (
+                    <span className="text-[10px] text-text-muted">Checking...</span>
+                  ) : backendHealth?.status === 'ok' || backendHealth?.status === 'healthy' ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Connected
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                      Offline
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-text-muted mt-1 truncate">
+                  {backendHealth?.app || 'HandoverLedger'} (v{backendHealth?.version || '1.0.0'})
+                </p>
               </div>
             </div>
 
-            <div className="text-[11px] text-text-muted sm:text-right">
-              <span className="block font-medium text-text-main">Automatic Fallback Routing</span>
-              <span className="text-[10px]">Primary &rarr; Fallback on 404 / 429</span>
+            {/* Database */}
+            <div className="p-3.5 rounded-btn border border-border bg-slate-50/50 dark:bg-slate-900/40 flex items-start gap-3">
+              <div className="mt-0.5">
+                <Database className="w-4 h-4 text-navy dark:text-teal" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-text-main">Database</span>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Ready
+                  </span>
+                </div>
+                <p className="text-[11px] text-text-muted mt-1 font-mono">
+                  Engine: {backendHealth?.database?.toUpperCase() || 'SQLITE'} (Zero-leak query layer)
+                </p>
+              </div>
+            </div>
+
+            {/* AI Engine (Gemini) */}
+            <div className="p-3.5 rounded-btn border border-border bg-slate-50/50 dark:bg-slate-900/40 flex items-start gap-3">
+              <div className="mt-0.5">
+                <Sparkles className="w-4 h-4 text-navy dark:text-teal" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-text-main">AI Engine</span>
+                  {isAIHealthLoading ? (
+                    <span className="text-[10px] text-text-muted">Checking...</span>
+                  ) : aiHealth?.ok ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Active
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                      Degraded
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-text-muted mt-1">
+                  {aiHealth?.ok ? (
+                    <span>
+                      Model: <code className="font-mono text-text-main font-semibold">{aiHealth.model_in_use}</code>
+                      {aiHealth.fallback_used && (
+                        <span className="text-amber-600 dark:text-amber-400 font-semibold ml-1.5">(Fallback)</span>
+                      )}
+                    </span>
+                  ) : (
+                    <span className="text-rose-600 dark:text-rose-400">
+                      {aiHealth?.error_type === 'missing_api_key' ? 'GEMINI_API_KEY missing' : aiHealth?.error_type || 'Unreachable'}
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* GitHub Integration */}
+            <div className="p-3.5 rounded-btn border border-border bg-slate-50/50 dark:bg-slate-900/40 flex items-start gap-3">
+              <div className="mt-0.5">
+                <GitBranch className="w-4 h-4 text-navy dark:text-teal" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between">
+                  <span className="font-semibold text-text-main">GitHub Integration</span>
+                  {isGitHubHealthLoading ? (
+                    <span className="text-[10px] text-text-muted">Checking...</span>
+                  ) : githubHealth?.reachable ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                      Reachable
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      Offline
+                    </span>
+                  )}
+                </div>
+                <p className="text-[11px] text-text-muted mt-1">
+                  Token: {githubHealth?.token_configured ? 'Configured' : 'Public limit'}
+                  {githubHealth?.remaining_rate_limit !== null && githubHealth?.remaining_rate_limit !== undefined && (
+                    <span className="ml-1.5">({githubHealth.remaining_rate_limit} remaining)</span>
+                  )}
+                </p>
+              </div>
             </div>
           </div>
         </CardContent>

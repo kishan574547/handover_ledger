@@ -53,20 +53,35 @@ logger = logging.getLogger("handoverledger")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Initialize SQLite / PostgreSQL tables
+    # 1. Database check and initialization
+    db_type = "postgresql" if "postgres" in settings.DATABASE_URL.lower() else "sqlite"
     Base.metadata.create_all(bind=engine)
-    logger.info("Database tables initialized successfully.")
+    logger.info(f"Database: Connected and initialized successfully ({db_type}).")
     
-    # Startup AI check and logging
+    # 2. Startup AI check and logging
     try:
         from backend.gemini_client import gemini_client
         ai_res = gemini_client.check_health()
         if ai_res.get("ok"):
-            logger.info(f"AI check passed with model '{ai_res.get('model_in_use')}' (fallback_used={ai_res.get('fallback_used')}).")
+            logger.info(f"AI: Health check passed with model '{ai_res.get('model_in_use')}' (fallback_used={ai_res.get('fallback_used')}).")
         else:
-            logger.warning(f"AI check failed with error type '{ai_res.get('error_type')}'.")
+            logger.warning(f"AI: Health check failed with error type '{ai_res.get('error_type')}'.")
     except Exception as e:
-        logger.warning(f"AI check failed with error: {e}")
+        logger.warning(f"AI: Health check failed with error: {e}")
+
+    # 3. Startup GitHub check and logging
+    try:
+        from backend.ingestion.github import check_github_health
+        gh_res = await check_github_health()
+        if gh_res.get("reachable"):
+            token_status = "token configured" if gh_res.get("token_configured") else "no token configured"
+            rem = gh_res.get("remaining_rate_limit")
+            rem_str = f", remaining={rem}" if rem is not None else ""
+            logger.info(f"GitHub: API reachable ({token_status}{rem_str}).")
+        else:
+            logger.warning("GitHub: API check unreachable.")
+    except Exception as e:
+        logger.warning(f"GitHub: Health check failed with error: {e}")
         
     yield
 

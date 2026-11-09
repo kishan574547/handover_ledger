@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import Project, Source, Chunk, Claim, Evidence, ConflictLink, Question, Comment, HandoverVersion, Acknowledgement, ActivityLog
 from backend.permissions import get_current_role, require_lead_role
-from backend.config import BACKEND_DIR
+from backend.config import BACKEND_DIR, settings
 
 router = APIRouter(tags=["demo"])
 logger = logging.getLogger(__name__)
@@ -16,8 +16,11 @@ CACHE_PATH = BACKEND_DIR / "demo_data" / "analysis_cache.json"
 
 @router.get("/health")
 def health():
+    db_type = "postgresql" if "postgres" in settings.DATABASE_URL.lower() else "sqlite"
     return {
-        "status": "healthy",
+        "status": "ok",
+        "app": "HandoverLedger",
+        "database": db_type,
         "service": "HandoverLedger API",
         "version": "1.0.0"
     }
@@ -26,6 +29,11 @@ def health():
 def health_ai():
     from backend.gemini_client import gemini_client
     return gemini_client.check_health()
+
+@router.get("/health/github")
+async def health_github():
+    from backend.ingestion.github import check_github_health
+    return await check_github_health()
 
 @router.get("/project")
 def get_project(db: Session = Depends(get_db)):
