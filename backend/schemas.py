@@ -254,3 +254,4 @@ class ExtractedClaimsBatch(BaseModel):
 class VerifierJudgement(BaseModel):
     support: str = Field(description="supported | partial | not_supported")
     reason: str = Field(description="One-line objective reasoning for the judgement")
+

@@ -12,3 +12,4 @@
 3. **Open Work**:
    - Need to finalize student council announcement banner API.
    - Complete end-to-end load testing on registration check-in scanner.
+

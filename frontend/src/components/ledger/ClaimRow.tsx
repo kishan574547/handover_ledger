@@ -152,3 +152,4 @@ export const ClaimRow: React.FC<ClaimRowProps> = ({
     </tr>
   );
 };
+

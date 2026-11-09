@@ -88,3 +88,4 @@ def test_permissions_unapproved_handover_access(client, db_session):
     # Lead CAN preview handover even when in draft
     resp_lead = client.get("/api/handover/view", headers={"X-Demo-Role": "lead"})
     assert resp_lead.status_code == 200
+

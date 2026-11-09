@@ -117,3 +117,4 @@ def verify_claim(claim_text: str, quote: str, chunk_text: str) -> Dict[str, Any]
         "reason": reason,
         "passage_found": passage_found
     }
+

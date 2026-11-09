@@ -82,3 +82,4 @@ def find_and_link_conflicts(claims: List[Claim]) -> List[ConflictLink]:
                     conflicts.append(link)
 
     return conflicts
+

@@ -71,3 +71,4 @@ export const Stepper: React.FC<StepperProps> = ({ steps, currentPercent, overall
     </div>
   );
 };
+

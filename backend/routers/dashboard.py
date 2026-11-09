@@ -123,3 +123,4 @@ def get_dashboard(
         recent_activity=activity_out,
         has_analysis=has_analysis
     )
+

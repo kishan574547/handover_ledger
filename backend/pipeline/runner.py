@@ -229,3 +229,4 @@ def run_analysis_in_background(role: str = "lead"):
 
     thread = threading.Thread(target=worker, daemon=True)
     thread.start()
+

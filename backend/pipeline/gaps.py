@@ -214,3 +214,4 @@ def detect_gaps_and_generate_questions(
                 questions.append(q)
 
     return new_claims, questions
+

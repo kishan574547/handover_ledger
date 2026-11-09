@@ -97,3 +97,4 @@ def get_review_summary(
         },
         "version_count": len(versions)
     }
+

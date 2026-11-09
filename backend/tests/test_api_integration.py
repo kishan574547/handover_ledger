@@ -97,3 +97,4 @@ def test_full_api_lifecycle(client):
     res_exp = client.get("/api/handover/export?role=developer", headers={"X-Demo-Role": "developer"})
     assert res_exp.status_code == 200
     assert "Handover Document" in res_exp.text
+

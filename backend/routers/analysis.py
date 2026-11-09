@@ -34,3 +34,4 @@ def trigger_analysis(
 @router.get("/status", response_model=AnalysisStatusOut)
 def read_analysis_status():
     return get_current_analysis_status()
+

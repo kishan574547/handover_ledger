@@ -19,3 +19,4 @@ def get_activity_logs(
         query = query.filter(ActivityLog.role == role)
     logs = query.order_by(ActivityLog.at.desc()).limit(limit).all()
     return logs
+

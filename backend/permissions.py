@@ -57,3 +57,4 @@ def require_can_view_handover(role: str, handover_status: str) -> None:
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Handover has not been approved and released by the Project Lead yet. Waiting for approval."
         )
+

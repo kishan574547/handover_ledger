@@ -93,3 +93,4 @@ def test_lead_full_clearance(client, db_session):
     resp_conf = client.get("/api/claims/c-conf-3", headers={"X-Demo-Role": "lead"})
     assert resp_conf.status_code == 200
     assert resp_conf.json()["id"] == "c-conf-3"
+

@@ -161,3 +161,4 @@ export const ClaimTypeBadge: React.FC<{ type: ClaimType; size?: 'sm' | 'md' }> =
     </span>
   );
 };
+

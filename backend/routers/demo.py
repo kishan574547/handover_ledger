@@ -217,3 +217,4 @@ def load_demo(db: Session = Depends(get_db), role: str = Depends(get_current_rol
         "conflicts_count": len(cache.get("conflict_links", [])),
         "questions_count": len(cache.get("questions", []))
     }
+

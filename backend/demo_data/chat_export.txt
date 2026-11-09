@@ -34,3 +34,4 @@
 [05/10/2026, 09:15:00] Rahul Verma: Issue #14 is still completely untouched. Stalled for more than two weeks now.
 [10/10/2026, 11:00:00] Arjun Mehta: Starting to prepare my handover notes. Priya and Rahul, let's make sure we review all ledger claims.
 [12/10/2026, 15:30:00] Priya Nair: Yes, we need a verified handover with clearance checks so nothing confidential leaks to coordinators.
+

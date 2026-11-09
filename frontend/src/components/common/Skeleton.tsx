@@ -36,3 +36,4 @@ export const TableRowSkeleton: React.FC<{ cols?: number }> = ({ cols = 5 }) => {
     </tr>
   );
 };
+

@@ -49,3 +49,4 @@ def test_verifier_mapping_quote_not_found_is_never_verified():
         assert res["status"] != "verified"
         assert res["status"] == "inferred"
         assert "not found" in res["reason"].lower()
+

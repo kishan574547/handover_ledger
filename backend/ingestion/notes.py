@@ -42,3 +42,4 @@ def chunk_notes_text(raw_text: str, source_name: str, chunk_size: int = 8) -> Li
             })
 
     return chunks
+

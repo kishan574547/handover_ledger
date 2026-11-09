@@ -431,3 +431,4 @@ export const EvidenceDrawer: React.FC<EvidenceDrawerProps> = ({ claimId, onClose
     </Drawer>
   );
 };
+

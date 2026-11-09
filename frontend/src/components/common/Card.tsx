@@ -71,3 +71,4 @@ export const CardFooter: React.FC<HTMLAttributes<HTMLDivElement>> = ({
     {children}
   </div>
 );
+

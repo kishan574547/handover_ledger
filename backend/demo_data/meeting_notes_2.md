@@ -15,3 +15,4 @@
 4. **Third Party Integrations**:
    - Razorpay payment gateway sandbox credentials verified.
    - External faculty mentor: Dr. Rao will review club compliance requirements before launch.
+

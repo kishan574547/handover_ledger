@@ -75,3 +75,4 @@ def extract_claims_from_chunk_batch(chunks: List[Dict[str, str]]) -> List[Extrac
                 raise RuntimeError(f"Gemini API extraction failed: {err_str}")
 
     return []
+

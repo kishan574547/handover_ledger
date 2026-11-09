@@ -43,3 +43,4 @@ if ($failed) {
 
 Write-Host "==> Secret check PASSED. No secrets found."
 exit 0
+

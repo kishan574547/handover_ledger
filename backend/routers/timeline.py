@@ -18,3 +18,4 @@ def get_timeline(
     all_claims = db.query(Claim).all()
     timeline = build_timeline_items(all_claims, max_clearance=max_clearance)
     return timeline
+

@@ -15,3 +15,4 @@
 4. **Design Decisions**:
    - Dropped dark mode support for v1 release.
    - Initial authentication will use college SSO email domain validation (@campus.edu).
+

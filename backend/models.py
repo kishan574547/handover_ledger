@@ -156,3 +156,4 @@ def query_claims_with_clearance(db, max_clearance: int):
     Never returns any claim with clearance > max_clearance.
     """
     return db.query(Claim).filter(Claim.clearance <= max_clearance)
+

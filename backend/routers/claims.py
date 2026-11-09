@@ -350,3 +350,4 @@ def add_claim_comment(
     db.commit()
     db.refresh(comment)
     return comment
+

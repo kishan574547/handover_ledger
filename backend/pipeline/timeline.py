@@ -46,3 +46,4 @@ def build_timeline_items(claims: List[Claim], max_clearance: int) -> List[Dict[s
         })
 
     return timeline
+

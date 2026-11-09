@@ -211,3 +211,4 @@ def delete_source(
     db.add(log)
     db.commit()
     return {"status": "success", "message": f"Source '{source_name}' deleted."}
+

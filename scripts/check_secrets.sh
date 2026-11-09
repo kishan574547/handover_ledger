@@ -39,3 +39,4 @@ fi
 
 echo "==> Secret check PASSED. No secrets found."
 exit 0
+

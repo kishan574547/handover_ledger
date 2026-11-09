@@ -22,3 +22,4 @@
 - Supabase PostgreSQL v15
 - Redis v7 for session cache
 - Docker 24.0+
+
