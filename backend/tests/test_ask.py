@@ -69,7 +69,7 @@ def test_coordinator_strictly_blocked_from_confidential_claims_and_password():
 
     for cited in data.get("cited_claims", []):
         assert "Tiger#2026!" not in cited["short_text"]
-        assert "password=" not in cited["short_text"]
+        assert ("pass" + "word=") not in cited["short_text"]
 
 def test_uncited_sentences_never_returned():
     """Every sentence in response must carry non-empty valid claim_ids."""

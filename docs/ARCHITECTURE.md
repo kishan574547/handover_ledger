@@ -125,7 +125,34 @@ Before any handover release or export, the system executes an automated security
 
 ---
 
-## 5. AI Assistance Disclosure
+## 5. Signature Feature Architectures
+
+### A. Ask the Handover (`POST /api/ask`)
+The grounded Q&A system enforces strict factual isolation:
+1. **Clearance Barrier**: SQL queries isolate candidate claims with `Claim.clearance <= max_clearance` and `review_state != 'rejected'`. Non-lead roles are blocked until the handover is approved.
+2. **Relevance Selection**: Uses `rapidfuzz` token-sort and partial ratios to retrieve the top 25 candidate claims without heavy embedding model dependencies.
+3. **Structured Gemini Grounding**: Requests JSON output strictly conforming to `{found: bool, sentences: [{text: str, claim_ids: [str]}]}` using only the provided claims.
+4. **Citation Integrity Check**: Every sentence is validated to ensure its cited `claim_id` belongs to the pre-authorized set; any uncited or hallucinated text is purged. If no valid sentences remain, `found=False` is returned.
+5. **Gap Routing**: When `found=False`, users can dispatch the question to the leaver's Exit Interview via `POST /api/ask/send-to-leaver`.
+
+### B. Trust Lens
+A client-side state projection mechanism implemented on Handover, Ledger, and Timeline pages:
+- **Proven Only**: Filters to claims with `status === 'verified'` ($\ge 90\%$ verbatim passage match + independent validation).
+- **Proven + Inferred**: Includes verified claims and leaver-attested / contextual inferences.
+- **Everything**: Presents all claims including identified gaps (`missing`) and active contradictions (`conflicting`).
+
+### C. Design Tokens & Multi-Viewport Breakpoints
+- **Fluid Tokens**: CSS custom properties (`--color-bg`, `--color-surface`, `--color-primary`, `--status-*`) loaded with AA contrast compliance.
+- **Theme Flash Prevention**: Synchronous execution block in `index.html` restores theme before first paint.
+- **Responsive Navigation**:
+  - $\ge 1280\text{px}$: Full 256px sidebar
+  - $1024 - 1279\text{px}$: 72px icon rail
+  - $< 1024\text{px}$: Accessible off-canvas drawer with focus trap
+  - $< 768\text{px}$: Fixed bottom navigation bar with top 4 role-specific actions + More
+
+---
+
+## 6. AI Assistance Disclosure
 
 HandoverLedger was architected and built with AI assistance utilizing **Google Antigravity** and **Gemini 2.5 / 1.5 Flash**. The underlying verification engine adheres to strict zero-hallucination trust rules, requiring algorithmic proof for every verified claim.
 
