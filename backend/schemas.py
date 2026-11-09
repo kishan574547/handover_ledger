@@ -8,12 +8,24 @@ class SourceBase(BaseModel):
     kind: str
     clearance: int = 1
 
+class ImportReport(BaseModel):
+    repository: str = ""
+    commits_imported: int = 0
+    issues_imported: int = 0
+    prs_imported: int = 0
+    comments_imported: int = 0
+    docs_imported: int = 0
+    total_chunks: int = 0
+    items_skipped: int = 0
+    warnings: List[str] = Field(default_factory=list)
+
 class SourceOut(SourceBase):
     id: str
     item_count: int
     masked_count: int
     content_hash: Optional[str] = None
     added_at: datetime
+    import_report: Optional[ImportReport] = None
     model_config = ConfigDict(from_attributes=True)
 
 class SourceCreateGithub(BaseModel):

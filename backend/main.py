@@ -77,13 +77,55 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# CORS configuration
+# Middleware to guarantee CORS headers on every response (including error responses and OPTIONS preflight)
+@app.middleware("http")
+async def cors_and_error_boundary_middleware(request: Request, call_next):
+    origin = request.headers.get("origin")
+    allowed_origins = settings.cors_origins_list
+
+    # Handle preflight OPTIONS requests directly
+    if request.method == "OPTIONS":
+        response = JSONResponse(content={"ok": True}, status_code=200)
+        if origin and (origin in allowed_origins or "*" in allowed_origins):
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+            response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Demo-Role, X-Workspace-Id, Authorization, Accept, Origin, User-Agent, X-Requested-With"
+            response.headers["Access-Control-Max-Age"] = "86400"
+        return response
+
+    try:
+        response = await call_next(request)
+    except Exception as exc:
+        err_msg = sanitize_text(str(exc))
+        logger.error(f"Unhandled server exception on {request.url.path}: {err_msg}")
+        response = JSONResponse(
+            status_code=500,
+            content={
+                "error_code": "INTERNAL_SERVER_ERROR",
+                "message": "An internal server error occurred. Details have been safely logged.",
+                "detail": "An internal server error occurred. Details have been safely logged."
+            }
+        )
+
+    # Attach CORS headers if request origin is authorized
+    if origin and (origin in allowed_origins or "*" in allowed_origins):
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Demo-Role, X-Workspace-Id, Authorization, Accept, Origin, User-Agent, X-Requested-With"
+        response.headers["Access-Control-Expose-Headers"] = "Content-Disposition, Content-Type, X-Demo-Role, X-Workspace-Id"
+
+    return response
+
+# CORS configuration outermost
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+    allow_headers=["Content-Type", "X-Demo-Role", "X-Workspace-Id", "Authorization", "Accept", "Origin", "User-Agent", "X-Requested-With", "*"],
+    expose_headers=["Content-Disposition", "Content-Type", "X-Demo-Role", "X-Workspace-Id"],
 )
 
 # Sanitize exceptions so secrets / tokens are NEVER leaked in error responses
@@ -96,9 +138,28 @@ async def http_exception_handler(request: Request, exc: StarletteHTTPException):
         sanitized_detail = sanitize_obj(detail)
     else:
         sanitized_detail = sanitize_text(str(detail))
+    
+    error_code = "HTTP_ERROR"
+    if exc.status_code == 404:
+        error_code = "NOT_FOUND"
+    elif exc.status_code == 400:
+        error_code = "BAD_REQUEST"
+    elif exc.status_code == 403:
+        error_code = "FORBIDDEN"
+    elif exc.status_code == 429:
+        error_code = "RATE_LIMITED"
+    elif exc.status_code >= 500:
+        error_code = "INTERNAL_SERVER_ERROR"
+
+    msg = sanitized_detail if isinstance(sanitized_detail, str) else str(sanitized_detail)
+
     return JSONResponse(
         status_code=exc.status_code,
-        content={"detail": sanitized_detail},
+        content={
+            "error_code": error_code,
+            "message": msg,
+            "detail": sanitized_detail
+        },
         headers=exc.headers
     )
 
@@ -107,7 +168,11 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     sanitized_errors = sanitize_obj(exc.errors())
     return JSONResponse(
         status_code=422,
-        content={"detail": sanitized_errors}
+        content={
+            "error_code": "VALIDATION_ERROR",
+            "message": "Invalid request payload format or parameters.",
+            "detail": sanitized_errors
+        }
     )
 
 @app.exception_handler(GeminiServiceError)
@@ -115,6 +180,8 @@ async def gemini_service_error_handler(request: Request, exc: GeminiServiceError
     return JSONResponse(
         status_code=502,
         content={
+            "error_code": f"AI_{exc.error_type.upper()}",
+            "message": sanitize_text(exc.friendly_message),
             "detail": sanitize_text(exc.friendly_message),
             "error_type": exc.error_type,
             "technical_detail": sanitize_text(exc.sanitized_details)
@@ -127,7 +194,11 @@ async def global_exception_handler(request: Request, exc: Exception):
     logger.error(f"Unhandled server error on {request.url.path}: {err_msg}")
     return JSONResponse(
         status_code=500,
-        content={"detail": "An internal server error occurred. Details have been safely logged."}
+        content={
+            "error_code": "INTERNAL_SERVER_ERROR",
+            "message": "An internal server error occurred. Details have been safely logged.",
+            "detail": "An internal server error occurred. Details have been safely logged."
+        }
     )
 
 # Include routers under /api prefix

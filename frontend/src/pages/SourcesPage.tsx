@@ -20,7 +20,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { api } from '../api/client';
-import { SourceItem, AnalysisStatusData } from '../types';
+import { SourceItem, AnalysisStatusData, ImportReport } from '../types';
 import { useRole } from '../context/RoleContext';
 import { useToast } from '../context/ToastContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
@@ -29,6 +29,7 @@ import { Modal } from '../components/common/Modal';
 import { Stepper } from '../components/common/Stepper';
 import { TableRowSkeleton } from '../components/common/Skeleton';
 import { sanitizeSecrets } from '../utils/sanitize';
+import { ApiErrorDisplay } from '../components/common/ApiErrorDisplay';
 
 export const SourcesPage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,7 +40,8 @@ export const SourcesPage: React.FC = () => {
   // Modals state
   const [showGithubModal, setShowGithubModal] = useState(false);
   const [githubUrl, setGithubUrl] = useState('');
-  const [githubError, setGithubError] = useState<string | null>(null);
+  const [githubError, setGithubError] = useState<any>(null);
+  const [githubReport, setGithubReport] = useState<ImportReport | null>(null);
 
   // Set --action-bar-h CSS variable so layout and floating button offset dynamically
   useEffect(() => {
@@ -102,13 +104,18 @@ export const SourcesPage: React.FC = () => {
     mutationFn: (url: string) => api.addGithubSource(url),
     onSuccess: (newSrc) => {
       queryClient.invalidateQueries({ queryKey: ['sources'] });
-      setShowGithubModal(false);
-      setGithubUrl('');
       setGithubError(null);
-      success('Repository Added', `Imported ${newSrc.item_count} items from GitHub.`);
+      if (newSrc.import_report) {
+        setGithubReport(newSrc.import_report);
+      } else {
+        setShowGithubModal(false);
+        setGithubUrl('');
+        setGithubReport(null);
+        success('Repository Added', `Imported ${newSrc.item_count} items from GitHub.`);
+      }
     },
     onError: (err: any) => {
-      setGithubError(err.message);
+      setGithubError(err);
     },
   });
 
@@ -482,54 +489,136 @@ export const SourcesPage: React.FC = () => {
       {/* GitHub Repository Modal */}
       <Modal
         isOpen={showGithubModal}
-        onClose={() => setShowGithubModal(false)}
-        title="Add Public GitHub Repository"
-        description="Ingests README, recent commits (up to 100), issues, and pull requests."
+        onClose={() => {
+          setShowGithubModal(false);
+          setGithubError(null);
+          setGithubReport(null);
+        }}
+        title={githubReport ? "GitHub Import Report" : "Add Public GitHub Repository"}
+        description={
+          githubReport
+            ? `Successfully imported content from ${githubReport.repository}.`
+            : "Ingests README, recent commits (up to 100), issues, and pull requests."
+        }
         footer={
-          <>
-            <Button variant="outline" size="sm" onClick={() => setShowGithubModal(false)}>
-              Cancel
-            </Button>
+          githubReport ? (
             <Button
               variant="primary"
               size="sm"
-              isLoading={addGithubMutation.isPending}
               onClick={() => {
-                if (!githubUrl.trim()) {
-                  setGithubError('Repository URL cannot be empty.');
-                  return;
-                }
-                addGithubMutation.mutate(githubUrl.trim());
+                setShowGithubModal(false);
+                setGithubUrl('');
+                setGithubError(null);
+                setGithubReport(null);
+                success('Repository Connected', `Imported ${githubReport.total_chunks} chunks from ${githubReport.repository}.`);
               }}
             >
-              Validate & Add
+              Done
             </Button>
-          </>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setShowGithubModal(false);
+                  setGithubError(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                isLoading={addGithubMutation.isPending}
+                onClick={() => {
+                  if (!githubUrl.trim()) {
+                    setGithubError(new Error('Repository URL cannot be empty.'));
+                    return;
+                  }
+                  addGithubMutation.mutate(githubUrl.trim());
+                }}
+              >
+                Validate & Add
+              </Button>
+            </>
+          )
         }
       >
-        <div className="space-y-4">
-          <div>
-            <label className="text-xs font-semibold text-slate-700 block mb-1">GitHub Repository URL</label>
-            <input
-              type="text"
-              placeholder="https://github.com/owner/repository or owner/repository"
-              value={githubUrl}
-              onChange={(e) => {
-                setGithubUrl(e.target.value);
-                setGithubError(null);
-              }}
-              className="w-full text-sm p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:outline-none"
-            />
-            <p className="text-[11px] text-slate-400 mt-1">Example: https://github.com/campus-club/campus-connect</p>
-          </div>
-
-          {githubError && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
-              <span>{githubError}</span>
+        {githubReport ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+              <div className="p-3 bg-bg-surface border border-border-subtle rounded-card text-center">
+                <span className="block text-lg font-bold text-navy dark:text-teal">{githubReport.commits_imported}</span>
+                <span className="text-[11px] text-text-muted">Commits</span>
+              </div>
+              <div className="p-3 bg-bg-surface border border-border-subtle rounded-card text-center">
+                <span className="block text-lg font-bold text-navy dark:text-teal">{githubReport.issues_imported}</span>
+                <span className="text-[11px] text-text-muted">Issues</span>
+              </div>
+              <div className="p-3 bg-bg-surface border border-border-subtle rounded-card text-center">
+                <span className="block text-lg font-bold text-navy dark:text-teal">{githubReport.prs_imported}</span>
+                <span className="text-[11px] text-text-muted">Pull Requests</span>
+              </div>
+              <div className="p-3 bg-bg-surface border border-border-subtle rounded-card text-center">
+                <span className="block text-lg font-bold text-navy dark:text-teal">{githubReport.comments_imported}</span>
+                <span className="text-[11px] text-text-muted">Comments</span>
+              </div>
+              <div className="p-3 bg-bg-surface border border-border-subtle rounded-card text-center">
+                <span className="block text-lg font-bold text-navy dark:text-teal">{githubReport.docs_imported}</span>
+                <span className="text-[11px] text-text-muted">Docs & README</span>
+              </div>
+              <div className="p-3 bg-bg-surface border border-border-subtle rounded-card text-center">
+                <span className="block text-lg font-bold text-emerald-600 dark:text-emerald-400">{githubReport.total_chunks}</span>
+                <span className="text-[11px] text-text-muted">Total Chunks</span>
+              </div>
             </div>
-          )}
-        </div>
+
+            {githubReport.items_skipped > 0 && (
+              <p className="text-xs text-text-muted">
+                Note: {githubReport.items_skipped} older items were capped to optimize processing.
+              </p>
+            )}
+
+            {githubReport.warnings.length > 0 && (
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 rounded-card text-xs text-amber-900 dark:text-amber-200 space-y-1">
+                <div className="font-semibold flex items-center gap-1.5">
+                  <AlertCircle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <span>Ingestion Notes:</span>
+                </div>
+                <ul className="list-disc list-inside space-y-0.5 text-[11px] pl-1">
+                  {githubReport.warnings.map((w, idx) => (
+                    <li key={idx}>{w}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs font-semibold text-slate-700 block mb-1">GitHub Repository URL</label>
+              <input
+                type="text"
+                placeholder="https://github.com/owner/repository or owner/repository"
+                value={githubUrl}
+                onChange={(e) => {
+                  setGithubUrl(e.target.value);
+                  setGithubError(null);
+                }}
+                className="w-full text-sm p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:outline-none"
+              />
+              <p className="text-[11px] text-slate-400 mt-1">Example: https://github.com/campus-club/campus-connect</p>
+            </div>
+
+            {githubError && (
+              <ApiErrorDisplay
+                error={githubError}
+                onRetry={() => addGithubMutation.mutate(githubUrl.trim())}
+              />
+            )}
+          </div>
+        )}
       </Modal>
 
       {/* Upload File Modal (Notes or Chat) */}

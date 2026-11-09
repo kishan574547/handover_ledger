@@ -28,6 +28,18 @@ export interface ProjectInfo {
   updated_at?: string;
 }
 
+export interface ImportReport {
+  repository: string;
+  commits_imported: number;
+  issues_imported: number;
+  prs_imported: number;
+  comments_imported: number;
+  docs_imported: number;
+  total_chunks: number;
+  items_skipped: number;
+  warnings: string[];
+}
+
 export interface SourceItem {
   id: string;
   name: string;
@@ -37,6 +49,7 @@ export interface SourceItem {
   masked_count: number;
   content_hash?: string;
   added_at: string;
+  import_report?: ImportReport;
 }
 
 export interface EvidenceItem {

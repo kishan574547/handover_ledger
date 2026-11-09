@@ -145,6 +145,27 @@ class SecretSanitizingFilter(logging.Filter):
             record.exc_text = sanitize_text(record.exc_text)
         return True
 
+class SecretSanitizingFormatterWrapper:
+    """
+    Wraps any existing formatter (including Uvicorn's DefaultFormatter)
+    so that custom attributes like %(levelprefix)s are preserved,
+    while the final formatted string is strictly scrubbed of secrets.
+    """
+    def __init__(self, original_formatter: Any):
+        self._orig = original_formatter
+
+    def format(self, record: logging.LogRecord) -> str:
+        res = self._orig.format(record)
+        return sanitize_text(res)
+
+    def formatException(self, ei: Any) -> str:
+        if hasattr(self._orig, "formatException"):
+            return sanitize_text(self._orig.formatException(ei))
+        return ""
+
+    def __getattr__(self, name: str) -> Any:
+        return getattr(self._orig, name)
+
 class SecretSanitizingFormatter(logging.Formatter):
     """
     Logging formatter that ensures the full formatted message and traceback
@@ -156,7 +177,7 @@ class SecretSanitizingFormatter(logging.Formatter):
 
 def install_logging_sanitizer():
     """
-    Installs the secret filter and formatter across root logger, handlers,
+    Installs the secret filter and formatter wrapper across root logger, handlers,
     and application/uvicorn loggers.
     """
     sanitizing_filter = SecretSanitizingFilter()
@@ -165,17 +186,13 @@ def install_logging_sanitizer():
 
     for handler in root.handlers:
         handler.addFilter(sanitizing_filter)
-        if handler.formatter:
-            fmt = handler.formatter._fmt
-            datefmt = handler.formatter.datefmt
-            handler.setFormatter(SecretSanitizingFormatter(fmt=fmt, datefmt=datefmt))
+        if handler.formatter and not isinstance(handler.formatter, SecretSanitizingFormatterWrapper):
+            handler.formatter = SecretSanitizingFormatterWrapper(handler.formatter)
 
     for logger_name in ["handoverledger", "uvicorn", "uvicorn.error", "uvicorn.access", "fastapi"]:
         l = logging.getLogger(logger_name)
         l.addFilter(sanitizing_filter)
         for h in l.handlers:
             h.addFilter(sanitizing_filter)
-            if h.formatter:
-                fmt = h.formatter._fmt
-                datefmt = h.formatter.datefmt
-                h.setFormatter(SecretSanitizingFormatter(fmt=fmt, datefmt=datefmt))
+            if h.formatter and not isinstance(h.formatter, SecretSanitizingFormatterWrapper):
+                h.formatter = SecretSanitizingFormatterWrapper(h.formatter)

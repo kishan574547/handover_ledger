@@ -7,6 +7,30 @@ export function getStoredRole(): DemoRole {
   return (localStorage.getItem('handover_demo_role') as DemoRole) || 'lead';
 }
 
+export type ApiErrorKind = 'network' | 'timeout' | 'client' | 'server';
+
+export class ApiClientError extends Error {
+  kind: ApiErrorKind;
+  statusCode?: number;
+  details?: string;
+  url: string;
+
+  constructor(params: {
+    message: string;
+    kind: ApiErrorKind;
+    statusCode?: number;
+    details?: string;
+    url: string;
+  }) {
+    super(params.message);
+    this.name = 'ApiClientError';
+    this.kind = params.kind;
+    this.statusCode = params.statusCode;
+    this.details = params.details;
+    this.url = params.url;
+  }
+}
+
 export function setStoredRole(role: DemoRole): void {
   localStorage.setItem('handover_demo_role', role);
 }
@@ -28,24 +52,74 @@ async function request<T>(
 
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
-  const response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  // Set up 45-second timeout controller
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 45000);
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers,
+      signal: options.signal || controller.signal,
+    });
+  } catch (err: any) {
+    clearTimeout(timeoutId);
+    if (err?.name === 'AbortError') {
+      throw new ApiClientError({
+        message: 'The server took too long. Try again.',
+        kind: 'timeout',
+        details: `Request to ${url} exceeded 45s timeout.`,
+        url,
+      });
+    }
+    // Browser network error (e.g. server down, connection refused, CORS failure)
+    throw new ApiClientError({
+      message: `Cannot reach the server. Check that the backend is running at ${API_BASE_URL}.`,
+      kind: 'network',
+      details: sanitizeSecrets(err?.message || 'Network connection failed or was blocked by the browser.'),
+      url,
+    });
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
-    let errorDetail = `Request failed with status ${response.status}`;
+    let errJson: any = null;
+    let rawText = '';
     try {
-      const errJson = await response.json();
-      if (errJson && errJson.detail) {
-        errorDetail = typeof errJson.detail === 'string'
-          ? errJson.detail
-          : JSON.stringify(errJson.detail);
-      }
+      errJson = await response.json();
     } catch {
-      // response is not JSON
+      try {
+        rawText = await response.text();
+      } catch {
+        // ignore
+      }
     }
-    throw new Error(sanitizeSecrets(errorDetail));
+
+    const serverMessage = errJson?.message || errJson?.detail || rawText || `HTTP ${response.status}`;
+    const technicalDetail = typeof errJson?.detail === 'object'
+      ? JSON.stringify(errJson.detail)
+      : (errJson?.technical_detail || rawText || `HTTP status ${response.status}`);
+
+    if (response.status >= 400 && response.status < 500) {
+      throw new ApiClientError({
+        message: sanitizeSecrets(typeof serverMessage === 'string' ? serverMessage : JSON.stringify(serverMessage)),
+        kind: 'client',
+        statusCode: response.status,
+        details: sanitizeSecrets(technicalDetail),
+        url,
+      });
+    } else {
+      // 5xx Server Error
+      throw new ApiClientError({
+        message: 'Something went wrong on our side.',
+        kind: 'server',
+        statusCode: response.status,
+        details: sanitizeSecrets(typeof serverMessage === 'string' ? serverMessage : technicalDetail),
+        url,
+      });
+    }
   }
 
   // Handle blob/text downloads like export

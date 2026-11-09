@@ -20,7 +20,7 @@ def list_sources(db: Session = Depends(get_db)):
     return sources
 
 @router.post("/github", response_model=SourceOut)
-def add_github_source(
+async def add_github_source(
     payload: SourceCreateGithub,
     db: Session = Depends(get_db),
     role: str = Depends(get_current_role)
@@ -29,7 +29,7 @@ def add_github_source(
     if not payload.url or not payload.url.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="GitHub URL is required.")
 
-    chunks_data = fetch_github_repository(payload.url)
+    chunks_data, import_report = await fetch_github_repository(payload.url)
     if not chunks_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -42,7 +42,7 @@ def add_github_source(
     content_hash = hashlib.sha256(full_text.encode("utf-8")).hexdigest()
 
     source = Source(
-        name=f"GitHub ({payload.url.replace('https://github.com/', '').strip('/')})",
+        name=f"GitHub ({import_report.repository})",
         kind="github",
         clearance=1,
         raw_text=masked_full,
@@ -65,12 +65,15 @@ def add_github_source(
     log = ActivityLog(
         role=role,
         action="add_source_github",
-        target=f"Connected repository {payload.url} ({len(chunks_data)} items)"
+        target=f"Connected repository {import_report.repository} ({len(chunks_data)} items)"
     )
     db.add(log)
     db.commit()
     db.refresh(source)
-    return source
+
+    out = SourceOut.model_validate(source)
+    out.import_report = import_report
+    return out
 
 @router.post("/upload", response_model=SourceOut)
 async def upload_source(
