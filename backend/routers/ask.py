@@ -41,9 +41,20 @@ def check_rate_limit(key: str) -> None:
         )
     _rate_limits[key].append(now)
 
+from pydantic import BaseModel
+from backend.gemini_client import gemini_client
+
+class QASentence(BaseModel):
+    text: str
+    claim_ids: List[str] = []
+
+class QAResponse(BaseModel):
+    found: bool = False
+    sentences: List[QASentence] = []
+
 def call_gemini_qa(question: str, candidate_claims: List[Claim]) -> Tuple[bool, List[dict]]:
     """
-    Calls Gemini API to ground answers strictly on the supplied claims.
+    Calls central Gemini client to ground answers strictly on the supplied claims.
     Returns (found: bool, sentences: List[{"text": str, "claim_ids": List[str]}])
     """
     if not settings.GEMINI_API_KEY:
@@ -51,9 +62,6 @@ def call_gemini_qa(question: str, candidate_claims: List[Claim]) -> Tuple[bool, 
         return local_grounded_qa(question, candidate_claims)
 
     try:
-        from google import genai
-        client = genai.Client(api_key=settings.GEMINI_API_KEY)
-
         claims_context = "\n".join([
             f"[Claim ID: {c.id}] (Status: {c.status}, Type: {c.type}): {c.text}"
             for c in candidate_claims
@@ -83,20 +91,12 @@ USER QUESTION:
 AVAILABLE CLAIMS:
 {claims_context}
 """
-        response = client.models.generate_content(
-            model=settings.GEMINI_MODEL,
+        data, meta = gemini_client.generate_json(
             contents=prompt,
-            config={
-                "response_mime_type": "application/json",
-                "temperature": 0.1
-            }
+            schema_cls=QAResponse,
+            temperature=0.1
         )
-
-        res_text = response.text.strip()
-        data = json.loads(res_text)
-        found = bool(data.get("found", False))
-        sentences = data.get("sentences", [])
-        return found, sentences
+        return data.found, [s.model_dump() for s in data.sentences]
     except Exception as e:
         logger.warning(f"Gemini Q&A call failed or rate-limited: {e}. Using deterministic matcher.")
         return local_grounded_qa(question, candidate_claims)

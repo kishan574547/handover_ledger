@@ -19,9 +19,13 @@
     <script>
       (function() {
         try {
-          var stored = localStorage.getItem('handover_theme') || 'system';
-          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          if (stored === 'dark' || (stored === 'system' && prefersDark)) {
+          var stored = localStorage.getItem('handover_theme');
+          // Migrate 'system' or invalid values to 'light'
+          if (stored !== 'light' && stored !== 'dark') {
+            stored = 'light';
+            localStorage.setItem('handover_theme', 'light');
+          }
+          if (stored === 'dark') {
             document.documentElement.classList.add('dark');
           } else {
             document.documentElement.classList.remove('dark');

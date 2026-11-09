@@ -1,4 +1,4 @@
-import { DemoRole } from '../types';
+import { DemoRole, AIHealthData, ProjectData } from '../types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
 
@@ -57,8 +57,9 @@ async function request<T>(
 // API methods
 export const api = {
   // Project & Demo
-  getProject: () => request<any>('/project'),
+  getProject: () => request<ProjectData>('/project'),
   healthCheck: () => request<any>('/health'),
+  getAIHealth: () => request<AIHealthData>('/health/ai'),
   loadDemo: () => request<any>('/demo/load', { method: 'POST' }),
   resetDemo: () => request<any>('/demo/reset', { method: 'POST' }),
 

@@ -70,7 +70,7 @@ export const DashboardPage: React.FC = () => {
           icon={<Database className="w-8 h-8 text-navy" />}
           title="No Project Knowledge Extracted Yet"
           description="HandoverLedger reconstructs project state into verifiable claims from GitHub repos, meeting notes, and chat logs."
-          actionText="Load Demo Project (Campus Connect)"
+          actionText="Load Demo Project"
           onAction={() => loadDemoMutation.mutate()}
           actionIcon={<Play className="w-4 h-4" />}
           secondaryAction={
@@ -89,17 +89,17 @@ export const DashboardPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header with Quick Actions */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Standard Page Header Pattern */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Project Overview</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <h2 className="page-title text-text-main">Project Overview</h2>
+          <p className="text-sm text-text-muted mt-1">
             Real-time factual ledger state, verification metrics, and handover readiness.
           </p>
         </div>
 
         {/* Quick Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           {canLead && (
             <Button
               variant="outline"
@@ -142,15 +142,15 @@ export const DashboardPage: React.FC = () => {
       </div>
 
       {/* Top Readiness & 4 Clickable Status Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {/* Readiness Progress Ring Card */}
-        <Card className="flex flex-col items-center justify-center p-6 text-center md:col-span-1 bg-gradient-to-b from-white to-slate-50/50">
-          <ProgressRing progress={readiness_percent} size={90} strokeWidth={8} />
-          <h4 className="text-sm font-semibold text-slate-900 mt-3">Readiness</h4>
-          <p className="text-[11px] text-slate-500 mt-0.5">
+        <Card className="flex flex-col items-center justify-center p-6 text-center sm:col-span-2 lg:col-span-1 bg-surface border-border shadow-soft">
+          <ProgressRing progress={readiness_percent} size={90} strokeWidth={8} showPercent />
+          <h4 className="text-sm font-semibold text-text-main mt-3">Readiness</h4>
+          <p className="text-[11px] text-text-muted mt-0.5">
             {readiness_percent}% claims reviewed
           </p>
-          <span className="mt-2 inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-slate-100 text-slate-700">
+          <span className="mt-2 inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider bg-slate-100 dark:bg-slate-800 text-text-muted border border-border">
             {data.handover_status}
           </span>
         </Card>
@@ -160,7 +160,7 @@ export const DashboardPage: React.FC = () => {
         <Card
           hoverable
           onClick={() => navigate('/ledger?status=verified')}
-          className="p-5 cursor-pointer border-l-4 border-l-status-verified-text bg-white"
+          className="p-5 cursor-pointer border-l-4 border-l-status-verified-text bg-surface border-border shadow-soft"
         >
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-status-verified-text uppercase tracking-wider">
@@ -168,15 +168,15 @@ export const DashboardPage: React.FC = () => {
             </span>
             <CheckCircle className="w-4 h-4 text-status-verified-text" />
           </div>
-          <div className="text-3xl font-bold text-slate-900 mt-2">{status_counts.verified}</div>
-          <p className="text-xs text-slate-500 mt-1">Dual-check supported claims</p>
+          <div className="text-3xl font-bold text-text-main mt-2">{status_counts.verified}</div>
+          <p className="text-xs text-text-muted mt-1">Dual-check supported claims</p>
         </Card>
 
         {/* 2. Inferred */}
         <Card
           hoverable
           onClick={() => navigate('/ledger?status=inferred')}
-          className="p-5 cursor-pointer border-l-4 border-l-status-inferred-text bg-white"
+          className="p-5 cursor-pointer border-l-4 border-l-status-inferred-text bg-surface border-border shadow-soft"
         >
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-status-inferred-text uppercase tracking-wider">
@@ -184,15 +184,15 @@ export const DashboardPage: React.FC = () => {
             </span>
             <Sparkles className="w-4 h-4 text-status-inferred-text" />
           </div>
-          <div className="text-3xl font-bold text-slate-900 mt-2">{status_counts.inferred}</div>
-          <p className="text-xs text-slate-500 mt-1">Contextual / leaver-attested</p>
+          <div className="text-3xl font-bold text-text-main mt-2">{status_counts.inferred}</div>
+          <p className="text-xs text-text-muted mt-1">Contextual / leaver-attested</p>
         </Card>
 
         {/* 3. Conflicting */}
         <Card
           hoverable
           onClick={() => navigate('/ledger?status=conflicting')}
-          className="p-5 cursor-pointer border-l-4 border-l-status-conflicting-text bg-white"
+          className="p-5 cursor-pointer border-l-4 border-l-status-conflicting-text bg-surface border-border shadow-soft"
         >
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-status-conflicting-text uppercase tracking-wider">
@@ -200,15 +200,15 @@ export const DashboardPage: React.FC = () => {
             </span>
             <AlertTriangle className="w-4 h-4 text-status-conflicting-text" />
           </div>
-          <div className="text-3xl font-bold text-slate-900 mt-2">{status_counts.conflicting}</div>
-          <p className="text-xs text-slate-500 mt-1">{data.open_conflicts_count} open conflict links</p>
+          <div className="text-3xl font-bold text-text-main mt-2">{status_counts.conflicting}</div>
+          <p className="text-xs text-text-muted mt-1">{data.open_conflicts_count} open conflict links</p>
         </Card>
 
         {/* 4. Missing */}
         <Card
           hoverable
           onClick={() => navigate('/ledger?status=missing')}
-          className="p-5 cursor-pointer border-l-4 border-l-status-missing-text bg-white"
+          className="p-5 cursor-pointer border-l-4 border-l-status-missing-text bg-surface border-border shadow-soft"
         >
           <div className="flex justify-between items-start">
             <span className="text-xs font-semibold text-status-missing-text uppercase tracking-wider">
@@ -216,8 +216,8 @@ export const DashboardPage: React.FC = () => {
             </span>
             <HelpCircle className="w-4 h-4 text-status-missing-text" />
           </div>
-          <div className="text-3xl font-bold text-slate-900 mt-2">{status_counts.missing}</div>
-          <p className="text-xs text-slate-500 mt-1">{data.unanswered_questions_count} unanswered questions</p>
+          <div className="text-3xl font-bold text-text-main mt-2">{status_counts.missing}</div>
+          <p className="text-xs text-text-muted mt-1">{data.unanswered_questions_count} unanswered questions</p>
         </Card>
       </div>
 
@@ -228,24 +228,24 @@ export const DashboardPage: React.FC = () => {
           {/* Top Risks */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldAlert className="w-4 h-4 text-amber-600" />
+              <CardTitle className="flex items-center gap-2 text-text-main">
+                <ShieldAlert className="w-4 h-4 text-amber-600 dark:text-amber-400" />
                 <span>Top Identified Risks ({top_risks.length})</span>
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={() => navigate('/ledger?type=risk')}>
                 View all risks
               </Button>
             </CardHeader>
-            <CardContent className="divide-y divide-slate-100 p-0">
+            <CardContent className="divide-y divide-border p-0">
               {top_risks.length === 0 ? (
-                <p className="text-xs text-slate-400 p-5 italic">No open risk claims recorded.</p>
+                <p className="text-xs text-text-muted p-5 italic">No open risk claims recorded.</p>
               ) : (
                 top_risks.map((risk) => (
-                  <div key={risk.id} className="p-4 hover:bg-slate-50 transition-colors flex items-start justify-between gap-4">
+                  <div key={risk.id} className="p-4 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-slate-900 leading-snug">{risk.text}</p>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        {risk.owner_name && <span>Owner: <strong>{risk.owner_name}</strong></span>}
+                      <p className="text-sm font-medium text-text-main leading-snug">{risk.text}</p>
+                      <div className="flex items-center gap-2 text-xs text-text-muted">
+                        {risk.owner_name && <span>Owner: <strong className="text-text-main">{risk.owner_name}</strong></span>}
                         <span>•</span>
                         <span>Clearance: Level {risk.clearance}</span>
                       </div>
@@ -263,24 +263,24 @@ export const DashboardPage: React.FC = () => {
           {/* Next Actions */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ArrowRight className="w-4 h-4 text-sky-600" />
+              <CardTitle className="flex items-center gap-2 text-text-main">
+                <ArrowRight className="w-4 h-4 text-sky-600 dark:text-sky-400" />
                 <span>Immediate Next Actions ({next_actions.length})</span>
               </CardTitle>
               <Button variant="ghost" size="sm" onClick={() => navigate('/ledger?type=next_action')}>
                 View all actions
               </Button>
             </CardHeader>
-            <CardContent className="divide-y divide-slate-100 p-0">
+            <CardContent className="divide-y divide-border p-0">
               {next_actions.length === 0 ? (
-                <p className="text-xs text-slate-400 p-5 italic">No next actions scheduled.</p>
+                <p className="text-xs text-text-muted p-5 italic">No next actions scheduled.</p>
               ) : (
                 next_actions.map((act) => (
-                  <div key={act.id} className="p-4 hover:bg-slate-50 transition-colors flex items-start justify-between gap-4">
+                  <div key={act.id} className="p-4 hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors flex items-start justify-between gap-4">
                     <div className="space-y-1">
-                      <p className="text-sm font-medium text-slate-900 leading-snug">{act.text}</p>
-                      <div className="flex items-center gap-2 text-xs text-slate-500">
-                        {act.owner_name && <span>Assignee: <strong>{act.owner_name}</strong></span>}
+                      <p className="text-sm font-medium text-text-main leading-snug">{act.text}</p>
+                      <div className="flex items-center gap-2 text-xs text-text-muted">
+                        {act.owner_name && <span>Assignee: <strong className="text-text-main">{act.owner_name}</strong></span>}
                         {act.event_date && (
                           <>
                             <span>•</span>
@@ -304,14 +304,14 @@ export const DashboardPage: React.FC = () => {
           {/* Ownership Breakdown */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-text-main">
                 <User className="w-4 h-4 text-teal" />
                 <span>Ownership Distribution</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {ownership_breakdown.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No ownership claims registered.</p>
+                <p className="text-xs text-text-muted italic">No ownership claims registered.</p>
               ) : (
                 ownership_breakdown.map((item, idx) => {
                   const maxCount = Math.max(...ownership_breakdown.map((o) => o.count), 1);
@@ -319,10 +319,10 @@ export const DashboardPage: React.FC = () => {
                   return (
                     <div key={idx} className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <span className="font-semibold text-slate-800">{item.owner_name}</span>
-                        <span className="text-slate-500 font-mono">{item.count} items</span>
+                        <span className="font-semibold text-text-main">{item.owner_name}</span>
+                        <span className="text-text-muted font-mono">{item.count} items</span>
                       </div>
-                      <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                      <div className="w-full h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
                         <div
                           className="h-full bg-teal rounded-full transition-all duration-300"
                           style={{ width: `${barWidth}%` }}
@@ -338,22 +338,24 @@ export const DashboardPage: React.FC = () => {
           {/* Recent Activity */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-slate-500" />
+              <CardTitle className="flex items-center gap-2 text-text-main">
+                <Clock className="w-4 h-4 text-text-muted" />
                 <span>Recent Activity</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 p-4">
               {recent_activity.length === 0 ? (
-                <p className="text-xs text-slate-400 italic">No activity recorded yet.</p>
+                <p className="text-xs text-text-muted italic">No activity recorded yet.</p>
               ) : (
                 recent_activity.slice(0, 5).map((act) => (
-                  <div key={act.id} className="text-xs space-y-0.5 border-b border-slate-100 pb-2 last:border-0 last:pb-0">
-                    <div className="flex justify-between items-center text-[11px] text-slate-500">
-                      <span className="font-semibold text-slate-800 capitalize">{act.role}</span>
-                      <span>{new Date(act.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                  <div key={act.id} className="text-xs space-y-0.5 border-b border-border pb-2 last:border-0 last:pb-0">
+                    <div className="flex justify-between items-center text-[11px] text-text-muted">
+                      <span className="font-semibold text-text-main capitalize">{act.role}</span>
+                      <span title={new Date(act.at).toLocaleString()}>
+                        {new Date(act.at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </span>
                     </div>
-                    <p className="text-slate-600 line-clamp-1">{act.target}</p>
+                    <p className="text-text-muted line-clamp-1">{act.target}</p>
                   </div>
                 ))
               )}

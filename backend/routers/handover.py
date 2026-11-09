@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from backend.database import get_db
 from backend.models import (
-    Claim, HandoverVersion, Acknowledgement, Project, ActivityLog,
+    Claim, HandoverVersion, Acknowledgement, Project, ActivityLog, Source,
     query_claims_with_clearance
 )
 from backend.schemas import (
@@ -158,13 +158,23 @@ def get_handover_view(
     # Check acknowledgement
     ack = db.query(Acknowledgement).filter(Acknowledgement.role == effective_role).order_by(Acknowledgement.at.desc()).first()
 
+    is_demo = db.query(Source).filter(
+        Source.id.like("src-github-campus%") |
+        (Source.id == "src-chat-export") |
+        (Source.name == "GitHub (campus-club/campus-connect)")
+    ).first() is not None
+
+    default_proj_name = "Campus Connect" if is_demo else "Project"
+    default_leaver = "Arjun Mehta" if is_demo else "Departing Member"
+    default_successor = "Rahul Verma" if is_demo else "Successor Developer"
+
     return HandoverViewOut(
         role=effective_role,
         clearance_level=max_clearance,
         handover_status=handover_status,
-        project_name=proj.name if proj else "Campus Connect",
-        departing_member=proj.departing_member if proj else "Arjun Mehta",
-        successor_name=proj.successor_name if proj else "Rahul Verma",
+        project_name=proj.name if (proj and is_demo) else default_proj_name,
+        departing_member=proj.departing_member if (proj and is_demo) else default_leaver,
+        successor_name=proj.successor_name if (proj and is_demo) else default_successor,
         sections=sections,
         total_visible_claims=total_visible,
         total_hidden_claims=total_hidden,
@@ -449,12 +459,22 @@ def export_handover(
     sections, total_visible, total_hidden = build_role_sections(db, target_role)
     proj = db.query(Project).filter(Project.id == "default").first()
 
+    is_demo = db.query(Source).filter(
+        Source.id.like("src-github-campus%") |
+        (Source.id == "src-chat-export") |
+        (Source.name == "GitHub (campus-club/campus-connect)")
+    ).first() is not None
+
+    proj_name = proj.name if (proj and is_demo) else "Project"
+    departing_member = proj.departing_member if (proj and is_demo) else "Departing Member"
+    successor_name = proj.successor_name if (proj and is_demo) else "Successor Developer"
+
     # Build Markdown document
     lines = [
-        f"# Handover Document: {proj.name if proj else 'Campus Connect'}",
+        f"# Handover Document: {proj_name}",
         f"**Role View**: {target_role.title()} | **Clearance Level**: {get_role_max_clearance(target_role)}",
-        f"**Departing Member**: {proj.departing_member if proj else 'Arjun Mehta'}  ",
-        f"**Successor**: {proj.successor_name if proj else 'Rahul Verma'}  ",
+        f"**Departing Member**: {departing_member}  ",
+        f"**Successor**: {successor_name}  ",
         f"**Exported At**: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}  ",
         "",
         "---",

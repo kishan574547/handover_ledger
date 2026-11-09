@@ -15,27 +15,40 @@ export interface RoleConfig {
   description: string;
 }
 
+export interface RoleConfig {
+  id: DemoRole;
+  label: string;
+  name: string;
+  demoName: string;
+  clearance: number;
+  clearanceLabel: string;
+  description: string;
+}
+
 export const ROLE_DETAILS: Record<DemoRole, RoleConfig> = {
   departing: {
     id: 'departing',
     label: 'Departing Member',
-    name: 'Arjun Mehta',
+    name: 'Departing Member',
+    demoName: 'Arjun Mehta',
     clearance: 2,
     clearanceLabel: 'Level 2: Technical',
-    description: 'Tech Lead graduating; answers exit interview questions, reviews ledger.',
+    description: 'Outbound member; answers exit interview questions, reviews ledger.',
   },
   lead: {
     id: 'lead',
     label: 'Project Lead',
-    name: 'Priya Nair',
+    name: 'Project Lead',
+    demoName: 'Priya Nair',
     clearance: 3,
     clearanceLabel: 'Level 3: Confidential',
-    description: 'Club President with full clearance; reviews, approves, and releases handover.',
+    description: 'Lead reviewer with full clearance; reviews, approves, and releases handover.',
   },
   developer: {
     id: 'developer',
     label: 'Successor Developer',
-    name: 'Rahul Verma',
+    name: 'Successor Developer',
+    demoName: 'Rahul Verma',
     clearance: 2,
     clearanceLabel: 'Level 2: Technical',
     description: 'Incoming developer; reads technical handover, runs leak check, acknowledges receipt.',
@@ -43,10 +56,11 @@ export const ROLE_DETAILS: Record<DemoRole, RoleConfig> = {
   coordinator: {
     id: 'coordinator',
     label: 'Coordinator',
-    name: 'Sneha Iyer',
+    name: 'Coordinator',
+    demoName: 'Sneha Iyer',
     clearance: 1,
     clearanceLabel: 'Level 1: General',
-    description: 'Club events coordinator; views general operational handover only.',
+    description: 'Team coordinator; views general operational handover only.',
   },
 };
 

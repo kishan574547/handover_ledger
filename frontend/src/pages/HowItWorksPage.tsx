@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/common/Card';
 import { StatusBadge, ClearanceBadge } from '../components/common/Badge';
+import { Button } from '../components/common/Button';
 
 export const HowItWorksPage: React.FC = () => {
   useEffect(() => {
@@ -121,12 +122,22 @@ export const HowItWorksPage: React.FC = () => {
             </div>
 
             <div className="p-4 rounded-card border border-border bg-surface space-y-2">
-              <div className="flex items-center gap-2">
-                <Compass className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                <h4 className="font-bold text-text-main text-sm">Judge Guide</h4>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Compass className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                  <h4 className="font-bold text-text-main text-sm">Judge Guide</h4>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-7 px-2.5"
+                  onClick={() => window.dispatchEvent(new CustomEvent('open_judge_guide'))}
+                >
+                  Open Checklist
+                </Button>
               </div>
               <p className="text-text-muted leading-relaxed">
-                A persistent progress checklist that tracks real actions performed during your test: loading demo data, running pipeline analysis, inspecting verbatim evidence quotes, resolving conflicting facts, and releasing the handover.
+                An interactive checklist accessible from the top bar tracking real actions performed during your test: loading demo data, running pipeline analysis, inspecting verbatim evidence quotes, resolving conflicting facts, and releasing the handover.
               </p>
             </div>
           </div>

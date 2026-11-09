@@ -51,6 +51,38 @@
 
   --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px 0 rgba(0, 0, 0, 0.03);
   --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+
+  /* Layout and Floating Offsets */
+  --bottom-nav-h: 0px;
+  --action-bar-h: 0px;
+  --sidebar-w: 0px;
+
+  /* Z-Index Design Tokens */
+  --z-content: 1;
+  --z-sticky-bar: 20;
+  --z-floating: 30;
+  --z-sidebar: 40;
+  --z-drawer: 45;
+  --z-modal: 50;
+  --z-toast: 60;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --bottom-nav-h: 64px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --sidebar-w: 72px;
+  }
+}
+
+@media (min-width: 1280px) {
+  :root {
+    --sidebar-w: 256px;
+  }
 }
 
 .dark {
@@ -143,6 +175,19 @@
 /* Quotes in JetBrains Mono */
 .quote-text {
   font-family: 'JetBrains Mono', monospace;
+}
+
+/* Touch device ergonomics (pointer: coarse) */
+@media (pointer: coarse) {
+  button,
+  a,
+  select,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
 }
 
 /* Reduced motion preference */

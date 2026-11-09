@@ -176,7 +176,15 @@ export interface AnalysisStatusData {
   current_step: string;
   percent: number;
   error?: string;
+  error_details?: string;
   steps: StepProgress[];
+}
+
+export interface AIHealthData {
+  ok: boolean;
+  model_in_use: string | null;
+  fallback_used: boolean;
+  error_type: string | null;
 }
 
 export interface ActivityItem {
@@ -253,5 +261,23 @@ export interface AskResponseData {
   verification_summary: string;
   restricted_notice?: string | null;
   question_created_id?: string | null;
+}
+
+// --- Project Meta Types ---
+export type ProjectMode = 'demo' | 'own' | 'empty';
+
+export interface ProjectData {
+  mode: ProjectMode;
+  display_name: string | null;
+  leaver_name: string | null;
+  id: string;
+  name: string;
+  description?: string;
+  departing_member?: string | null;
+  lead_name?: string | null;
+  successor_name?: string | null;
+  coordinator_name?: string | null;
+  handover_status: string;
+  updated_at?: string | null;
 }
 

@@ -41,8 +41,18 @@ async def lifespan(app: FastAPI):
     # Initialize SQLite / PostgreSQL tables
     Base.metadata.create_all(bind=engine)
     logger.info("Database tables initialized successfully.")
-    if not settings.GEMINI_API_KEY:
-        logger.warning("GEMINI_API_KEY is not set. Live AI extraction will prompt for an API key. Precomputed demo cache is available.")
+    
+    # Startup AI check and logging
+    try:
+        from backend.gemini_client import gemini_client
+        ai_res = gemini_client.check_health()
+        if ai_res.get("ok"):
+            logger.info(f"AI check passed with model '{ai_res.get('model_in_use')}' (fallback_used={ai_res.get('fallback_used')}).")
+        else:
+            logger.warning(f"AI check failed with error type '{ai_res.get('error_type')}'.")
+    except Exception as e:
+        logger.warning(f"AI check failed with error: {e}")
+        
     yield
 
 app = FastAPI(

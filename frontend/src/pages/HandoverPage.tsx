@@ -20,6 +20,7 @@ import { api } from '../api/client';
 import { HandoverViewData, LeakCheckResult, DemoRole, CitationItem } from '../types';
 import { useRole, ROLE_DETAILS } from '../context/RoleContext';
 import { useToast } from '../context/ToastContext';
+import { useProjectMeta } from '../context/ProjectMetaContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
@@ -29,6 +30,7 @@ import { TrustLens, TrustLensMode, filterClaimsByTrustLens } from '../components
 
 export const HandoverPage: React.FC = () => {
   const { role, canLead, canAcknowledge, roleConfig } = useRole();
+  const { isDemo, displayName, leaverName } = useProjectMeta();
   const { success, error, warning } = useToast();
   const queryClient = useQueryClient();
 
@@ -118,9 +120,9 @@ export const HandoverPage: React.FC = () => {
         </h3>
         <p className="text-sm text-text-muted mt-2 max-w-md mx-auto leading-relaxed">
           {role === 'coordinator'
-            ? 'The Project Lead (Priya Nair) has not approved and released the handover yet. Once released, you will see general operational contacts, club decisions, and milestone records cleared for Level 1 (General).'
+            ? `The Project Lead${isDemo ? ' (Priya Nair)' : ''} has not approved and released the handover yet. Once released, you will see general operational contacts, club decisions, and milestone records cleared for Level 1 (General).`
             : role === 'developer'
-            ? 'The Project Lead (Priya Nair) has not approved and released the handover yet. Once released, you will see full technical runbooks, architecture decisions, open tasks, and dependencies cleared up to Level 2 (Technical).'
+            ? `The Project Lead${isDemo ? ' (Priya Nair)' : ''} has not approved and released the handover yet. Once released, you will see full technical runbooks, architecture decisions, open tasks, and dependencies cleared up to Level 2 (Technical).`
             : 'The Project Lead is currently reviewing verified claims and resolving open conflicts. You can review current findings or answer open gap questions in the Exit Interview.'}
         </p>
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
@@ -165,27 +167,28 @@ export const HandoverPage: React.FC = () => {
         </div>
       )}
 
-      {/* Handover Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Standard Page Header Pattern */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Project Handover Document</h2>
+            <h2 className="page-title text-text-main">Project Handover Document</h2>
             <ClearanceBadge clearance={handover.clearance_level} size="sm" />
           </div>
-          <p className="text-xs text-slate-500 mt-1">
+          <p className="text-xs text-text-muted mt-1">
             Authoritative, citation-linked knowledge release for <strong>{effectiveRole.toUpperCase()}</strong> ({ROLE_DETAILS[effectiveRole as DemoRole]?.name}).
           </p>
         </div>
 
         {/* Lead Preview Selector & Actions */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           {canLead && (
-            <div className="flex items-center gap-1 bg-white border border-slate-200 px-2.5 py-1 rounded-lg text-xs">
-              <span className="font-semibold text-slate-500 uppercase text-[10px]">Preview As:</span>
+            <div className="flex items-center gap-1 bg-surface border border-border px-2.5 py-1 rounded-btn text-xs min-h-[36px]">
+              <span className="font-semibold text-text-muted uppercase text-[10px]">Preview As:</span>
               <select
                 value={previewRole}
                 onChange={(e) => setPreviewRole(e.target.value as DemoRole)}
-                className="bg-transparent font-medium text-navy focus:outline-none cursor-pointer"
+                className="bg-transparent font-medium text-navy dark:text-teal focus:outline-none cursor-pointer"
+                aria-label="Preview handover as role"
               >
                 <option value="lead">Lead (Level 3 - Confidential)</option>
                 <option value="developer">Developer (Level 2 - Technical)</option>
@@ -466,7 +469,9 @@ export const HandoverPage: React.FC = () => {
               <div className="space-y-1.5 pl-2">
                 {[
                   'Run end-to-end integration test on local Docker compose',
-                  'Meet with Mr. Kapoor regarding hostel network port forwarding',
+                  isDemo
+                    ? 'Meet with Mr. Kapoor regarding hostel network port forwarding'
+                    : 'Meet with infrastructure contacts regarding port forwarding',
                   'Review unowned PR #9 (Notification service queue) and assign successor',
                 ].map((item, idx) => (
                   <label key={idx} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">

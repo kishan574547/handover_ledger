@@ -5,7 +5,6 @@ import {
   Menu,
   Sun,
   Moon,
-  Laptop,
   MoreVertical,
   RefreshCw,
   Settings as SettingsIcon,
@@ -16,10 +15,15 @@ import {
   ChevronDown,
   Lock,
   Search,
+  Compass,
+  Check,
 } from 'lucide-react';
 import { useRole, ROLE_DETAILS } from '../../context/RoleContext';
 import { useTheme } from '../../context/ThemeContext';
 import { useToast } from '../../context/ToastContext';
+import { useJudgeGuide } from '../../context/JudgeGuideContext';
+import { useProjectMeta } from '../../context/ProjectMetaContext';
+import { ProgressRing } from '../common/ProgressRing';
 import { api } from '../../api/client';
 import { DemoRole } from '../../types';
 import { Button } from '../common/Button';
@@ -36,7 +40,10 @@ export const Topbar: React.FC<TopbarProps> = ({
   onOpenCommandPalette,
 }) => {
   const { role, setRole, roleConfig } = useRole();
-  const { theme, resolvedTheme, cycleTheme } = useTheme();
+  const { theme, cycleTheme } = useTheme();
+  const { toggleGuide, completedCount, totalSteps, progressPercent } = useJudgeGuide();
+  const { mode, isDemo, isOwn, isEmpty } = useProjectMeta();
+  const isAllStepsDone = completedCount >= totalSteps;
   const { success, error } = useToast();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -105,18 +112,17 @@ export const Topbar: React.FC<TopbarProps> = ({
   const pageTitle = currentNavItem ? currentNavItem.label : 'HandoverLedger';
 
   return (
-    <header className="bg-surface border-b border-border z-20 flex flex-col flex-shrink-0 sticky top-0">
+    <header className="bg-surface border-b border-border z-sticky-bar flex flex-col flex-shrink-0 sticky top-0">
       {/* 1. Dismissible Demo Mode Banner */}
       {showBanner && (
         <div className="bg-slate-900 text-slate-100 px-3 sm:px-4 py-2 text-xs flex items-center justify-between border-b border-slate-800">
           <div className="flex items-center gap-2 overflow-hidden">
             <Info className="w-4 h-4 text-teal flex-shrink-0" />
             <span className="truncate hidden sm:inline">
-              <strong>Demo mode:</strong> Roles are simulated via header{' '}
-              <code className="bg-slate-800 px-1 py-0.5 rounded text-teal-300 font-mono">X-Demo-Role</code>. No login required. All data is synthetic.
+              You are exploring a demo workspace. Roles are simulated and all data is synthetic.
             </span>
             <span className="truncate sm:hidden text-[11px]">
-              <strong>Demo mode:</strong> Simulated roles (X-Demo-Role). All data synthetic.
+              Demo workspace: Roles are simulated and all data is synthetic.
             </span>
           </div>
           <button
@@ -149,14 +155,22 @@ export const Topbar: React.FC<TopbarProps> = ({
             {pageTitle}
           </h1>
 
-          {/* Project Chip: hidden on mobile (< 640px), visible from sm */}
-          <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 border border-border px-2.5 py-1 rounded-btn text-xs">
-            <span className="font-semibold text-text-main">Campus Connect</span>
-            <span className="text-text-muted">•</span>
-            <span className="text-text-muted truncate max-w-[120px] md:max-w-none">
-              {project?.departing_member || 'Arjun Mehta'}
-            </span>
-          </div>
+          {/* Project Chip: hidden in empty mode or on mobile (< 640px) */}
+          {!isEmpty && (
+            <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 border border-border px-2.5 py-1 rounded-btn text-xs">
+              {isDemo ? (
+                <>
+                  <span className="font-semibold text-text-main">Campus Connect</span>
+                  <span className="text-text-muted">•</span>
+                  <span className="text-text-muted truncate max-w-[120px] md:max-w-none">
+                    Arjun Mehta (Tech Lead)
+                  </span>
+                </>
+              ) : (
+                <span className="font-semibold text-text-main">Your project</span>
+              )}
+            </div>
+          )}
 
           {/* Handover Status Chip */}
           <div
@@ -181,7 +195,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                   <button
                     key={r}
                     onClick={() => setRole(r)}
-                    title={`${cfg.label} (${cfg.name}): ${cfg.clearanceLabel}`}
+                    title={`${cfg.label}${isDemo ? ` (${cfg.demoName})` : ''}: ${cfg.clearanceLabel}`}
                     className={`px-2.5 py-1 rounded-btn text-xs font-medium transition-all min-h-[32px] flex items-center gap-1.5 ${
                       isSelected
                         ? 'bg-surface text-navy dark:text-teal font-semibold shadow-soft border border-border'
@@ -224,6 +238,39 @@ export const Topbar: React.FC<TopbarProps> = ({
             <ChevronDown className="w-3.5 h-3.5 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-muted" />
           </div>
 
+          {/* Quick start Button: fixed 40px height, flex row with 8px gaps, single 20px progress ring */}
+          <button
+            onClick={toggleGuide}
+            className="h-10 min-h-[40px] px-2.5 flex items-center gap-2 rounded-btn bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-border text-text-main transition-colors focus-visible:ring-2 focus-visible:ring-navy flex-shrink-0 motion-safe:transition-transform"
+            title={`Quick start: ${completedCount}/${totalSteps} steps completed. Click to open checklist.`}
+            aria-label={`Quick start, ${completedCount} of ${totalSteps} steps done`}
+          >
+            {/* Compass icon (desktop only >= 1024px) */}
+            <Compass className="hidden lg:inline-block w-4 h-4 text-navy dark:text-teal flex-shrink-0" />
+
+            {/* Exactly ONE progress indicator: small 20px ring (no text inside) */}
+            <ProgressRing progress={progressPercent} size={20} strokeWidth={3} color="#0F766E" className="flex-shrink-0" />
+
+            {/* Label: >= 1024px */}
+            <span className="hidden lg:inline text-xs font-semibold whitespace-nowrap">
+              Quick start
+            </span>
+
+            {/* Counter chip / Done: >= 640px */}
+            <div className="hidden sm:inline-flex items-center">
+              {isAllStepsDone ? (
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-semibold motion-safe:animate-fade-in">
+                  <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  Done
+                </span>
+              ) : (
+                <span className="px-1.5 py-0.5 rounded bg-surface border border-border text-[11px] font-mono font-bold text-text-muted">
+                  {completedCount}/{totalSteps}
+                </span>
+              )}
+            </div>
+          </button>
+
           {/* Search / Command Palette Button */}
           <button
             onClick={onOpenCommandPalette}
@@ -234,16 +281,14 @@ export const Topbar: React.FC<TopbarProps> = ({
             <Search className="w-4 h-4" />
           </button>
 
-          {/* Theme Toggle Button (Light -> Dark -> System) */}
+          {/* Theme Toggle Button (Light <-> Dark) */}
           <button
             onClick={cycleTheme}
             className="p-2 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-navy"
-            title={`Theme: ${theme.toUpperCase()} (Click to toggle)`}
-            aria-label={`Toggle theme. Current: ${theme}`}
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
+            aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
           >
-            {theme === 'system' ? (
-              <Laptop className="w-4 h-4" />
-            ) : resolvedTheme === 'dark' ? (
+            {theme === 'dark' ? (
               <Moon className="w-4 h-4 text-teal" />
             ) : (
               <Sun className="w-4 h-4 text-amber-500" />
@@ -264,7 +309,17 @@ export const Topbar: React.FC<TopbarProps> = ({
 
             {/* Dropdown Popover */}
             {showOverflowMenu && (
-              <div className="absolute right-0 mt-1 w-52 bg-surface rounded-card border border-border shadow-card py-1 z-50 text-sm">
+              <div className="absolute right-0 mt-1 w-52 bg-surface rounded-card border border-border shadow-card py-1 z-modal text-sm">
+                <button
+                  onClick={() => {
+                    setShowOverflowMenu(false);
+                    toggleGuide();
+                  }}
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-text-main hover:bg-slate-100 dark:hover:bg-slate-800 text-left min-h-[44px] sm:min-h-0"
+                >
+                  <Compass className="w-3.5 h-3.5 text-navy dark:text-teal" />
+                  <span>Quick-Start Guide ({completedCount}/{totalSteps})</span>
+                </button>
                 <button
                   onClick={() => {
                     setShowOverflowMenu(false);
@@ -352,7 +407,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             </kbd>
           </div>
           <div className="flex items-center justify-between p-2 rounded-lg bg-slate-50 dark:bg-slate-800/60 border border-border">
-            <span>Toggle Theme (Light / Dark / System)</span>
+            <span>Toggle Theme (Light / Dark)</span>
             <kbd className="px-2 py-1 bg-surface border border-border rounded font-mono font-bold shadow-soft">
               Shift + T
             </kbd>

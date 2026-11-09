@@ -7,7 +7,7 @@ import {
   FileSpreadsheet,
   Moon,
   Sun,
-  Laptop,
+  Compass,
   User,
   Shield,
   Play,
@@ -30,7 +30,7 @@ interface CommandPaletteProps {
 export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
   const { role, setRole, canLead } = useRole();
-  const { cycleTheme } = useTheme();
+  const { theme, cycleTheme } = useTheme();
 
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
@@ -80,9 +80,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   // Action commands
   const actions = [
     {
+      id: 'action-quick-start',
+      title: 'Open Quick-Start Guide (Checklist)',
+      icon: <Compass className="w-4 h-4 text-teal" />,
+      run: () => {
+        window.dispatchEvent(new CustomEvent('open_judge_guide'));
+        onClose();
+      },
+    },
+    {
       id: 'action-theme',
-      title: 'Toggle Theme (Light / Dark / System)',
-      icon: <Sun className="w-4 h-4 text-amber-500" />,
+      title: `Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`,
+      icon: theme === 'dark' ? <Sun className="w-4 h-4 text-amber-500" /> : <Moon className="w-4 h-4 text-teal" />,
       run: () => {
         cycleTheme();
         onClose();
@@ -164,7 +173,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto p-4 sm:p-6 md:p-20" role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-modal overflow-y-auto p-4 sm:p-6 md:p-20" role="dialog" aria-modal="true">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"

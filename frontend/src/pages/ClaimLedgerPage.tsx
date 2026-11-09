@@ -136,17 +136,17 @@ export const ClaimLedgerPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Standard Page Header Pattern */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Claim Ledger</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <h2 className="page-title text-text-main">Claim Ledger</h2>
+          <p className="text-sm text-text-muted mt-1">
             Complete atomic ledger of verified, inferred, conflicting, and missing project assertions.
           </p>
         </div>
 
         {canLead && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 self-start sm:self-auto">
             <Button
               variant="primary"
               size="sm"
@@ -161,18 +161,18 @@ export const ClaimLedgerPage: React.FC = () => {
       </div>
 
       {/* Filter Bar Card */}
-      <Card className="p-4 space-y-3 bg-white">
+      <Card className="p-4 space-y-3 bg-surface border-border">
         {/* Top search & selectors row */}
         <div className="flex flex-wrap items-center gap-3">
           {/* Search box */}
           <div className="relative flex-1 min-w-[240px]">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search claims, owners, subjects..."
               value={searchQuery}
               onChange={(e) => handleFilterChange('q', e.target.value)}
-              className="w-full text-xs pl-9 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-1 focus:ring-navy focus:outline-none"
+              className="w-full text-xs pl-9 pr-3 py-2 border border-border rounded-btn bg-surface text-text-main focus:ring-1 focus:ring-navy focus:outline-none min-h-[40px]"
             />
           </div>
 
@@ -180,7 +180,7 @@ export const ClaimLedgerPage: React.FC = () => {
           <select
             value={selectedClearance}
             onChange={(e) => handleFilterChange('clearance', e.target.value)}
-            className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white text-slate-700"
+            className="text-xs py-2 px-3 border border-border rounded-btn bg-surface text-text-main min-h-[40px] focus:outline-none"
           >
             <option value="">All Clearances</option>
             <option value="1">Level 1: General</option>
@@ -192,7 +192,7 @@ export const ClaimLedgerPage: React.FC = () => {
           <select
             value={selectedReviewState}
             onChange={(e) => handleFilterChange('review_state', e.target.value)}
-            className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white text-slate-700"
+            className="text-xs py-2 px-3 border border-border rounded-btn bg-surface text-text-main min-h-[40px] focus:outline-none"
           >
             <option value="">All Review States</option>
             <option value="pending">Pending Review</option>
@@ -204,7 +204,7 @@ export const ClaimLedgerPage: React.FC = () => {
           <select
             value={selectedSort}
             onChange={(e) => handleFilterChange('sort', e.target.value)}
-            className="text-xs py-2 px-3 border border-slate-300 rounded-lg bg-white text-slate-700 font-mono"
+            className="text-xs py-2 px-3 border border-border rounded-btn bg-surface text-text-main font-mono min-h-[40px] focus:outline-none"
           >
             <option value="event_date_desc">Sort: Newest Date</option>
             <option value="event_date_asc">Sort: Oldest Date</option>
@@ -221,18 +221,18 @@ export const ClaimLedgerPage: React.FC = () => {
         </div>
 
         {/* Type & Status Filter Chips */}
-        <div className="pt-2 border-t border-slate-100 flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mr-1">Status:</span>
+        <div className="pt-2 border-t border-border flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mr-1">Status:</span>
           {statuses.map((st) => {
             const isActive = selectedStatus === st.id;
             return (
               <button
                 key={st.id}
                 onClick={() => handleFilterChange('status', isActive ? '' : st.id)}
-                className={`text-xs px-2.5 py-1 rounded-full border transition-all ${
+                className={`text-xs px-2.5 py-1 rounded-full border transition-all min-h-[32px] ${
                   isActive
-                    ? 'bg-navy text-white border-navy font-semibold'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    ? 'bg-navy text-white border-navy dark:bg-teal dark:text-white dark:border-teal font-semibold'
+                    : 'bg-surface text-text-muted border-border hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-text-main'
                 }`}
               >
                 {st.label}
@@ -240,9 +240,9 @@ export const ClaimLedgerPage: React.FC = () => {
             );
           })}
 
-          <div className="h-4 w-px bg-slate-200 mx-2" />
+          <div className="h-4 w-px bg-border mx-2" />
 
-          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mr-1">Type:</span>
+          <span className="text-[11px] font-semibold text-text-muted uppercase tracking-wider mr-1">Type:</span>
           <div className="flex flex-wrap items-center gap-1.5">
             {claimTypes.map((ct) => {
               const isActive = selectedType === ct.id;
@@ -250,10 +250,10 @@ export const ClaimLedgerPage: React.FC = () => {
                 <button
                   key={ct.id}
                   onClick={() => handleFilterChange('type', isActive ? '' : ct.id)}
-                  className={`text-xs px-2.5 py-1 rounded-lg border transition-all ${
+                  className={`text-xs px-2.5 py-1 rounded-btn border transition-all min-h-[32px] ${
                     isActive
-                      ? 'bg-navy text-white border-navy font-semibold'
-                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                      ? 'bg-navy text-white border-navy dark:bg-teal dark:text-white dark:border-teal font-semibold'
+                      : 'bg-surface text-text-muted border-border hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-text-main'
                   }`}
                 >
                   {ct.label}
@@ -320,7 +320,7 @@ export const ClaimLedgerPage: React.FC = () => {
           <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50/80 dark:bg-slate-900/50 border-b border-border text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+                <tr className="sticky top-0 bg-surface z-10 border-b border-border text-[11px] font-semibold text-text-muted uppercase tracking-wider">
                   <th className="py-3 px-4">Type</th>
                   <th className="py-3 px-4">Claim Statement</th>
                   <th className="py-3 px-4">Status</th>

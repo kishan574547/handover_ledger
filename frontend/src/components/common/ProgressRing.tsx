@@ -6,6 +6,8 @@ interface ProgressRingProps {
   strokeWidth?: number;
   className?: string;
   color?: string;
+  showPercent?: boolean;
+  children?: React.ReactNode;
 }
 
 export const ProgressRing: React.FC<ProgressRingProps> = ({
@@ -14,6 +16,8 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   strokeWidth = 8,
   className = '',
   color = 'currentColor',
+  showPercent = false,
+  children,
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -45,9 +49,13 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
           className="transition-all duration-500 ease-out"
         />
       </svg>
-      <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-base font-bold text-text-main">{Math.round(progress)}%</span>
-      </div>
+      {(showPercent || children) && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          {children ? children : (
+            <span className="text-base font-bold text-text-main">{Math.round(progress)}%</span>
+          )}
+        </div>
+      )}
     </div>
   );
 };

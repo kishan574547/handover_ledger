@@ -22,6 +22,11 @@ def health():
         "version": "1.0.0"
     }
 
+@router.get("/health/ai")
+def health_ai():
+    from backend.gemini_client import gemini_client
+    return gemini_client.check_health()
+
 @router.get("/project")
 def get_project(db: Session = Depends(get_db)):
     proj = db.query(Project).filter(Project.id == "default").first()
@@ -39,14 +44,38 @@ def get_project(db: Session = Depends(get_db)):
         db.add(proj)
         db.commit()
         db.refresh(proj)
+
+    sources_count = db.query(Source).count()
+    if sources_count == 0:
+        mode = "empty"
+        display_name = None
+        leaver_name = None
+    else:
+        is_demo = db.query(Source).filter(
+            Source.id.like("src-github-campus%") |
+            (Source.id == "src-chat-export") |
+            (Source.name == "GitHub (campus-club/campus-connect)")
+        ).first() is not None
+        if is_demo:
+            mode = "demo"
+            display_name = "Campus Connect"
+            leaver_name = "Arjun Mehta"
+        else:
+            mode = "own"
+            display_name = None
+            leaver_name = None
+
     return {
+        "mode": mode,
+        "display_name": display_name,
+        "leaver_name": leaver_name,
         "id": proj.id,
-        "name": proj.name,
-        "description": proj.description,
-        "departing_member": proj.departing_member,
-        "lead_name": proj.lead_name,
-        "successor_name": proj.successor_name,
-        "coordinator_name": proj.coordinator_name,
+        "name": display_name or ("Your project" if mode == "own" else proj.name),
+        "description": proj.description if mode == "demo" else "",
+        "departing_member": leaver_name if mode == "demo" else None,
+        "lead_name": proj.lead_name if mode == "demo" else None,
+        "successor_name": proj.successor_name if mode == "demo" else None,
+        "coordinator_name": proj.coordinator_name if mode == "demo" else None,
         "handover_status": proj.handover_status,
         "updated_at": proj.updated_at
     }

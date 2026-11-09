@@ -28,7 +28,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   isLeaverAttested = false,
   size = 'md',
 }) => {
-  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs font-medium';
+  const sizeClasses = size === 'sm' ? 'h-5 px-2 text-[11px] leading-none' : 'h-6 px-2.5 text-xs font-medium leading-none';
 
   if (isLeaverAttested) {
     return (
@@ -98,7 +98,7 @@ interface ClearanceBadgeProps {
 }
 
 export const ClearanceBadge: React.FC<ClearanceBadgeProps> = ({ clearance, size = 'md' }) => {
-  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2.5 py-1 text-xs font-medium';
+  const sizeClasses = size === 'sm' ? 'h-5 px-2 text-[11px] leading-none' : 'h-6 px-2.5 text-xs font-medium leading-none';
 
   if (clearance === 1) {
     return (
@@ -137,7 +137,7 @@ export const ClaimTypeBadge: React.FC<{ type: ClaimType; size?: 'sm' | 'md' }> =
   type,
   size = 'md',
 }) => {
-  const sizeClasses = size === 'sm' ? 'px-2 py-0.5 text-xs' : 'px-2 py-0.5 text-xs font-medium';
+  const sizeClasses = size === 'sm' ? 'h-5 px-2 text-[11px] leading-none' : 'h-6 px-2.5 text-xs font-medium leading-none';
 
   const typeConfig: Record<string, { label: string; icon: React.ReactNode; bg: string; text: string }> = {
     decision: { label: 'Decision', icon: <GitBranch className="w-3 h-3" />, bg: 'bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200 dark:border-indigo-800', text: 'text-indigo-700 dark:text-indigo-300' },

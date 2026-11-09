@@ -17,6 +17,7 @@ import {
   Sparkles,
   Info,
   X,
+  RefreshCw,
 } from 'lucide-react';
 import { api } from '../api/client';
 import { SourceItem, AnalysisStatusData } from '../types';
@@ -38,6 +39,14 @@ export const SourcesPage: React.FC = () => {
   const [showGithubModal, setShowGithubModal] = useState(false);
   const [githubUrl, setGithubUrl] = useState('');
   const [githubError, setGithubError] = useState<string | null>(null);
+
+  // Set --action-bar-h CSS variable so layout and floating button offset dynamically
+  useEffect(() => {
+    document.documentElement.style.setProperty('--action-bar-h', '68px');
+    return () => {
+      document.documentElement.style.setProperty('--action-bar-h', '0px');
+    };
+  }, []);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadKind, setUploadKind] = useState<'notes' | 'chat'>('notes');
@@ -83,7 +92,7 @@ export const SourcesPage: React.FC = () => {
     mutationFn: api.loadDemo,
     onSuccess: () => {
       queryClient.invalidateQueries();
-      success('Demo Loaded', 'Loaded Campus Connect repository and synthetic sources.');
+      success('Demo Loaded', 'Loaded demo repository and synthetic sources.');
     },
     onError: (err: any) => error('Load Failed', err.message),
   });
@@ -167,17 +176,17 @@ export const SourcesPage: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-24">
-      {/* Page Header & Action Buttons */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Standard Page Header Pattern */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Connected Project Sources</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <h2 className="page-title text-text-main">Connected Project Sources</h2>
+          <p className="text-sm text-text-muted mt-1">
             Authorised inputs scanned for claims. Secrets and personal data are masked prior to AI processing.
           </p>
         </div>
 
         {canLead && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
             <Button
               variant="outline"
               size="sm"
@@ -223,61 +232,61 @@ export const SourcesPage: React.FC = () => {
         )}
       </div>
 
-      {/* Sources Table */}
+      {/* Sources Table (Desktop) & Stacked Cards (Mobile) */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold text-slate-900">
+          <CardTitle className="text-base font-semibold text-text-main">
             Active Sources ({totalSourcesCount})
           </CardTitle>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-text-muted">
             Source Clearance determines maximum classification of extracted claims.
           </span>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50/80 border-b border-slate-200 text-[11px] font-semibold text-slate-600 uppercase tracking-wider">
-                <th className="py-3 px-5">Source Name</th>
-                <th className="py-3 px-4">Item Count</th>
-                <th className="py-3 px-4">Clearance Level</th>
-                <th className="py-3 px-4">Masking Protection</th>
-                <th className="py-3 px-4">Added Time</th>
-                {canLead && <th className="py-3 px-5 text-right">Actions</th>}
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
-              {isLoading ? (
-                Array.from({ length: 4 }).map((_, i) => <TableRowSkeleton key={i} cols={6} />)
-              ) : totalSourcesCount === 0 ? (
-                <tr>
-                  <td colSpan={6} className="py-12 text-center text-slate-400">
-                    <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm font-medium text-slate-600">No sources connected yet.</p>
-                    <p className="text-xs text-slate-400 mt-1">Connect a GitHub repo or upload meeting notes to begin.</p>
-                  </td>
-                </tr>
-              ) : (
-                sources!.map((src) => (
-                  <tr key={src.id} className="hover:bg-slate-50/80 transition-colors">
-                    <td className="py-3.5 px-5">
-                      <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-slate-100 flex-shrink-0">
-                          {getSourceIcon(src.kind)}
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-900 leading-tight">{src.name}</p>
-                          <span className="text-xs text-slate-500 uppercase tracking-wider font-mono">
-                            Type: {src.kind}
-                          </span>
-                        </div>
+        <CardContent className="p-0">
+          {/* Mobile Stacked Cards (< 768px) */}
+          <div className="md:hidden divide-y divide-border">
+            {isLoading ? (
+              Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="p-4 space-y-2 animate-pulse">
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 w-1/3 rounded" />
+                  <div className="h-4 bg-slate-200 dark:bg-slate-700 w-3/4 rounded" />
+                </div>
+              ))
+            ) : totalSourcesCount === 0 ? (
+              <div className="py-12 text-center text-text-muted">
+                <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                <p className="text-sm font-medium text-text-main">No sources connected yet.</p>
+                <p className="text-xs text-text-muted mt-1">Connect a GitHub repo or upload meeting notes to begin.</p>
+              </div>
+            ) : (
+              sources!.map((src) => (
+                <div key={src.id} className="p-4 space-y-3 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 flex-shrink-0 text-navy dark:text-teal">
+                        {getSourceIcon(src.kind)}
                       </div>
-                    </td>
+                      <div>
+                        <p className="font-semibold text-xs sm:text-sm text-text-main leading-tight">{src.name}</p>
+                        <span className="text-[10px] text-text-muted uppercase tracking-wider font-mono">
+                          Type: {src.kind} • {src.item_count} items
+                        </span>
+                      </div>
+                    </div>
+                    {canLead && (
+                      <button
+                        onClick={() => setDeleteSourceId(src.id)}
+                        className="p-1.5 min-w-[36px] min-h-[36px] flex items-center justify-center rounded-btn text-text-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                        title="Delete source"
+                        aria-label="Delete source"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
 
-                    <td className="py-3.5 px-4 font-mono text-xs text-slate-700">
-                      {src.item_count} {src.kind === 'github' ? 'commits/issues' : 'chunks'}
-                    </td>
-
-                    <td className="py-3.5 px-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border text-xs">
+                    <div>
                       {canLead ? (
                         <select
                           value={src.clearance}
@@ -287,64 +296,166 @@ export const SourcesPage: React.FC = () => {
                               clearance: Number(e.target.value),
                             })
                           }
-                          className="text-xs font-medium rounded-lg border border-slate-300 bg-white px-2.5 py-1 text-slate-800 shadow-sm focus:border-navy focus:outline-none"
+                          className="text-xs font-medium rounded-btn border border-border bg-surface px-2 py-1 text-text-main shadow-sm focus:border-navy focus:outline-none min-h-[36px]"
+                          aria-label="Source clearance"
                         >
                           <option value={1}>Level 1: General</option>
                           <option value={2}>Level 2: Technical</option>
                           <option value={3}>Level 3: Confidential</option>
                         </select>
                       ) : (
-                        <span className="text-xs font-medium">
+                        <span className="text-xs font-medium text-text-main">
                           {src.clearance === 1 ? 'General (1)' : src.clearance === 2 ? 'Technical (2)' : 'Confidential (3)'}
                         </span>
                       )}
-                    </td>
+                    </div>
 
-                    <td className="py-3.5 px-4">
+                    <div>
                       {src.masked_count > 0 ? (
                         <span
-                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200"
+                          className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
                           title="Sensitive tokens automatically sanitized before AI pipeline: secrets, passwords, emails, phones"
                         >
-                          <Shield className="w-3.5 h-3.5 text-amber-600" />
+                          <Shield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
                           <span>{src.masked_count} secrets masked</span>
                         </span>
                       ) : (
-                        <span className="text-xs text-slate-400 flex items-center gap-1">
+                        <span className="text-xs text-text-muted flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
                           <span>Clean / Sanitized</span>
                         </span>
                       )}
-                    </td>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
 
-                    <td className="py-3.5 px-4 text-xs text-slate-500">
-                      {new Date(src.added_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+          {/* Desktop Table (>= 768px) */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="sticky top-0 bg-surface z-10 border-b border-border text-[11px] font-semibold text-text-muted uppercase tracking-wider">
+                  <th className="py-3 px-5">Source Name</th>
+                  <th className="py-3 px-4">Item Count</th>
+                  <th className="py-3 px-4">Clearance Level</th>
+                  <th className="py-3 px-4">Masking Protection</th>
+                  <th className="py-3 px-4">Added Time</th>
+                  {canLead && <th className="py-3 px-5 text-right">Actions</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border text-sm">
+                {isLoading ? (
+                  Array.from({ length: 4 }).map((_, i) => <TableRowSkeleton key={i} cols={6} />)
+                ) : totalSourcesCount === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center text-text-muted">
+                      <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-sm font-medium text-text-main">No sources connected yet.</p>
+                      <p className="text-xs text-text-muted mt-1">Connect a GitHub repo or upload meeting notes to begin.</p>
                     </td>
-
-                    {canLead && (
-                      <td className="py-3.5 px-5 text-right">
-                        <button
-                          onClick={() => setDeleteSourceId(src.id)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                          title="Delete source"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </td>
-                    )}
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  sources!.map((src) => (
+                    <tr key={src.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 text-navy dark:text-teal flex-shrink-0">
+                            {getSourceIcon(src.kind)}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-text-main leading-tight">{src.name}</p>
+                            <span className="text-xs text-text-muted uppercase tracking-wider font-mono">
+                              Type: {src.kind}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-4 font-mono text-xs text-text-main">
+                        {src.item_count} {src.kind === 'github' ? 'commits/issues' : 'chunks'}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        {canLead ? (
+                          <select
+                            value={src.clearance}
+                            onChange={(e) =>
+                              updateClearanceMutation.mutate({
+                                id: src.id,
+                                clearance: Number(e.target.value),
+                              })
+                            }
+                            className="text-xs font-medium rounded-btn border border-border bg-surface px-2.5 py-1 text-text-main shadow-sm focus:border-navy focus:outline-none min-h-[32px]"
+                          >
+                            <option value={1}>Level 1: General</option>
+                            <option value={2}>Level 2: Technical</option>
+                            <option value={3}>Level 3: Confidential</option>
+                          </select>
+                        ) : (
+                          <span className="text-xs font-medium text-text-main">
+                            {src.clearance === 1 ? 'General (1)' : src.clearance === 2 ? 'Technical (2)' : 'Confidential (3)'}
+                          </span>
+                        )}
+                      </td>
+
+                      <td className="py-3.5 px-4">
+                        {src.masked_count > 0 ? (
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800"
+                            title="Sensitive tokens automatically sanitized before AI pipeline: secrets, passwords, emails, phones"
+                          >
+                            <Shield className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                            <span>{src.masked_count} secrets masked</span>
+                          </span>
+                        ) : (
+                          <span className="text-xs text-text-muted flex items-center gap-1">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                            <span>Clean / Sanitized</span>
+                          </span>
+                        )}
+                      </td>
+
+                      <td
+                        className="py-3.5 px-4 text-xs text-text-muted"
+                        title={new Date(src.added_at).toLocaleString()}
+                      >
+                        {new Date(src.added_at).toLocaleDateString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </td>
+
+                      {canLead && (
+                        <td className="py-3.5 px-5 text-right">
+                          <button
+                            onClick={() => setDeleteSourceId(src.id)}
+                            className="p-1.5 rounded-btn text-text-muted hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 transition-colors"
+                            title="Delete source"
+                            aria-label="Delete source"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </td>
+                      )}
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Sticky Bottom Bar with Primary "Run analysis" */}
-      <div className="fixed bottom-0 left-60 right-0 bg-white border-t border-slate-200 p-4 px-8 shadow-xl flex items-center justify-between z-10">
-        <div className="flex items-center gap-3 text-xs text-slate-600">
-          <Info className="w-4 h-4 text-navy flex-shrink-0" />
-          <span>
+      <div
+        className="fixed inset-x-0 bg-surface/95 backdrop-blur-md border-t border-border p-3 sm:p-4 px-4 sm:px-8 shadow-card flex items-center justify-between gap-3 z-sticky-bar lg:left-[var(--sidebar-w,72px)]"
+        style={{
+          bottom: 'calc(var(--bottom-nav-h, 0px) + env(safe-area-inset-bottom, 0px))',
+          height: 'var(--action-bar-h, 68px)',
+        }}
+      >
+        <div className="flex items-center gap-2 sm:gap-3 text-xs text-text-muted min-w-0">
+          <Info className="w-4 h-4 text-navy dark:text-teal flex-shrink-0" />
+          <span className="truncate">
             {totalSourcesCount === 0
               ? 'Connect at least one source before running pipeline analysis.'
               : `Ready to analyze ${totalSourcesCount} connected source(s) through 6-stage AI pipeline.`}
@@ -359,8 +470,10 @@ export const SourcesPage: React.FC = () => {
             onClick={() => triggerAnalysisMutation.mutate()}
             isLoading={triggerAnalysisMutation.isPending || isPollingAnalysis}
             leftIcon={<Play className="w-4 h-4" />}
+            className="flex-shrink-0"
           >
-            Run Analysis Pipeline
+            <span className="hidden sm:inline">Run Analysis Pipeline</span>
+            <span className="sm:hidden">Run Analysis</span>
           </Button>
         )}
       </div>
@@ -525,12 +638,14 @@ export const SourcesPage: React.FC = () => {
         maxWidth="xl"
         footer={
           !isPollingAnalysis ? (
-            <div className="w-full flex justify-between items-center">
+            <div className="w-full flex justify-between items-center gap-2">
               {analysisStatus?.error ? (
                 <Button
-                  variant="outline"
+                  variant="primary"
                   size="sm"
                   onClick={() => triggerAnalysisMutation.mutate()}
+                  isLoading={triggerAnalysisMutation.isPending}
+                  leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
                 >
                   Try Again
                 </Button>
@@ -538,8 +653,9 @@ export const SourcesPage: React.FC = () => {
                 <div />
               )}
               <Button
-                variant="primary"
+                variant={analysisStatus?.error ? "outline" : "primary"}
                 size="sm"
+                disabled={Boolean(analysisStatus?.error)}
                 onClick={() => {
                   setIsAnalysisModalOpen(false);
                   navigate('/ledger');
@@ -560,18 +676,37 @@ export const SourcesPage: React.FC = () => {
             />
           ) : (
             <div className="text-center py-6">
-              <Sparkles className="w-8 h-8 text-navy mx-auto animate-spin" />
-              <p className="text-sm text-slate-500 mt-2">Initializing analysis pipeline...</p>
+              <Sparkles className="w-8 h-8 text-navy dark:text-teal mx-auto animate-spin" />
+              <p className="text-sm text-text-muted mt-2">Initializing analysis pipeline...</p>
             </div>
           )}
 
           {analysisStatus?.error && (
-            <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-800 flex items-start gap-2">
-              <AlertCircle className="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <strong className="block font-semibold">Analysis Pipeline Error:</strong>
-                <span>{analysisStatus.error}</span>
+            <div className="p-4 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900 rounded-card text-xs text-rose-800 dark:text-rose-200 space-y-2">
+              <div className="flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 dark:text-rose-400 flex-shrink-0 mt-0.5" />
+                <div className="flex-1">
+                  <strong className="block font-semibold text-rose-900 dark:text-rose-100">
+                    Analysis Incomplete
+                  </strong>
+                  <p className="mt-0.5 text-xs text-rose-800 dark:text-rose-200">
+                    {analysisStatus.error}
+                  </p>
+                </div>
               </div>
+
+              {/* Collapsed Technical Details with Key Scrubbing */}
+              <details className="mt-2 pt-2 border-t border-rose-200/60 dark:border-rose-900/60 text-[11px]">
+                <summary className="cursor-pointer text-rose-700 dark:text-rose-300 font-medium hover:underline select-none">
+                  Show technical details
+                </summary>
+                <div className="mt-2 p-2.5 rounded bg-rose-100/60 dark:bg-rose-950/80 font-mono text-[10px] break-all max-h-32 overflow-y-auto text-rose-900 dark:text-rose-300">
+                  {(analysisStatus.error_details || analysisStatus.error)
+                    ?.replace(/AIza[0-9A-Za-z-_]{35}/g, '[REDACTED_KEY]')
+                    .replace(/sk-[a-zA-Z0-9]{20,}/g, '[REDACTED_KEY]')
+                    .slice(0, 300)}
+                </div>
+              </details>
             </div>
           )}
         </div>

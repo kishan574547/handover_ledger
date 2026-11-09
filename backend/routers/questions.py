@@ -95,12 +95,20 @@ def answer_question(
     subject_key = question.claim.subject_key if question.claim else "exit_interview"
     claim_type = question.claim.type if question.claim else "decision"
 
+    # In demo mode, attribute to Arjun Mehta; in own mode, use generic departing member
+    is_demo = db.query(Source).filter(
+        Source.id.like("src-github-campus%") |
+        (Source.id == "src-chat-export") |
+        (Source.name == "GitHub (campus-club/campus-connect)")
+    ).first() is not None
+    leaver_owner = "Arjun Mehta (Leaver-attested)" if is_demo else "Departing Member (Leaver-attested)"
+
     leaver_claim = Claim(
         type=claim_type,
         text=f"{payload.answer.strip()}",
         status="inferred",  # Inferred with created_by='leaver', displayed as leaver-attested
         clearance=1,
-        owner_name="Arjun Mehta (Leaver-attested)",
+        owner_name=leaver_owner,
         subject_key=subject_key,
         review_state="pending",
         created_by="leaver"

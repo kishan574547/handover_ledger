@@ -71,6 +71,15 @@ export default {
         card: '12px',
         btn: '10px',
       },
+      zIndex: {
+        'content': '1',
+        'sticky-bar': '20',
+        'floating': '30',
+        'sidebar': '40',
+        'drawer': '45',
+        'modal': '50',
+        'toast': '60',
+      },
       boxShadow: {
         soft: 'var(--shadow-soft)',
         card: 'var(--shadow-card)',

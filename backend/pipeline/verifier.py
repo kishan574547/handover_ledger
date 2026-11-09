@@ -1,13 +1,18 @@
 import re
 import json
+import hashlib
 import logging
 from typing import Tuple, Dict, Any, Optional
 from rapidfuzz import fuzz
-from google import genai
-from google.genai import types
+from pydantic import BaseModel
 from backend.config import settings
+from backend.gemini_client import gemini_client, GeminiServiceError
 
 logger = logging.getLogger(__name__)
+
+class VerificationJudgement(BaseModel):
+    support: str = "partial"
+    reason: str = "Independent verification completed."
 
 def normalize_whitespace(text: str) -> str:
     """Collapses consecutive whitespace and trims for robust comparison."""
@@ -44,7 +49,7 @@ Return ONLY a JSON object:
 
 def judge_claim_support_with_gemini(claim_text: str, quote: str, chunk_text: str) -> Tuple[str, str]:
     """
-    Independent Gemini verification check.
+    Independent Gemini verification check using central Gemini client.
     Returns (support_level, reason).
     """
     if not settings.GEMINI_API_KEY:
@@ -59,29 +64,35 @@ def judge_claim_support_with_gemini(claim_text: str, quote: str, chunk_text: str
         else:
             return "not_supported", "Quote does not provide sufficient evidence for the claim."
 
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
-    model_name = settings.GEMINI_MODEL or "gemini-2.5-flash"
-
     prompt = f"CLAIM: {claim_text}\n\nQUOTE: {quote}\n\nCHUNK CONTEXT:\n{chunk_text[:1000]}"
+    cache_key = f"verify_{hashlib.sha256(prompt.encode()).hexdigest()}"
+
     try:
-        response = client.models.generate_content(
-            model=model_name,
+        judgement, meta = gemini_client.generate_json(
             contents=prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=VERIFIER_PROMPT,
-                temperature=0.0,
-                response_mime_type="application/json",
-            )
+            system_instruction=VERIFIER_PROMPT,
+            schema_cls=VerificationJudgement,
+            temperature=0.0,
+            low_thinking=True,
+            cache_key=cache_key
         )
-        data = json.loads(response.text or "{}")
-        support = data.get("support", "partial")
+        support = judgement.support
         if support not in ("supported", "partial", "not_supported"):
             support = "partial"
-        reason = data.get("reason", "Independent verification completed.")
+        reason = judgement.reason or "Independent verification completed."
         return support, reason
     except Exception as exc:
         logger.warning(f"Gemini verification call failed: {exc}")
-        return "partial", f"Verification service fallback: {str(exc)}"
+        # Graceful fallback to fuzzy heuristic if AI service fails
+        norm_claim = normalize_whitespace(claim_text)
+        norm_quote = normalize_whitespace(quote)
+        ratio = fuzz.token_set_ratio(norm_claim, norm_quote)
+        if ratio >= 75:
+            return "supported", "Quote contains direct textual support for the claim (heuristic evaluation)."
+        elif ratio >= 45:
+            return "partial", "Quote provides partial or related context for the claim."
+        else:
+            return "not_supported", f"Verification service fallback: {str(exc)}"
 
 def verify_claim(claim_text: str, quote: str, chunk_text: str) -> Dict[str, Any]:
     """
@@ -117,4 +128,3 @@ def verify_claim(claim_text: str, quote: str, chunk_text: str) -> Dict[str, Any]
         "reason": reason,
         "passage_found": passage_found
     }
-

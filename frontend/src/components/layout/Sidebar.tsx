@@ -8,8 +8,11 @@ import {
   X,
   Shield,
   Layers,
+  Compass,
 } from 'lucide-react';
 import { useRole } from '../../context/RoleContext';
+import { useJudgeGuide } from '../../context/JudgeGuideContext';
+import { useProjectMeta } from '../../context/ProjectMetaContext';
 import { ALL_NAV_ITEMS, NAV_GROUPS, NavItemConfig } from '../../config/navigation';
 import { api } from '../../api/client';
 import { ClearanceBadge } from '../common/Badge';
@@ -24,6 +27,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onCloseMobileDrawer,
 }) => {
   const { role, roleConfig } = useRole();
+  const { openGuide, completedCount, totalSteps } = useJudgeGuide();
+  const { isDemo, isOwn, isEmpty } = useProjectMeta();
 
   // Collapsed state persisted in localStorage (affects screens >= 1024px)
   const [isCollapsed, setIsCollapsed] = useState<boolean>(() => {
@@ -126,6 +131,31 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 </NavLink>
               );
             })}
+
+            {/* Quick Start Guide entry inside System group */}
+            {group.id === 'system' && (
+              <button
+                onClick={() => {
+                  openGuide();
+                  if (onCloseMobileDrawer) onCloseMobileDrawer();
+                }}
+                title={isRail ? `Quick Start Guide (${completedCount}/${totalSteps})` : undefined}
+                className={`group relative flex items-center gap-3 px-3 py-2.5 rounded-btn text-xs sm:text-sm font-medium transition-all min-h-[44px] w-full text-left text-slate-300 hover:bg-navy-light/40 hover:text-white dark:hover:bg-slate-800/50 ${
+                  isRail ? 'justify-center px-2' : ''
+                }`}
+              >
+                <Compass className="w-4 h-4 flex-shrink-0 text-teal group-hover:text-white animate-spin-slow" />
+                {!isRail && <span className="truncate flex-1">Quick Start</span>}
+                {!isRail && (
+                  <span className="flex-shrink-0 px-2 py-0.5 text-[10px] font-bold rounded-full bg-teal/20 text-teal-300 border border-teal/40">
+                    {completedCount}/{totalSteps}
+                  </span>
+                )}
+                {isRail && (
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-teal" />
+                )}
+              </button>
+            )}
           </div>
         );
       })}
@@ -207,7 +237,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* >= 1280px (xl): w-64 full sidebar (or 72px if collapsed) */}
       {/* 1024px - 1279px (lg): 72px rail sidebar */}
       <aside
-        className={`hidden lg:flex flex-col flex-shrink-0 transition-all duration-200 z-30 h-screen sticky top-0 ${
+        className={`hidden lg:flex flex-col flex-shrink-0 transition-all duration-200 z-sidebar h-screen sticky top-0 ${
           isCollapsed ? 'w-[72px]' : 'lg:w-[72px] xl:w-64'
         }`}
       >
@@ -222,7 +252,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* 2. Mobile & Tablet (< 1024px): Off-canvas Drawer */}
       {isMobileDrawerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden overflow-hidden" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-drawer lg:hidden overflow-hidden" role="dialog" aria-modal="true">
           {/* Backdrop */}
           <div
             className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm transition-opacity"
@@ -243,7 +273,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   </div>
                   <div>
                     <h2 className="font-bold text-sm text-white">HandoverLedger</h2>
-                    <p className="text-[10px] text-teal-300 font-medium">Campus Connect</p>
+                    <p className="text-[10px] text-teal-300 font-medium">
+                      {isDemo ? 'Campus Connect' : isOwn ? 'Your project' : 'Workspace'}
+                    </p>
                   </div>
                 </div>
                 <button
@@ -256,12 +288,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
 
               {/* Compact project chip for mobile */}
-              <div className="px-4 py-2.5 bg-navy-dark/40 dark:bg-slate-950/30 border-b border-navy-light/20 text-xs text-slate-300">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">Current Handover</span>
-                <span className="font-medium text-white truncate block">
-                  Campus Connect • Arjun Mehta
-                </span>
-              </div>
+              {!isEmpty && (
+                <div className="px-4 py-2.5 bg-navy-dark/40 dark:bg-slate-950/30 border-b border-navy-light/20 text-xs text-slate-300">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Current Handover</span>
+                  <span className="font-medium text-white truncate block">
+                    {isDemo ? 'Campus Connect • Arjun Mehta' : 'Your project'}
+                  </span>
+                </div>
+              )}
 
               {/* Navigation links (Full mode for mobile drawer) */}
               {renderNavList(false)}

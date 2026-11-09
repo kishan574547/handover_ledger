@@ -12,7 +12,19 @@ FRONTEND_DIR = ROOT_DIR / "frontend"
 SCREENSHOT_DIR = ROOT_DIR / "docs" / "screenshots"
 SCREENSHOT_DIR.mkdir(parents=True, exist_ok=True)
 
-VIEWPORTS = [360, 390, 768, 1024, 1280, 1536, 1920]
+VIEWPORT_CONFIGS = [
+    {"name": "360", "width": 360, "height": 740, "desc": "360px Mobile Portrait"},
+    {"name": "390", "width": 390, "height": 844, "desc": "390px Mobile Portrait"},
+    {"name": "390-landscape", "width": 844, "height": 390, "desc": "390px Mobile Landscape"},
+    {"name": "768", "width": 768, "height": 1024, "desc": "768px Tablet Portrait"},
+    {"name": "820", "width": 820, "height": 1180, "desc": "820px Tablet Portrait"},
+    {"name": "820-landscape", "width": 1180, "height": 820, "desc": "820px Tablet Landscape"},
+    {"name": "1024", "width": 1024, "height": 768, "desc": "1024px Desktop"},
+    {"name": "1280", "width": 1280, "height": 800, "desc": "1280px Desktop"},
+    {"name": "1440", "width": 1440, "height": 900, "desc": "1440px Desktop"},
+    {"name": "1920", "width": 1920, "height": 1080, "desc": "1920px Full HD"},
+    {"name": "2560", "width": 2560, "height": 1440, "desc": "2560px QHD Ultrawide"},
+]
 
 PAGES = [
     ("/", "dashboard"),
@@ -114,8 +126,10 @@ def main():
                 mode_dir = SCREENSHOT_DIR / mode
                 mode_dir.mkdir(parents=True, exist_ok=True)
 
-                for width in VIEWPORTS:
-                    height = 900 if width >= 1024 else 844
+                for vp in VIEWPORT_CONFIGS:
+                    width = vp["width"]
+                    height = vp["height"]
+                    vname = vp["name"]
                     page.set_viewport_size({"width": width, "height": height})
 
                     # Toggle theme class
@@ -124,7 +138,7 @@ def main():
                     else:
                         page.evaluate("() => { document.documentElement.classList.remove('dark'); localStorage.setItem('handover_theme', 'light'); }")
 
-                    width_dir = mode_dir / str(width)
+                    width_dir = mode_dir / vname
                     width_dir.mkdir(parents=True, exist_ok=True)
 
                     for path, name in PAGES:
@@ -139,7 +153,7 @@ def main():
 
                         if has_h_scroll:
                             diff = page.evaluate("() => document.documentElement.scrollWidth - window.innerWidth")
-                            issue_msg = f"Horizontal scroll overflow of {diff}px on {path} at {width}px ({mode})"
+                            issue_msg = f"Horizontal scroll overflow of {diff}px on {path} at {width}px ({mode}, {vname})"
                             print(f"  [OVERFLOW WARNING] {issue_msg}")
                             issues_found.append(issue_msg)
 
@@ -147,7 +161,7 @@ def main():
                         out_path = width_dir / f"{name}.png"
                         page.screenshot(path=str(out_path), full_page=False)
 
-                    print(f"  Captured all {len(PAGES)} pages at {width}px wide ({mode}).")
+                    print(f"  Captured all {len(PAGES)} pages at {vp['desc']} ({mode}).")
 
             # 5. Interactive Journey Verification on Mobile (390px)
             print("\n--- Verifying Interactive Journey on 390px Mobile ---")
@@ -212,3 +226,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

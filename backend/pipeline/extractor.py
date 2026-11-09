@@ -1,11 +1,8 @@
-import json
-import time
+import hashlib
 import logging
 from typing import List, Dict, Any, Optional
-from google import genai
-from google.genai import types
-from backend.config import settings
 from backend.schemas import ExtractedClaimsBatch, ExtractedClaimItem
+from backend.gemini_client import gemini_client, GeminiServiceError
 
 logger = logging.getLogger(__name__)
 
@@ -29,50 +26,24 @@ Return ONLY a valid JSON object matching:
 
 def extract_claims_from_chunk_batch(chunks: List[Dict[str, str]]) -> List[ExtractedClaimItem]:
     """
-    Extracts structured claims from a batch of chunks using Gemini.
-    Retries on rate-limit / transient errors with exponential backoff.
+    Extracts structured claims from a batch of chunks using central Gemini client.
+    Enforces low thinking level where supported to save quota and latency.
     """
-    if not settings.GEMINI_API_KEY:
-        raise RuntimeError("GEMINI_API_KEY is not configured in backend/.env. Cannot run live AI extraction.")
-
     # Format chunks into prompt payload
     chunk_payloads = []
     for c in chunks:
         chunk_payloads.append(f"--- CHUNK [{c.get('location_label', 'Unknown')}] ---\n{c.get('text', '')}")
     user_prompt = "\n\n".join(chunk_payloads)
 
-    client = genai.Client(api_key=settings.GEMINI_API_KEY)
-    model_name = settings.GEMINI_MODEL or "gemini-2.5-flash"
+    cache_key = f"extract_{hashlib.sha256(user_prompt.encode()).hexdigest()}"
 
-    retries = 3
-    delay = 2.0
-    for attempt in range(retries):
-        try:
-            response = client.models.generate_content(
-                model=model_name,
-                contents=f"Extract factual project claims from the following source chunks:\n\n{user_prompt}",
-                config=types.GenerateContentConfig(
-                    system_instruction=SYSTEM_PROMPT,
-                    temperature=0.1,
-                    response_mime_type="application/json",
-                )
-            )
+    batch, meta = gemini_client.generate_json(
+        contents=f"Extract factual project claims from the following source chunks:\n\n{user_prompt}",
+        system_instruction=SYSTEM_PROMPT,
+        schema_cls=ExtractedClaimsBatch,
+        temperature=0.1,
+        low_thinking=True,
+        cache_key=cache_key
+    )
 
-            raw_json = response.text or "{}"
-            parsed = json.loads(raw_json)
-            batch = ExtractedClaimsBatch.model_validate(parsed)
-            return batch.claims
-
-        except Exception as exc:
-            err_str = str(exc)
-            logger.warning(f"Gemini extract attempt {attempt+1} failed: {err_str}")
-            if "429" in err_str or "quota" in err_str.lower() or "resource exhausted" in err_str.lower():
-                if attempt < retries - 1:
-                    time.sleep(delay)
-                    delay *= 2
-                    continue
-            if attempt == retries - 1:
-                raise RuntimeError(f"Gemini API extraction failed: {err_str}")
-
-    return []
-
+    return batch.claims

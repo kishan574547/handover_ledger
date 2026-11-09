@@ -54,6 +54,7 @@ def run_analysis_pipeline_sync(db: Session, role: str = "lead") -> Dict[str, Any
     with analysis_lock:
         analysis_status["is_running"] = True
         analysis_status["error"] = None
+        analysis_status["error_details"] = None
         analysis_status["percent"] = 0
         for s in analysis_status["steps"]:
             s["status"] = "pending"
@@ -208,12 +209,14 @@ def run_analysis_pipeline_sync(db: Session, role: str = "lead") -> Dict[str, Any
 
     except Exception as exc:
         db.rollback()
-        err_msg = str(exc)
-        logger.error(f"Analysis pipeline failed: {err_msg}")
+        from backend.gemini_client import map_gemini_error
+        friendly_msg, err_type, sanitized_detail = map_gemini_error(exc)
+        logger.error(f"Analysis pipeline failed ({err_type}): {sanitized_detail}")
         with analysis_lock:
             analysis_status["is_running"] = False
-            analysis_status["error"] = err_msg
-            analysis_status["current_step"] = f"Failed: {err_msg[:60]}"
+            analysis_status["error"] = friendly_msg
+            analysis_status["error_details"] = sanitized_detail
+            analysis_status["current_step"] = f"Failed: {friendly_msg}"
         raise exc
 
 def run_analysis_in_background(role: str = "lead"):

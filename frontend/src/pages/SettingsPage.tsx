@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Sun,
   Moon,
@@ -126,6 +126,18 @@ export const SettingsPage: React.FC = () => {
     onError: (err: any) => error('Reset Failed', err.message),
   });
 
+  // Fetch AI health status
+  const {
+    data: aiHealth,
+    isLoading: isAIHealthLoading,
+    refetch: refetchAIHealth,
+    isFetching: isAIHealthFetching,
+  } = useQuery({
+    queryKey: ['ai-health'],
+    queryFn: api.getAIHealth,
+    staleTime: 15000,
+  });
+
   const handleClearSettings = () => {
     localStorage.removeItem('handover_theme');
     localStorage.removeItem('handover_density');
@@ -137,7 +149,7 @@ export const SettingsPage: React.FC = () => {
     localStorage.removeItem('handover_sidebar_collapsed');
     document.documentElement.style.fontSize = '100%';
     document.documentElement.classList.remove('density-compact', 'force-reduced-motion');
-    setTheme('system');
+    setTheme('light');
     setDensity('comfortable');
     setTextSize(100);
     setReduceMotion(false);
@@ -172,11 +184,10 @@ export const SettingsPage: React.FC = () => {
             <label className="text-xs font-semibold text-text-muted uppercase tracking-wider block mb-2">
               Color Theme
             </label>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
                 { id: 'light' as Theme, label: 'Light Mode', icon: Sun, desc: 'Clean high-contrast daytime interface' },
                 { id: 'dark' as Theme, label: 'Dark Mode', icon: Moon, desc: 'Deep navy background for low light' },
-                { id: 'system' as Theme, label: 'System Default', icon: Laptop, desc: 'Follows your operating system theme' },
               ].map((item) => {
                 const Icon = item.icon;
                 const isSelected = theme === item.id;
@@ -333,14 +344,24 @@ export const SettingsPage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <h4 className="text-sm font-semibold text-text-main">Show Judge Quick-Start Guide</h4>
-                <p className="text-xs text-text-muted">Floating interactive checklist tracking full handover journey.</p>
+                <p className="text-xs text-text-muted">Top bar interactive checklist tracking full handover journey.</p>
               </div>
-              <input
-                type="checkbox"
-                checked={showJudgeGuide}
-                onChange={(e) => handleJudgeGuideToggle(e.target.checked)}
-                className="w-4 h-4 rounded text-navy dark:text-teal focus:ring-navy cursor-pointer"
-              />
+              <div className="flex items-center gap-3">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs h-7 px-2.5"
+                  onClick={() => window.dispatchEvent(new CustomEvent('open_judge_guide'))}
+                >
+                  Open Checklist
+                </Button>
+                <input
+                  type="checkbox"
+                  checked={showJudgeGuide}
+                  onChange={(e) => handleJudgeGuideToggle(e.target.checked)}
+                  className="w-4 h-4 rounded text-navy dark:text-teal focus:ring-navy cursor-pointer"
+                />
+              </div>
             </div>
           </div>
         </CardContent>
@@ -397,12 +418,78 @@ export const SettingsPage: React.FC = () => {
             <strong>Pre-Ingestion Regex Masking:</strong> Sensitive patterns like API keys (AIza..., sk-..., ghp_...), passwords, private keys, emails, and phone numbers are automatically sanitized into <code className="font-mono bg-emerald-100 dark:bg-emerald-900/60 px-1 py-0.5 rounded">[MASKED:type]</code> before any AI call.
           </div>
           <div className="p-3 rounded-btn bg-slate-50 dark:bg-slate-900/40 border border-border text-text-muted">
-            <strong>Synthetic Demo Project:</strong> All names, phone numbers, and credentials in the &quot;Campus Connect&quot; demo are synthetic and intended for local testing only.
+            <strong>Synthetic Demo Workspace:</strong> All names, phone numbers, and credentials in the evaluation demo are synthetic and intended for local testing only.
           </div>
         </CardContent>
       </Card>
 
-      {/* 5. About */}
+      {/* 5. AI Service & Model Integration */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-navy dark:text-teal" />
+              <span>AI Service &amp; Model Integration</span>
+            </CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetchAIHealth()}
+              isLoading={isAIHealthFetching}
+              leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
+              title="Test AI connection"
+            >
+              Test Connection
+            </Button>
+          </div>
+          <CardDescription>
+            Live status of Google GenAI Gemini connection, active model, and dynamic fallback routing.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-btn border border-border bg-slate-50/50 dark:bg-slate-900/40">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-text-muted font-semibold uppercase text-[10px]">Status:</span>
+                {isAIHealthLoading ? (
+                  <span className="text-text-muted">Checking connection...</span>
+                ) : aiHealth?.ok ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    Connected
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800">
+                    <span className="w-2 h-2 rounded-full bg-rose-500" />
+                    Problem
+                  </span>
+                )}
+              </div>
+              <div className="text-text-muted text-[11px]">
+                {aiHealth?.ok ? (
+                  <span>
+                    Model in use: <strong className="text-text-main font-mono">{aiHealth.model_in_use}</strong>{' '}
+                    {aiHealth.fallback_used && (
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold">(Fallback Model)</span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="text-rose-700 dark:text-rose-300">
+                    Error: {aiHealth?.error_type === 'missing_api_key' ? 'GEMINI_API_KEY is not configured' : aiHealth?.error_type || 'Unable to reach AI service'}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            <div className="text-[11px] text-text-muted sm:text-right">
+              <span className="block font-medium text-text-main">Automatic Fallback Routing</span>
+              <span className="text-[10px]">Primary &rarr; Fallback on 404 / 429</span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 6. About */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -415,7 +502,7 @@ export const SettingsPage: React.FC = () => {
             <strong className="text-text-main">Version:</strong> 1.2.0 (Hackathon Edition)
           </p>
           <p>
-            <strong className="text-text-main">Stack:</strong> React 18, Vite, TypeScript, Tailwind CSS, TanStack Query, FastAPI, SQLAlchemy 2, SQLite / Supabase, Google GenAI (Gemini 2.5 Flash), RapidFuzz.
+            <strong className="text-text-main">Stack:</strong> React 18, Vite, TypeScript, Tailwind CSS, TanStack Query, FastAPI, SQLAlchemy 2, SQLite / Supabase, Google GenAI (Gemini), RapidFuzz.
           </p>
           <p className="pt-1 text-[11px] text-teal font-medium">
             Built with AI assistance (Antigravity, Gemini).

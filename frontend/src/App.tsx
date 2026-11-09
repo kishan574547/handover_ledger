@@ -4,6 +4,8 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
 import { ToastProvider } from './context/ToastContext';
 import { RoleProvider } from './context/RoleContext';
+import { JudgeGuideProvider } from './context/JudgeGuideContext';
+import { ProjectMetaProvider } from './context/ProjectMetaContext';
 import { Layout } from './components/layout/Layout';
 
 import { DashboardPage } from './pages/DashboardPage';
@@ -37,24 +39,28 @@ export const App: React.FC = () => {
         <ToastProvider>
           <BrowserRouter>
             <RoleProvider>
-              <ErrorBoundary>
-                <Routes>
-                  <Route path="/" element={<Layout />}>
-                    <Route index element={<DashboardPage />} />
-                    <Route path="sources" element={<SourcesPage />} />
-                    <Route path="ledger" element={<ClaimLedgerPage />} />
-                    <Route path="timeline" element={<TimelinePage />} />
-                    <Route path="interview" element={<ExitInterviewPage />} />
-                    <Route path="review" element={<ReviewApprovePage />} />
-                    <Route path="handover" element={<HandoverPage />} />
-                    <Route path="ask" element={<AskHandoverPage />} />
-                    <Route path="activity" element={<ActivityPage />} />
-                    <Route path="how-it-works" element={<HowItWorksPage />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="*" element={<NotFoundPage />} />
-                  </Route>
-                </Routes>
-              </ErrorBoundary>
+              <ProjectMetaProvider>
+                <JudgeGuideProvider>
+                  <ErrorBoundary>
+                    <Routes>
+                      <Route path="/" element={<Layout />}>
+                        <Route index element={<DashboardPage />} />
+                        <Route path="sources" element={<SourcesPage />} />
+                        <Route path="ledger" element={<ClaimLedgerPage />} />
+                        <Route path="timeline" element={<TimelinePage />} />
+                        <Route path="interview" element={<ExitInterviewPage />} />
+                        <Route path="review" element={<ReviewApprovePage />} />
+                        <Route path="handover" element={<HandoverPage />} />
+                        <Route path="ask" element={<AskHandoverPage />} />
+                        <Route path="activity" element={<ActivityPage />} />
+                        <Route path="how-it-works" element={<HowItWorksPage />} />
+                        <Route path="settings" element={<SettingsPage />} />
+                        <Route path="*" element={<NotFoundPage />} />
+                      </Route>
+                    </Routes>
+                  </ErrorBoundary>
+                </JudgeGuideProvider>
+              </ProjectMetaProvider>
             </RoleProvider>
           </BrowserRouter>
         </ToastProvider>

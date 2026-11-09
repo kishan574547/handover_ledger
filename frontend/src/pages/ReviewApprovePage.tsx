@@ -19,6 +19,7 @@ import { api } from '../api/client';
 import { ReviewSummary, HandoverVersionItem } from '../types';
 import { useRole } from '../context/RoleContext';
 import { useToast } from '../context/ToastContext';
+import { useProjectMeta } from '../context/ProjectMetaContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
@@ -26,6 +27,7 @@ import { Modal } from '../components/common/Modal';
 export const ReviewApprovePage: React.FC = () => {
   const navigate = useNavigate();
   const { canLead, role } = useRole();
+  const { isDemo } = useProjectMeta();
   const { success, error, warning } = useToast();
   const queryClient = useQueryClient();
 
@@ -111,11 +113,11 @@ export const ReviewApprovePage: React.FC = () => {
 
   if (!canLead) {
     return (
-      <Card className="p-12 text-center text-slate-500">
+      <Card className="p-12 text-center text-text-muted border-border">
         <AlertTriangle className="w-8 h-8 text-amber-500 mx-auto mb-2" />
-        <h3 className="text-base font-semibold text-slate-900">Restricted to Project Lead</h3>
-        <p className="text-xs text-slate-500 mt-1">
-          Only the Project Lead (Priya Nair) has administrative permission to review checklists, save versions, and release the handover.
+        <h3 className="text-base font-semibold text-text-main">Restricted to Project Lead</h3>
+        <p className="text-xs text-text-muted mt-1">
+          Only the Project Lead{isDemo ? ' (Priya Nair)' : ''} has administrative permission to review checklists, save versions, and release the handover.
         </p>
       </Card>
     );
@@ -125,17 +127,17 @@ export const ReviewApprovePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Standard Page Header Pattern */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Review & Handover Approval</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <h2 className="page-title text-text-main">Review &amp; Handover Approval</h2>
+          <p className="text-sm text-text-muted mt-1">
             Audit readiness checklist, manage release versions, and approve the authoritative handover for incoming members.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
           <Button
             variant="outline"
             size="sm"
@@ -168,12 +170,12 @@ export const ReviewApprovePage: React.FC = () => {
 
       {/* Green Approved Success Banner (if approved) */}
       {isApproved && (
-        <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-card flex items-center justify-between gap-4">
+        <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-card flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <CheckCircle2 className="w-6 h-6 text-emerald-600 flex-shrink-0" />
+            <CheckCircle2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400 flex-shrink-0" />
             <div>
-              <h4 className="text-sm font-semibold text-emerald-950">Handover Approved and Released</h4>
-              <p className="text-xs text-emerald-800 mt-0.5">
+              <h4 className="text-sm font-semibold text-emerald-950 dark:text-emerald-200">Handover Approved and Released</h4>
+              <p className="text-xs text-emerald-800 dark:text-emerald-300 mt-0.5">
                 The handover is now officially released. Incoming developers and coordinators can view sections within their clearance.
               </p>
             </div>
@@ -187,30 +189,30 @@ export const ReviewApprovePage: React.FC = () => {
       {/* Readiness Checklist Card */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold text-slate-900">
+          <CardTitle className="text-base font-semibold text-text-main">
             Handover Release Readiness Checklist
           </CardTitle>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold text-slate-500 uppercase">Readiness Score:</span>
-            <span className="text-sm font-bold text-navy bg-navy/10 px-2 py-0.5 rounded">
+            <span className="text-xs font-semibold text-text-muted uppercase">Readiness Score:</span>
+            <span className="text-sm font-bold text-navy dark:text-teal bg-navy/10 dark:bg-teal/20 px-2 py-0.5 rounded">
               {summary?.readiness_percent || 0}%
             </span>
           </div>
         </CardHeader>
-        <CardContent className="divide-y divide-slate-100 p-0">
+        <CardContent className="divide-y divide-border p-0">
           {summary?.checklist.map((item) => (
-            <div key={item.id} className="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+            <div key={item.id} className="p-4 flex items-center justify-between hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 flex-shrink-0">
                   {item.passed ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                    <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                   ) : (
-                    <AlertTriangle className="w-5 h-5 text-amber-500" />
+                    <AlertTriangle className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                   )}
                 </div>
                 <div>
-                  <h4 className="text-sm font-semibold text-slate-900">{item.title}</h4>
-                  <p className="text-xs text-slate-500 mt-0.5">{item.message}</p>
+                  <h4 className="text-sm font-semibold text-text-main">{item.title}</h4>
+                  <p className="text-xs text-text-muted mt-0.5">{item.message}</p>
                 </div>
               </div>
 
@@ -227,73 +229,128 @@ export const ReviewApprovePage: React.FC = () => {
       {/* Version History Table with Compare */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-base font-semibold text-slate-900">
+          <CardTitle className="text-base font-semibold text-text-main">
             Handover Version Snapshots ({versions?.length || 0})
           </CardTitle>
-          <span className="text-xs text-slate-500">
+          <span className="text-xs text-text-muted">
             Immutable snapshots of claims and verified records across review stages.
           </span>
         </CardHeader>
-        <CardContent className="p-0 overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-slate-50 text-[11px] font-semibold text-slate-600 uppercase tracking-wider border-b border-slate-200">
-                <th className="py-3 px-5">Version #</th>
-                <th className="py-3 px-4">Created Time</th>
-                <th className="py-3 px-4">Audit Note</th>
-                <th className="py-3 px-4">Status</th>
-                <th className="py-3 px-5 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 text-sm">
-              {!versions || versions.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="py-8 text-center text-slate-400 text-xs">
-                    No version snapshots saved yet. Click &quot;Save Draft Version&quot; to freeze a snapshot.
-                  </td>
-                </tr>
-              ) : (
-                versions.map((ver, idx) => (
-                  <tr key={ver.id} className="hover:bg-slate-50">
-                    <td className="py-3 px-5 font-mono font-bold text-navy">
+        <CardContent className="p-0">
+          {/* Mobile Stacked Cards (< 768px) */}
+          <div className="md:hidden divide-y divide-border">
+            {!versions || versions.length === 0 ? (
+              <div className="py-8 text-center text-text-muted text-xs p-4">
+                No version snapshots saved yet. Click &quot;Save Draft Version&quot; to freeze a snapshot.
+              </div>
+            ) : (
+              versions.map((ver, idx) => (
+                <div key={ver.id} className="p-4 space-y-2 hover:bg-slate-50/50 dark:hover:bg-slate-800/40 transition-colors">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="font-mono font-bold text-xs text-navy dark:text-teal">
                       v{ver.number}.0
-                    </td>
-                    <td className="py-3 px-4 text-xs text-slate-600">
-                      {new Date(ver.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                    </td>
-                    <td className="py-3 px-4 text-xs text-slate-800">
-                      {ver.note || 'No note recorded'}
-                    </td>
-                    <td className="py-3 px-4">
-                      <span
-                        className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold uppercase ${
-                          ver.status === 'approved'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : ver.status === 'sent_back'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-slate-100 text-slate-700'
-                        }`}
+                    </span>
+                    <span
+                      className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                        ver.status === 'approved'
+                          ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                          : ver.status === 'sent_back'
+                          ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                          : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                      }`}
+                    >
+                      {ver.status}
+                    </span>
+                  </div>
+                  <p className="text-xs text-text-main">
+                    {ver.note || 'No note recorded'}
+                  </p>
+                  <div className="flex items-center justify-between text-[11px] text-text-muted pt-2 border-t border-border">
+                    <span title={new Date(ver.created_at).toLocaleString()}>
+                      {new Date(ver.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                    </span>
+                    {versions.length > 1 && idx < versions.length - 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleOpenDiff(versions[idx + 1].number, ver.number)}
+                        leftIcon={<GitCompare className="w-3.5 h-3.5" />}
+                        className="text-xs h-8 px-2"
                       >
-                        {ver.status}
-                      </span>
-                    </td>
-                    <td className="py-3 px-5 text-right">
-                      {versions.length > 1 && idx < versions.length - 1 && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleOpenDiff(versions[idx + 1].number, ver.number)}
-                          leftIcon={<GitCompare className="w-3.5 h-3.5" />}
-                        >
-                          Compare with v{versions[idx + 1].number}
-                        </Button>
-                      )}
+                        Compare v{versions[idx + 1].number}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table (>= 768px) */}
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="sticky top-0 bg-surface z-10 text-[11px] font-semibold text-text-muted uppercase tracking-wider border-b border-border">
+                  <th className="py-3 px-5">Version #</th>
+                  <th className="py-3 px-4">Created Time</th>
+                  <th className="py-3 px-4">Audit Note</th>
+                  <th className="py-3 px-4">Status</th>
+                  <th className="py-3 px-5 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border text-sm">
+                {!versions || versions.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-text-muted text-xs">
+                      No version snapshots saved yet. Click &quot;Save Draft Version&quot; to freeze a snapshot.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  versions.map((ver, idx) => (
+                    <tr key={ver.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 px-5 font-mono font-bold text-navy dark:text-teal">
+                        v{ver.number}.0
+                      </td>
+                      <td
+                        className="py-3 px-4 text-xs text-text-muted"
+                        title={new Date(ver.created_at).toLocaleString()}
+                      >
+                        {new Date(ver.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                      </td>
+                      <td className="py-3 px-4 text-xs text-text-main">
+                        {ver.note || 'No note recorded'}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={`inline-block px-2 py-0.5 rounded text-[11px] font-semibold uppercase ${
+                            ver.status === 'approved'
+                              ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300'
+                              : ver.status === 'sent_back'
+                              ? 'bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300'
+                              : 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                          }`}
+                        >
+                          {ver.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-5 text-right">
+                        {versions.length > 1 && idx < versions.length - 1 && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleOpenDiff(versions[idx + 1].number, ver.number)}
+                            leftIcon={<GitCompare className="w-3.5 h-3.5" />}
+                          >
+                            Compare with v{versions[idx + 1].number}
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </CardContent>
       </Card>
 

@@ -124,7 +124,23 @@ bash scripts/check_secrets.sh
 
 ---
 
-## 6. Architecture & Tech Stack
+## 6. AI Model Configuration & Resilient Fallback
+
+The backend uses a centralized Gemini client (`backend/gemini_client.py`) with automatic model rotation, exponential backoff, and Pydantic schema validation.
+
+Configure the models in `backend/.env`:
+```bash
+GEMINI_API_KEY=your_gemini_api_key_here
+GEMINI_MODEL=gemini-3.8-flash
+GEMINI_FALLBACK_MODELS=gemini-3.5-flash-lite
+```
+- **Primary Model** (`GEMINI_MODEL`): Defaults to `gemini-3.8-flash`.
+- **Fallback Models** (`GEMINI_FALLBACK_MODELS`): Comma-separated list (defaults to `gemini-3.5-flash-lite`). If the primary model returns 404 (model retired) or 429 (rate/quota limit), the client automatically rotates to the next available model.
+- **Health Check**: `GET /api/health/ai` verifies model connectivity without leaking keys.
+
+---
+
+## 7. Architecture & Tech Stack
 
 - **Frontend**: React 18, Vite, TypeScript, Tailwind CSS, TanStack Query, React Router, Lucide icons, `@fontsource/inter`, `@fontsource/jetbrains-mono`.
 - **Backend**: Python 3.11+, FastAPI, SQLAlchemy 2, SQLite / Supabase PostgreSQL, Pydantic v2, Google GenAI Gemini, RapidFuzz.

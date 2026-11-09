@@ -236,6 +236,7 @@ class AnalysisStatusOut(BaseModel):
     current_step: str
     percent: int
     error: Optional[str] = None
+    error_details: Optional[str] = None
     steps: List[StepProgress]
 
 # --- AI Extraction Schemas (Gemini Structured Output) ---

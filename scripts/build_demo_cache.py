@@ -426,7 +426,8 @@ def build_cache():
     processed_evidence = []
     claim_by_id = {}
 
-    for c_def in candidate_claims:
+    for idx, c_def in enumerate(candidate_claims):
+        print(f"  [{idx+1}/{len(candidate_claims)}] Verifying claim {c_def['id']}...", flush=True)
         # Find chunk
         chunk = None
         for chk in all_chunks:

@@ -14,7 +14,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({ onOpenMore }) => {
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-40 bg-surface border-t border-border shadow-lg md:hidden flex items-center justify-around h-16 px-1 pb-[env(safe-area-inset-bottom)] bottom-nav select-none"
+      className="fixed bottom-0 inset-x-0 z-sticky-bar bg-surface border-t border-border shadow-lg md:hidden flex items-center justify-around h-16 px-1 pb-[env(safe-area-inset-bottom)] bottom-nav select-none"
       aria-label="Mobile navigation"
     >
       {navItems.map((item) => {

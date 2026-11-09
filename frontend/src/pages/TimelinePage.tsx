@@ -65,17 +65,17 @@ export const TimelinePage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header & Filter Chips */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      {/* Standard Page Header Pattern */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-          <h2 className="text-2xl font-bold text-slate-900 tracking-tight">Project Evolution Timeline</h2>
-          <p className="text-sm text-slate-500 mt-1">
+          <h2 className="page-title text-text-main">Project Evolution Timeline</h2>
+          <p className="text-sm text-text-muted mt-1">
             Chronological log of architecture decisions, changes, and open milestones ({roleConfig.clearanceLabel}).
           </p>
         </div>
 
         {/* Filter Chips */}
-        <div className="flex items-center gap-1.5 bg-white p-1 rounded-xl border border-slate-200">
+        <div className="flex flex-wrap items-center gap-1.5 bg-surface p-1 rounded-card border border-border self-start sm:self-auto">
           {[
             { id: 'all', label: 'All Milestones' },
             { id: 'decision', label: 'Decisions' },
@@ -87,10 +87,10 @@ export const TimelinePage: React.FC = () => {
               <button
                 key={chip.id}
                 onClick={() => setFilterType(chip.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-btn text-xs font-medium transition-all min-h-[32px] ${
                   isActive
-                    ? 'bg-navy text-white font-semibold shadow-sm'
-                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                    ? 'bg-navy text-white dark:bg-teal dark:text-white font-semibold shadow-sm'
+                    : 'text-text-muted hover:text-text-main hover:bg-slate-100 dark:hover:bg-slate-800'
                 }`}
               >
                 {chip.label}
@@ -110,11 +110,11 @@ export const TimelinePage: React.FC = () => {
 
       {/* Timeline Stream */}
       {isLoading ? (
-        <div className="p-12 text-center text-slate-400 animate-pulse">Loading timeline milestones...</div>
+        <div className="p-12 text-center text-text-muted animate-pulse">Loading timeline milestones...</div>
       ) : Object.keys(groupedByMonth).length === 0 ? (
-        <Card className="p-12 text-center text-slate-400">
+        <Card className="p-12 text-center text-text-muted">
           <Clock className="w-8 h-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm font-medium text-slate-600">No timeline entries found for the selected filter.</p>
+          <p className="text-sm font-medium text-text-main">No timeline entries found for the selected filter.</p>
         </Card>
       ) : (
         <div className="space-y-8">
@@ -122,62 +122,62 @@ export const TimelinePage: React.FC = () => {
             <div key={month} className="space-y-4">
               {/* Month Header Banner */}
               <div className="sticky top-0 z-10 flex items-center gap-3 bg-background/90 backdrop-blur-sm py-2">
-                <span className="px-3 py-1 rounded-full bg-navy text-white text-xs font-semibold shadow-sm">
+                <span className="px-3 py-1 rounded-full bg-navy dark:bg-teal text-white text-xs font-semibold shadow-sm">
                   {month}
                 </span>
-                <div className="flex-1 h-px bg-slate-200" />
-                <span className="text-xs text-slate-400 font-mono">{items.length} items</span>
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-xs text-text-muted font-mono">{items.length} items</span>
               </div>
 
               {/* Vertical Timeline Items */}
-              <div className="relative pl-6 border-l-2 border-slate-200 ml-4 space-y-4">
+              <div className="relative pl-6 border-l-2 border-border ml-4 space-y-4">
                 {items.map((item) => {
                   const isAmber = item.is_unresolved;
                   return (
                     <div
                       key={item.id}
-                      className={`relative p-4 rounded-xl border transition-all ${
+                      className={`relative p-4 rounded-card border transition-all ${
                         isAmber
-                          ? 'bg-amber-50/40 border-amber-300 shadow-sm'
-                          : 'bg-white border-slate-200 shadow-soft'
+                          ? 'bg-amber-50/40 dark:bg-amber-950/20 border-amber-300 dark:border-amber-700/60 shadow-sm'
+                          : 'bg-surface border-border shadow-soft'
                       }`}
                     >
                       {/* Timeline Node Dot */}
                       <div
-                        className={`absolute -left-[31px] top-4 w-3.5 h-3.5 rounded-full border-2 border-white ${
-                          isAmber ? 'bg-amber-500 ring-2 ring-amber-200' : 'bg-navy ring-2 ring-slate-200'
+                        className={`absolute -left-[31px] top-4 w-3.5 h-3.5 rounded-full border-2 border-surface ${
+                          isAmber ? 'bg-amber-500 ring-2 ring-amber-200 dark:ring-amber-900' : 'bg-navy dark:bg-teal ring-2 ring-border'
                         }`}
                       />
 
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
                         <div className="space-y-1">
                           <div className="flex items-center gap-2">
-                            <span className="text-xs font-mono text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                            <span className="text-xs font-mono text-text-muted bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-border">
                               {item.date}
                             </span>
-                            <span className="text-xs font-semibold text-slate-600 capitalize">
+                            <span className="text-xs font-semibold text-text-muted capitalize">
                               [{item.type.replace('_', ' ')}]
                             </span>
                             {item.is_unresolved && (
-                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-950/60 px-2 py-0.5 rounded border border-amber-300 dark:border-amber-800">
                                 <AlertTriangle className="w-3 h-3" />
                                 <span>Unresolved</span>
                               </span>
                             )}
                           </div>
 
-                          <h3 className="text-sm font-semibold text-slate-900 mt-1">{item.title}</h3>
+                          <h3 className="text-sm font-semibold text-text-main mt-1">{item.title}</h3>
 
                           {item.evidence_snippet && (
-                            <p className="text-xs font-mono text-slate-600 bg-slate-50 p-2 rounded border border-slate-100 mt-2 line-clamp-2">
+                            <p className="text-xs font-mono text-text-main bg-slate-50 dark:bg-slate-800/40 p-2 rounded border border-border mt-2 line-clamp-2">
                               &quot;{item.evidence_snippet}&quot;
                             </p>
                           )}
 
-                          <div className="flex items-center gap-2 text-xs text-slate-500 pt-1">
+                          <div className="flex items-center gap-2 text-xs text-text-muted pt-1">
                             {item.owner_name && (
                               <span>
-                                Attribution: <strong>{item.owner_name}</strong>
+                                Attribution: <strong className="text-text-main">{item.owner_name}</strong>
                               </span>
                             )}
                             {item.source_label && (
@@ -219,4 +219,3 @@ export const TimelinePage: React.FC = () => {
     </div>
   );
 };
-
