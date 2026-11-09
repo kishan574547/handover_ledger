@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import Source, Chunk, ActivityLog
 from backend.schemas import SourceOut, SourceCreateGithub, SourceUpdateClearance
-from backend.permissions import get_current_role, require_lead_role
+from backend.permissions import get_current_role, require_lead_role, get_workspace_id
 from backend.ingestion.masking import mask_sensitive_text
 from backend.ingestion.github import fetch_github_repository
 from backend.ingestion.notes import chunk_notes_text, extract_text_from_pdf
@@ -23,13 +23,14 @@ def list_sources(db: Session = Depends(get_db)):
 async def add_github_source(
     payload: SourceCreateGithub,
     db: Session = Depends(get_db),
-    role: str = Depends(get_current_role)
+    role: str = Depends(get_current_role),
+    workspace_id: str = Depends(get_workspace_id)
 ):
     require_lead_role(role)
     if not payload.url or not payload.url.strip():
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="GitHub URL is required.")
 
-    chunks_data, import_report = await fetch_github_repository(payload.url)
+    chunks_data, import_report = await fetch_github_repository(payload.url, workspace_id=workspace_id)
     if not chunks_data:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

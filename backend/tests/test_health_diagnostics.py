@@ -43,3 +43,4 @@ def test_health_github_endpoint():
     # Ensure no tokens leaked
     assert "ghp_" not in resp.text
     assert "github_pat_" not in resp.text
+

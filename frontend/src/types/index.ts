@@ -213,6 +213,7 @@ export interface GitHubHealthData {
   token_configured: boolean;
   remaining_rate_limit: number | null;
   reset_time: string | null;
+  rate_limit_low?: boolean;
 }
 
 export interface ActivityItem {

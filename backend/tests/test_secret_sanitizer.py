@@ -146,3 +146,4 @@ def test_secrets_redacted_in_api_unhandled_500_response(secret_type, secret_val)
         assert "MySuperSecretDbPass999" not in res_text
     else:
         assert secret_val not in res_text
+

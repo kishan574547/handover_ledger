@@ -141,7 +141,7 @@ To reproduce all audits and test suites:
 # 1. Run pipeline audit database verification
 python scripts/audit_pipeline.py
 
-# 2. Run complete backend automated test suite (105 tests)
+# 2. Run complete backend automated test suite (102 tests)
 pytest backend/tests
 
 # 3. Compile frontend production build
@@ -150,3 +150,4 @@ npm run build --prefix frontend
 # 4. Verify full non-demo live run
 python scripts/verify_non_demo_run.py
 ```
+

@@ -57,3 +57,4 @@ export function sanitizeSecrets(text: string | null | undefined): string {
   }
   return sanitized;
 }
+

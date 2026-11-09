@@ -3,7 +3,23 @@ from unittest.mock import AsyncMock, patch, MagicMock
 import httpx
 from fastapi import HTTPException
 
-from backend.ingestion.github import parse_github_url, fetch_github_repository, ImportReport
+from backend.ingestion.github import (
+    parse_github_url,
+    fetch_github_repository,
+    ImportReport,
+    clear_repo_cache,
+    clear_workspace_limits,
+    _import_semaphore,
+    check_github_health
+)
+
+@pytest.fixture(autouse=True)
+def reset_limits_and_cache():
+    clear_workspace_limits()
+    clear_repo_cache()
+    yield
+    clear_workspace_limits()
+    clear_repo_cache()
 
 # --- 1. Test URL Variants & Rejections ---
 @pytest.mark.parametrize("url,expected_owner,expected_repo", [
@@ -151,6 +167,8 @@ async def test_fetch_github_repository_success_with_report():
                     "state": "closed",
                     "created_at": "2026-10-04T09:00:00Z",
                     "body": "Implements redis cache with 15-minute TTL.",
+                    "comments": 1,
+                    "review_comments": 1,
                 }
             ]
         elif "/pulls/9/comments" in path:
@@ -192,3 +210,185 @@ async def test_fetch_github_repository_success_with_report():
         assert "PR #9" in labels
         assert any("PR #9 comment" in l for l in labels)
         assert "Documentation: CONTRIBUTING.md" in labels
+
+
+# --- 4. Call-Budget Protection & Caching Tests ---
+
+@pytest.mark.anyio
+async def test_github_60min_cache_zero_calls():
+    """Importing the same repo within 60 minutes makes 0 GitHub calls on repeated import."""
+    clear_repo_cache()
+    clear_workspace_limits()
+
+    call_count = 0
+
+    async def mock_handler(method, url, **kwargs):
+        nonlocal call_count
+        call_count += 1
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.headers = {"x-ratelimit-remaining": "4000"}
+        path = str(url)
+        if "/repos/cache-org/cache-repo/commits" in path:
+            resp.json = lambda: [{"sha": "deadbeef12345", "commit": {"author": {"name": "Test"}, "message": "msg"}}]
+        elif "/repos/cache-org/cache-repo" in path:
+            resp.json = lambda: {"description": "desc", "default_branch": "main"}
+        else:
+            resp.status_code = 404
+            resp.text = "Not found"
+            resp.json = lambda: {}
+        return resp
+
+    with patch("httpx.AsyncClient.request", side_effect=mock_handler):
+        # 1st import
+        chunks1, report1 = await fetch_github_repository("https://github.com/cache-org/cache-repo", workspace_id="ws1")
+        assert report1.from_cache is False
+        initial_calls = call_count
+        assert initial_calls > 0
+
+        # 2nd import of the same repo makes 0 calls
+        chunks2, report2 = await fetch_github_repository("https://github.com/cache-org/cache-repo", workspace_id="ws1")
+        assert report2.from_cache is True
+        assert report2.api_calls_used == 0
+        assert call_count == initial_calls  # Zero additional calls made!
+        assert len(chunks2) == len(chunks1)
+        assert any("60-minute cache" in w for w in report2.warnings)
+
+
+@pytest.mark.anyio
+async def test_github_comments_only_fetched_when_count_positive():
+    """Issues and PRs with 0 comments do not trigger sub-resource comment calls."""
+    clear_repo_cache()
+    clear_workspace_limits()
+
+    queried_paths = []
+
+    async def mock_handler(method, url, **kwargs):
+        path = str(url)
+        queried_paths.append(path)
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.headers = {"x-ratelimit-remaining": "3000"}
+        if "/repos/zero-org/zero-repo/issues" in path and "comments" not in path:
+            resp.json = lambda: [{
+                "number": 1,
+                "title": "Issue without comments",
+                "user": {"login": "dev"},
+                "body": "no comments here",
+                "state": "open",
+                "comments": 0  # Zero comments
+            }]
+        elif "/repos/zero-org/zero-repo/pulls" in path and "comments" not in path:
+            resp.json = lambda: [{
+                "number": 2,
+                "title": "PR without comments",
+                "user": {"login": "dev"},
+                "body": "no pr comments",
+                "state": "open",
+                "comments": 0,
+                "review_comments": 0
+            }]
+        elif "/repos/zero-org/zero-repo/commits" in path:
+            resp.json = lambda: [{"sha": "1234567890", "commit": {"author": {"name": "Test"}, "message": "msg"}}]
+        elif "/repos/zero-org/zero-repo" in path:
+            resp.json = lambda: {"description": "desc", "default_branch": "main"}
+        else:
+            resp.status_code = 404
+            resp.text = ""
+            resp.json = lambda: {}
+        return resp
+
+    with patch("httpx.AsyncClient.request", side_effect=mock_handler):
+        chunks, report = await fetch_github_repository("https://github.com/zero-org/zero-repo", workspace_id="ws2")
+        assert report.comments_imported == 0
+        # Verify no comment subpaths were queried
+        assert not any("/issues/1/comments" in p for p in queried_paths)
+        assert not any("/issues/2/comments" in p for p in queried_paths)
+        assert not any("/pulls/2/comments" in p for p in queried_paths)
+
+
+@pytest.mark.anyio
+async def test_github_workspace_limit_3_per_hour():
+    """Limit each workspace to 3 imports per hour, 4th returns HTTP 429."""
+    clear_repo_cache()
+    clear_workspace_limits()
+
+    async def mock_handler(method, url, **kwargs):
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.headers = {"x-ratelimit-remaining": "4000"}
+        resp.json = lambda: {"description": "desc", "default_branch": "main"}
+        resp.text = "content"
+        return resp
+
+    with patch("httpx.AsyncClient.request", side_effect=mock_handler):
+        # 3 imports to distinct repos in workspace "ws-limit"
+        for i in range(3):
+            await fetch_github_repository(f"https://github.com/org/repo-{i}", workspace_id="ws-limit")
+
+        # 4th import in the same hour must raise HTTP 429
+        with pytest.raises(HTTPException) as exc_info:
+            await fetch_github_repository("https://github.com/org/repo-4", workspace_id="ws-limit")
+        assert exc_info.value.status_code == 429
+        assert "3 github imports per hour" in exc_info.value.detail.lower()
+
+
+@pytest.mark.anyio
+async def test_github_global_concurrency_busy_message():
+    """Process at most 2 imports at once globally, showing friendly busy message."""
+    clear_repo_cache()
+    clear_workspace_limits()
+
+    # Simulate 2 imports currently holding the semaphore
+    await _import_semaphore.acquire()
+    await _import_semaphore.acquire()
+
+    try:
+        with pytest.raises(HTTPException) as exc_info:
+            await fetch_github_repository("https://github.com/busy-org/busy-repo", workspace_id="any-ws")
+        assert exc_info.value.status_code == 429
+        assert "server is busy importing other repositories" in exc_info.value.detail.lower()
+    finally:
+        _import_semaphore.release()
+        _import_semaphore.release()
+
+
+@pytest.mark.anyio
+async def test_github_warn_when_rate_limit_below_100():
+    """Warn when remaining rate limit is below 100 instead of failing."""
+    clear_repo_cache()
+    clear_workspace_limits()
+
+    async def mock_handler(method, url, **kwargs):
+        resp = MagicMock()
+        resp.status_code = 200
+        # Return rate limit 42 (< 100)
+        resp.headers = {"x-ratelimit-remaining": "42"}
+        path = str(url)
+        if "/commits" in path:
+            resp.json = lambda: [{"sha": "aabbcc123", "commit": {"author": {"name": "Test"}, "message": "msg"}}]
+        else:
+            resp.json = lambda: {"description": "desc", "default_branch": "main"}
+            resp.text = "text"
+        return resp
+
+    with patch("httpx.AsyncClient.request", side_effect=mock_handler):
+        chunks, report = await fetch_github_repository("https://github.com/low-org/low-repo", workspace_id="ws-low")
+        assert any("almost used up" in w.lower() for w in report.warnings)
+
+
+@pytest.mark.anyio
+async def test_github_health_rate_limit_low_detection():
+    """Health check returns rate_limit_low=True when remaining < 100."""
+    with patch("httpx.AsyncClient.get") as mock_get:
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json = lambda: {"resources": {"core": {"remaining": 88, "reset": 1700000000}}}
+        mock_get.return_value = mock_resp
+
+        health = await check_github_health()
+        assert health["reachable"] is True
+        assert health["remaining_rate_limit"] == 88
+        assert health["rate_limit_low"] is True
+
+

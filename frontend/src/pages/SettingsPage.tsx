@@ -628,9 +628,17 @@ export const SettingsPage: React.FC = () => {
                 <p className="text-[11px] text-text-muted mt-1">
                   Token: {githubHealth?.token_configured ? 'Configured' : 'Public limit'}
                   {githubHealth?.remaining_rate_limit !== null && githubHealth?.remaining_rate_limit !== undefined && (
-                    <span className="ml-1.5">({githubHealth.remaining_rate_limit} remaining)</span>
+                    <span className="ml-1.5 font-medium">({githubHealth.remaining_rate_limit} remaining)</span>
                   )}
                 </p>
+                {githubHealth?.remaining_rate_limit !== null &&
+                  githubHealth?.remaining_rate_limit !== undefined &&
+                  githubHealth.remaining_rate_limit < 100 && (
+                    <p className="text-[11px] text-amber-600 dark:text-amber-400 mt-1.5 flex items-center gap-1 font-medium bg-amber-50 dark:bg-amber-950/40 px-2 py-1 rounded">
+                      <span>⚠️</span>
+                      <span>GitHub requests are almost used up, please try again later</span>
+                    </p>
+                  )}
               </div>
             </div>
           </div>
