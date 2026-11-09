@@ -152,7 +152,45 @@ A client-side state projection mechanism implemented on Handover, Ledger, and Ti
 
 ---
 
-## 6. AI Assistance Disclosure
+## 6. Resilience, Diagnostics & Ingestion Architecture
 
-HandoverLedger was architected and built with AI assistance utilizing **Google Antigravity** and **Gemini 2.5 / 1.5 Flash**. The underlying verification engine adheres to strict zero-hallucination trust rules, requiring algorithmic proof for every verified claim.
+### A. Outermost CORS & Error Boundary Middleware
+To eliminate browser-level network errors such as `"Failed to fetch"`, `backend/main.py` incorporates an outermost middleware boundary (`cors_and_error_boundary_middleware`):
+- Intercepts all incoming requests and directly responds to `OPTIONS` preflight with `200 OK` and a 24-hour cache max-age (`86400s`).
+- Enforces allowed headers including `Content-Type`, `Authorization`, `X-Demo-Role`, and `X-Workspace-Id`.
+- Traps unhandled Python exceptions, logs them with comprehensive secret scrubbing, and returns structured JSON `{error_code: "internal_server_error", message: "An unexpected server error occurred"}`.
+- Injects standard CORS headers (`Access-Control-Allow-Origin`, `Access-Control-Allow-Methods`, `Access-Control-Allow-Headers`) into **every single HTTP response**, guaranteeing that client browsers never encounter a CORS header drop even during 500 server crashes.
+
+### B. Non-Blocking Asynchronous GitHub Ingestion
+The GitHub ingestion engine (`backend/ingestion/github.py`) was overhauled to be completely non-blocking:
+- Utilizes `httpx.AsyncClient` with explicit 15-second per-request timeouts.
+- Ingests repository metadata, README, commits (up to 100), issues (up to 50), and pull requests (up to 30).
+- Secondary resource queries (issue comments, PR review discussions) feature graceful rate-limit degradation: if unauthenticated IP quotas are reached (HTTP 403/429), secondary loops terminate cleanly with an actionable warning on the `ImportReport`, preserving primary commit and PR records without aborting the import.
+- Transient HTTP 5xx errors from external APIs are retried with exponential backoff (1s, 2s).
+
+### C. Central Gemini Client & Model Rotation Subsystem
+All generative AI workflows (claim extraction, verification judging, exit question generation, grounded Q&A) route through `backend/gemini_client.py`:
+- Reads candidate models dynamically from environment variables: primary `GEMINI_MODEL` (default `gemini-3.8-flash`) and fallbacks `GEMINI_FALLBACK_MODELS` (default `gemini-3.5-flash-lite`).
+- On 404 (model retired) or 429/`RESOURCE_EXHAUSTED` errors, the client rotates automatically to the next candidate model in the chain.
+- Applies exponential backoff for transient network issues.
+- Enforces strict JSON output schemas via Pydantic model validation.
+- Configures low thinking levels (`thinking_budget=0`) during extraction and verification calls to minimize quota consumption and latency.
+
+### D. Prioritized Chunk Sampling & Idempotency
+- **Prioritized Sampling**: When ingesting massive repositories or chat exports, source chunks are capped at 150 using a deterministic priority hierarchy: `README & documentation > open issues > pull requests > meeting notes > decision commits > general commits > chat logs`.
+- **Idempotency**: Running analysis multiple times against an existing workspace preserves human review decisions (`approved`, `rejected`), leaver interview attestations, and coordinator comments, seamlessly merging newly discovered claims.
+- **Empty Guard**: Ingestion payloads with less than 50 total characters are rejected with HTTP 400 (`"not enough material to extract claims, add more sources"`).
+
+### E. Health Diagnostics & System Status
+- Three specialized health endpoints provide live diagnostic telemetry:
+  - `GET /api/health`: Base service and database status.
+  - `GET /api/health/ai`: AI connectivity and active Gemini model name (secrets strictly scrubbed).
+  - `GET /api/health/github`: GitHub REST API connectivity and remaining rate-limit quota.
+- Settings page provides a real-time status matrix with green/red badges and a one-click secret-sanitized "Copy Diagnostics" bundle.
+
+---
+
+## 7. AI Assistance Disclosure
+
+HandoverLedger was architected and built with AI assistance utilizing **Google Antigravity** and **Gemini 3.8 / 3.5 Flash**. The underlying verification engine adheres to strict zero-hallucination trust rules, requiring algorithmic proof for every verified claim.
 

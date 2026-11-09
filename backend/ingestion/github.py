@@ -272,24 +272,29 @@ async def fetch_github_repository(url: str) -> Tuple[List[Dict[str, str]], Impor
 
             # Fetch up to 20 comments if comments present
             if issue.get("comments", 0) > 0:
-                comments_resp = await _fetch_with_retry(
-                    client,
-                    "GET",
-                    f"/repos/{owner}/{repo}/issues/{num}/comments",
-                    params={"per_page": 20}
-                )
-                check_rate_limit(comments_resp)
-                if comments_resp.status_code == 200 and isinstance(comments_resp.json(), list):
-                    comments = comments_resp.json()[:20]
-                    for idx, c in enumerate(comments, 1):
-                        c_user = c.get("user", {}).get("login", "unknown")
-                        c_body = c.get("body") or ""
-                        c_date = c.get("created_at", "")[:10]
-                        chunks.append({
-                            "location_label": f"Issue #{num} comment",
-                            "text": f"Comment #{idx} on Issue #{num} by {c_user} ({c_date}):\n{c_body}"
-                        })
-                        report.comments_imported += 1
+                try:
+                    comments_resp = await _fetch_with_retry(
+                        client,
+                        "GET",
+                        f"/repos/{owner}/{repo}/issues/{num}/comments",
+                        params={"per_page": 20}
+                    )
+                    if comments_resp.status_code in (403, 429):
+                        report.warnings.append("GitHub API rate limit reached on comments; continuing with imported issues and PRs.")
+                        break
+                    if comments_resp.status_code == 200 and isinstance(comments_resp.json(), list):
+                        comments = comments_resp.json()[:20]
+                        for idx, c in enumerate(comments, 1):
+                            c_user = c.get("user", {}).get("login", "unknown")
+                            c_body = c.get("body") or ""
+                            c_date = c.get("created_at", "")[:10]
+                            chunks.append({
+                                "location_label": f"Issue #{num} comment",
+                                "text": f"Comment #{idx} on Issue #{num} by {c_user} ({c_date}):\n{c_body}"
+                            })
+                            report.comments_imported += 1
+                except Exception:
+                    break
 
         # 5. Fetch Pull Requests (state=all, up to 30)
         prs_resp = await _fetch_with_retry(
@@ -316,85 +321,100 @@ async def fetch_github_repository(url: str) -> Tuple[List[Dict[str, str]], Impor
                 report.prs_imported += 1
 
                 # Fetch PR discussion comments (up to 20)
-                pr_comments_resp = await _fetch_with_retry(
-                    client,
-                    "GET",
-                    f"/repos/{owner}/{repo}/issues/{pr_num}/comments",
-                    params={"per_page": 20}
-                )
-                check_rate_limit(pr_comments_resp)
-                if pr_comments_resp.status_code == 200 and isinstance(pr_comments_resp.json(), list):
-                    for idx, c in enumerate(pr_comments_resp.json()[:20], 1):
-                        c_user = c.get("user", {}).get("login", "unknown")
-                        c_body = c.get("body") or ""
-                        chunks.append({
-                            "location_label": f"PR #{pr_num} comment",
-                            "text": f"Discussion comment on PR #{pr_num} by {c_user}:\n{c_body}"
-                        })
-                        report.comments_imported += 1
+                try:
+                    pr_comments_resp = await _fetch_with_retry(
+                        client,
+                        "GET",
+                        f"/repos/{owner}/{repo}/issues/{pr_num}/comments",
+                        params={"per_page": 20}
+                    )
+                    if pr_comments_resp.status_code in (403, 429):
+                        report.warnings.append("GitHub API rate limit reached on PR comments; proceeding.")
+                        break
+                    if pr_comments_resp.status_code == 200 and isinstance(pr_comments_resp.json(), list):
+                        for idx, c in enumerate(pr_comments_resp.json()[:20], 1):
+                            c_user = c.get("user", {}).get("login", "unknown")
+                            c_body = c.get("body") or ""
+                            chunks.append({
+                                "location_label": f"PR #{pr_num} comment",
+                                "text": f"Discussion comment on PR #{pr_num} by {c_user}:\n{c_body}"
+                            })
+                            report.comments_imported += 1
+                except Exception:
+                    break
 
                 # Fetch PR review comments (up to 20)
-                reviews_resp = await _fetch_with_retry(
-                    client,
-                    "GET",
-                    f"/repos/{owner}/{repo}/pulls/{pr_num}/comments",
-                    params={"per_page": 20}
-                )
-                check_rate_limit(reviews_resp)
-                if reviews_resp.status_code == 200 and isinstance(reviews_resp.json(), list):
-                    for idx, rc in enumerate(reviews_resp.json()[:20], 1):
-                        rc_user = rc.get("user", {}).get("login", "unknown")
-                        rc_path = rc.get("path", "")
-                        rc_body = rc.get("body") or ""
-                        chunks.append({
-                            "location_label": f"PR #{pr_num} comment",
-                            "text": f"Code review comment on {rc_path} (PR #{pr_num}) by {rc_user}:\n{rc_body}"
-                        })
-                        report.comments_imported += 1
+                try:
+                    reviews_resp = await _fetch_with_retry(
+                        client,
+                        "GET",
+                        f"/repos/{owner}/{repo}/pulls/{pr_num}/comments",
+                        params={"per_page": 20}
+                    )
+                    if reviews_resp.status_code in (403, 429):
+                        report.warnings.append("GitHub API rate limit reached on review comments; proceeding.")
+                        break
+                    if reviews_resp.status_code == 200 and isinstance(reviews_resp.json(), list):
+                        for idx, rc in enumerate(reviews_resp.json()[:20], 1):
+                            rc_user = rc.get("user", {}).get("login", "unknown")
+                            rc_path = rc.get("path", "")
+                            rc_body = rc.get("body") or ""
+                            chunks.append({
+                                "location_label": f"PR #{pr_num} comment",
+                                "text": f"Code review comment on {rc_path} (PR #{pr_num}) by {rc_user}:\n{rc_body}"
+                            })
+                            report.comments_imported += 1
+                except Exception:
+                    break
 
         # 6. Fetch Documentation Files (CONTRIBUTING, CHANGELOG, DECISIONS, ADR, /docs)
         doc_files_to_check = ["CONTRIBUTING.md", "CHANGELOG.md", "DECISIONS.md", "ADR.md", "ARCHITECTURE.md"]
         for doc_name in doc_files_to_check:
-            doc_resp = await _fetch_with_retry(
-                client,
-                "GET",
-                f"/repos/{owner}/{repo}/contents/{doc_name}",
-                headers={**headers, "Accept": "application/vnd.github.raw"}
-            )
-            check_rate_limit(doc_resp)
-            if doc_resp.status_code == 200 and doc_resp.text.strip():
-                # Cap individual doc to 50KB
-                doc_text = doc_resp.text.strip()[:50000]
-                chunks.append({
-                    "location_label": f"Documentation: {doc_name}",
-                    "text": doc_text
-                })
-                report.docs_imported += 1
+            try:
+                doc_resp = await _fetch_with_retry(
+                    client,
+                    "GET",
+                    f"/repos/{owner}/{repo}/contents/{doc_name}",
+                    headers={**headers, "Accept": "application/vnd.github.raw"}
+                )
+                if doc_resp.status_code in (403, 429):
+                    break
+                if doc_resp.status_code == 200 and doc_resp.text.strip():
+                    # Cap individual doc to 50KB
+                    doc_text = doc_resp.text.strip()[:50000]
+                    chunks.append({
+                        "location_label": f"Documentation: {doc_name}",
+                        "text": doc_text
+                    })
+                    report.docs_imported += 1
+            except Exception:
+                break
 
         # Check /docs directory
-        docs_dir_resp = await _fetch_with_retry(
-            client,
-            "GET",
-            f"/repos/{owner}/{repo}/contents/docs"
-        )
-        check_rate_limit(docs_dir_resp)
-        if docs_dir_resp.status_code == 200 and isinstance(docs_dir_resp.json(), list):
-            for doc_item in docs_dir_resp.json()[:10]:
-                if doc_item.get("type") == "file" and doc_item.get("name", "").endswith((".md", ".txt")):
-                    file_name = doc_item["name"]
-                    file_resp = await _fetch_with_retry(
-                        client,
-                        "GET",
-                        f"/repos/{owner}/{repo}/contents/docs/{file_name}",
-                        headers={**headers, "Accept": "application/vnd.github.raw"}
-                    )
-                    check_rate_limit(file_resp)
-                    if file_resp.status_code == 200 and file_resp.text.strip():
-                        chunks.append({
-                            "location_label": f"Documentation: docs/{file_name}",
-                            "text": file_resp.text.strip()[:50000]
-                        })
-                        report.docs_imported += 1
+        try:
+            docs_dir_resp = await _fetch_with_retry(
+                client,
+                "GET",
+                f"/repos/{owner}/{repo}/contents/docs"
+            )
+            if docs_dir_resp.status_code == 200 and isinstance(docs_dir_resp.json(), list):
+                for doc_item in docs_dir_resp.json()[:10]:
+                    if doc_item.get("type") == "file" and doc_item.get("name", "").endswith((".md", ".txt")):
+                        file_name = doc_item["name"]
+                        file_resp = await _fetch_with_retry(
+                            client,
+                            "GET",
+                            f"/repos/{owner}/{repo}/contents/docs/{file_name}",
+                            headers={**headers, "Accept": "application/vnd.github.raw"}
+                        )
+                        if file_resp.status_code == 200 and file_resp.text.strip():
+                            chunks.append({
+                                "location_label": f"Documentation: docs/{file_name}",
+                                "text": file_resp.text.strip()[:50000]
+                            })
+                            report.docs_imported += 1
+        except Exception:
+            pass
 
         # 7. Add helpful warning if no issues or PRs found
         if report.issues_imported == 0 and report.prs_imported == 0:

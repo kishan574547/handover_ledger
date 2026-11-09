@@ -6,8 +6,10 @@ This document records the automated and end-to-end integration test coverage for
 
 ## 1. Test Summary
 
-- **Pytest Automated Suite**: **30 / 30 tests passing** in 0.6s (`backend/tests/`)
-  - Integration, clearance isolation, verifier mapping, masking sanitization, permissions, failure cases, and grounded Ask Q&A.
+- **Pytest Automated Suite**: **105 / 105 tests passing** (`backend/tests/`)
+  - Integration, clearance isolation, verifier mapping, masking sanitization, permissions, failure cases, grounded Ask Q&A, async GitHub ingestion, Gemini client hardening, prioritized chunk sampling, health diagnostics, and secret sanitization.
+- **Pipeline Database Audit**: **100% checks passed** (`scripts/audit_pipeline.py`) verifying claim evidence, verifier mapping rigor, clearance inheritance, missing claim questions, zero orphans/duplicates, zero unmasked secrets, and status distribution.
+- **Non-Demo Live Verification Run**: **184.56s complete run passed** (`scripts/verify_non_demo_run.py`) on public GitHub repository + notes + chat export (75 claims, 4 conflicts, 13 questions, match score 100%, conflict resolved, interview answered, claims approved, clearance isolation verified, leak check passed, grounded Q&A with citations, markdown export 16,449 chars with `[claim-id]` citations, receipt acknowledged).
 - **Playwright Visual Suite**: **154 full-page screenshots captured and verified** across 7 viewports (360px, 390px, 768px, 1024px, 1280px, 1536px, 1920px) in **both Light and Dark modes**.
   - **Horizontal Scroll Audit**: **0 overflow violations** detected (`scrollWidth <= clientWidth` across all pages).
 - **Secrets Scanner**: **0 exposed patterns** across all tracked and staged files (`scripts/check_secrets.sh`).
@@ -68,17 +70,27 @@ Tested using automated Playwright Chromium headless engine across all 11 applica
 
 ## 6. How to Re-Run All Verifications
 
-1. **Pytest Backend Tests**:
+1. **Pipeline Database Audit**:
+   ```bash
+   python scripts/audit_pipeline.py
+   ```
+
+2. **Non-Demo Live Run Verification**:
+   ```bash
+   python scripts/verify_non_demo_run.py
+   ```
+
+3. **Pytest Backend Tests (105 tests)**:
    ```bash
    pytest backend/tests
    ```
 
-2. **Multi-Viewport Visual & Journey Suite**:
+4. **Multi-Viewport Visual & Journey Suite**:
    ```bash
    python scripts/screenshot_and_verify.py
    ```
 
-3. **Secrets Scanner**:
+5. **Secrets Scanner**:
    ```bash
    powershell -File scripts/check_secrets.ps1
    # Or bash scripts/check_secrets.sh

@@ -42,7 +42,10 @@ def run_pipeline_audit() -> bool:
     results = []
 
     # 1. Every non-MISSING claim has evidence
-    non_missing = [c for c in claims if c.status != "missing"]
+    # Pipeline-extracted non-missing claims must have evidence.
+    # Note: claims attested by the leaver during exit interviews (created_by == 'leaver')
+    # represent first-party human testimony rather than extracted document passages.
+    non_missing = [c for c in claims if c.status != "missing" and c.created_by != "leaver"]
     non_missing_missing_ev = [c for c in non_missing if not c.evidence]
     c1_pass = len(non_missing_missing_ev) == 0
     results.append({

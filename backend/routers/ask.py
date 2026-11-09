@@ -18,6 +18,7 @@ from backend.permissions import (
     get_current_role, get_role_max_clearance, require_can_view_handover
 )
 from backend.config import settings
+from backend.gemini_client import gemini_client
 
 router = APIRouter(prefix="/ask", tags=["ask"])
 logger = logging.getLogger("handoverledger.ask")

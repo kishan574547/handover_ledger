@@ -43,6 +43,7 @@ Open [http://localhost:5173](http://localhost:5173) in your browser.
 - **Natural Language Search**: Ask natural questions regarding architecture decisions, open blockers, or first-week plans.
 - **Strict Verification & Zero Hallucinations**: Every sentence in the answer is grounded exclusively on verified claims within the caller's role clearance.
 - **Interactive Citations**: Clickable citation tags link directly to verbatim source excerpts.
+- **How to Use This App**: Dedicated interactive help assistant tab providing pre-configured quick questions and step pills.
 - **Leaver Knowledge Routing**: When an answer is missing from documentation, an immediate button routes the inquiry into a targeted question in the leaving member's Exit Interview.
 
 ### 🔍 Trust Lens
@@ -103,7 +104,17 @@ Role simulation is managed via the `X-Demo-Role` HTTP header:
 
 ## 5. Automated Verification & Test Suite
 
-Run all automated pytest unit and integration tests:
+Run the full end-to-end pipeline database audit:
+```bash
+python scripts/audit_pipeline.py
+```
+
+Run the complete non-demo live pipeline verification run:
+```bash
+python scripts/verify_non_demo_run.py
+```
+
+Run all automated pytest unit and integration tests (105 tests):
 ```bash
 pytest backend/tests
 ```
@@ -122,6 +133,8 @@ powershell -File scripts/check_secrets.ps1
 bash scripts/check_secrets.sh
 ```
 
+For complete pipeline diagnostic findings, root cause analysis, and audit tables, see [`docs/PIPELINE_AUDIT.md`](file:///docs/PIPELINE_AUDIT.md).
+
 ---
 
 ## 6. AI Model Configuration & Resilient Fallback
@@ -136,7 +149,11 @@ GEMINI_FALLBACK_MODELS=gemini-3.5-flash-lite
 ```
 - **Primary Model** (`GEMINI_MODEL`): Defaults to `gemini-3.8-flash`.
 - **Fallback Models** (`GEMINI_FALLBACK_MODELS`): Comma-separated list (defaults to `gemini-3.5-flash-lite`). If the primary model returns 404 (model retired) or 429 (rate/quota limit), the client automatically rotates to the next available model.
-- **Health Check**: `GET /api/health/ai` verifies model connectivity without leaking keys.
+- **Health Diagnostics Endpoints**:
+  - `GET /api/health`: Base backend and database health.
+  - `GET /api/health/ai`: Model connectivity and fallback status (never leaks API keys).
+  - `GET /api/health/github`: GitHub REST API connectivity and rate limit status.
+- **UI System Status**: The Settings page includes a live System Status card displaying real-time green/red health indicators and a secret-scrubbed "Copy Diagnostics" utility.
 
 ---
 
