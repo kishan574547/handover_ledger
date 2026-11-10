@@ -206,7 +206,7 @@ def get_handover_view(
         departing_member = proj.departing_member if proj else "Arjun Mehta"
         successor_name = proj.successor_name if proj else "Rahul Verma"
     else:
-        proj_name = gh_repo or (proj.name if (proj and proj.name != "Campus Connect") else "Repository Project")
+        proj_name = (proj.name if (proj and proj.name and proj.name not in ("Campus Connect", "Campus Connect Handover", "default", "Repository Project") and proj.name.strip()) else None) or gh_repo or "Repository Project"
         departing_member = proj.departing_member if (proj and proj.departing_member and "Arjun" not in proj.departing_member) else "Departing Member"
         successor_name = proj.successor_name if (proj and proj.successor_name and "Rahul" not in proj.successor_name) else "Successor Developer"
 
@@ -546,7 +546,7 @@ def export_handover(
         departing_member = proj.departing_member if proj else "Arjun Mehta"
         successor_name = proj.successor_name if proj else "Rahul Verma"
     else:
-        proj_name = gh_repo or (proj.name if (proj and proj.name != "Campus Connect") else "Repository Project")
+        proj_name = (proj.name if (proj and proj.name and proj.name not in ("Campus Connect", "Campus Connect Handover", "default", "Repository Project") and proj.name.strip()) else None) or gh_repo or "Repository Project"
         departing_member = proj.departing_member if (proj and proj.departing_member and "Arjun" not in proj.departing_member) else "Departing Member"
         successor_name = proj.successor_name if (proj and proj.successor_name and "Rahul" not in proj.successor_name) else "Successor Developer"
 

@@ -39,23 +39,25 @@ export const SourcesPage: React.FC = () => {
   const { success, error } = useToast();
   const queryClient = useQueryClient();
 
+  const [projectNameInput, setProjectNameInput] = useState('');
   const [leaverNameInput, setLeaverNameInput] = useState('');
   const [successorNameInput, setSuccessorNameInput] = useState('');
   const [isSettingMembers, setIsSettingMembers] = useState(false);
 
   useEffect(() => {
     if (projectData) {
-      setLeaverNameInput(projectData.departing_member || 'Departing Member');
-      setSuccessorNameInput(projectData.successor_name || 'Successor');
+      setProjectNameInput(projectData.name || projectData.display_name || '');
+      setLeaverNameInput(projectData.departing_member || 'Departing member');
+      setSuccessorNameInput(projectData.successor_name || 'Successor Developer');
     }
   }, [projectData]);
 
   const updateMembersMutation = useMutation({
-    mutationFn: (vars: { departing_member?: string; successor_name?: string }) =>
+    mutationFn: (vars: { project_name?: string; departing_member?: string; successor_name?: string }) =>
       api.updateProjectMembers(vars),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['project'] });
-      success('Members Updated', 'Departing member and successor names updated.');
+      success('Project Settings Updated', 'Project and handover member names updated.');
       setIsSettingMembers(false);
     },
     onError: (err: any) => error('Update Failed', err.message),
@@ -271,39 +273,49 @@ export const SourcesPage: React.FC = () => {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <div>
                 <CardTitle className="text-sm font-semibold text-text-main">
-                  Set leaver and successor names for the handover document
+                  Set project and handover names
                 </CardTitle>
                 <p className="text-xs text-text-muted mt-0.5">
-                  Customize the departing team member and successor developer names shown across handover reports and exports.
+                  Optional "Project name" and "Who is leaving?" fields. Defaults to repository name and Departing member.
                 </p>
               </div>
               {!isSettingMembers && (
                 <Button variant="outline" size="sm" onClick={() => setIsSettingMembers(true)} className="self-start sm:self-auto">
-                  Edit Names
+                  Edit Settings
                 </Button>
               )}
             </div>
           </CardHeader>
           {isSettingMembers ? (
             <CardContent className="pt-0 pb-4 px-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
                 <div>
-                  <label className="block text-xs font-medium text-text-muted mb-1">Departing Member Name</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1">Project name</label>
                   <input
                     type="text"
-                    value={leaverNameInput}
-                    onChange={(e) => setLeaverNameInput(e.target.value)}
-                    placeholder="e.g. Departing Member"
+                    value={projectNameInput}
+                    onChange={(e) => setProjectNameInput(e.target.value)}
+                    placeholder="Defaults to repo name"
                     className="w-full text-xs p-2 rounded-btn border border-border bg-surface text-text-main focus:outline-none focus:ring-1 focus:ring-navy"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-text-muted mb-1">Successor Developer Name</label>
+                  <label className="block text-xs font-medium text-text-muted mb-1">Who is leaving?</label>
+                  <input
+                    type="text"
+                    value={leaverNameInput}
+                    onChange={(e) => setLeaverNameInput(e.target.value)}
+                    placeholder="Departing member"
+                    className="w-full text-xs p-2 rounded-btn border border-border bg-surface text-text-main focus:outline-none focus:ring-1 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-text-muted mb-1">Successor developer</label>
                   <input
                     type="text"
                     value={successorNameInput}
                     onChange={(e) => setSuccessorNameInput(e.target.value)}
-                    placeholder="e.g. Successor Developer"
+                    placeholder="Successor developer"
                     className="w-full text-xs p-2 rounded-btn border border-border bg-surface text-text-main focus:outline-none focus:ring-1 focus:ring-navy"
                   />
                 </div>
@@ -315,12 +327,13 @@ export const SourcesPage: React.FC = () => {
                   isLoading={updateMembersMutation.isPending}
                   onClick={() =>
                     updateMembersMutation.mutate({
-                      departing_member: leaverNameInput.trim() || 'Departing Member',
-                      successor_name: successorNameInput.trim() || 'Successor',
+                      project_name: projectNameInput.trim() || undefined,
+                      departing_member: leaverNameInput.trim() || 'Departing member',
+                      successor_name: successorNameInput.trim() || 'Successor developer',
                     })
                   }
                 >
-                  Save Names
+                  Save Settings
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setIsSettingMembers(false)}>
                   Cancel
@@ -331,12 +344,16 @@ export const SourcesPage: React.FC = () => {
             <CardContent className="pt-0 pb-3 px-4">
               <div className="flex flex-wrap gap-4 text-xs text-text-main">
                 <div>
-                  <span className="text-text-muted">Departing Member: </span>
-                  <strong>{projectData?.departing_member || 'Departing Member'}</strong>
+                  <span className="text-text-muted">Project name: </span>
+                  <strong>{projectData?.display_name || projectData?.name || 'Repository Project'}</strong>
+                </div>
+                <div>
+                  <span className="text-text-muted">Who is leaving?: </span>
+                  <strong>{projectData?.departing_member || 'Departing member'}</strong>
                 </div>
                 <div>
                   <span className="text-text-muted">Successor: </span>
-                  <strong>{projectData?.successor_name || 'Successor'}</strong>
+                  <strong>{projectData?.successor_name || 'Successor developer'}</strong>
                 </div>
               </div>
             </CardContent>

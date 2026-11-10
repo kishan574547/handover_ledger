@@ -210,9 +210,11 @@ export const HandoverPage: React.FC = () => {
           <div className="flex items-center gap-3">
             <Clock className="w-5 h-5 text-amber-600 flex-shrink-0" />
             <div className="text-xs">
-              <span className="font-bold text-amber-950">Version {handover.acknowledged_version_number} was acknowledged</span>
+              <span className="font-bold text-amber-950">
+                Version {handover.current_version_number} released: acknowledgement required
+              </span>
               <span className="text-amber-800 ml-2">
-                Confirmed by <strong>{acknowledged_by}</strong> on{' '}
+                (Acknowledged for version {handover.acknowledged_version_number} by <strong>{acknowledged_by}</strong> on{' '}
                 {acknowledged_at ? (
                   <span title={formatLocalDateTime(acknowledged_at).iso} className="cursor-help font-medium">
                     {formatLocalDateTime(acknowledged_at).display}
@@ -220,12 +222,12 @@ export const HandoverPage: React.FC = () => {
                 ) : (
                   '—'
                 )}
-                ; <strong>Version {handover.current_version_number} is pending acknowledgement.</strong>
+                )
               </span>
             </div>
           </div>
           <span className="text-[11px] font-semibold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
-            New Version Pending
+            Acknowledgement Required
           </span>
         </div>
       ) : acknowledged ? (
@@ -234,7 +236,7 @@ export const HandoverPage: React.FC = () => {
             <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <div className="text-xs">
               <span className="font-bold text-emerald-950">
-                Version {handover.acknowledged_version_number || 1} Acknowledged
+                Acknowledged for version {handover.acknowledged_version_number || 1}
               </span>
               <span className="text-emerald-800 ml-2">
                 Confirmed by <strong>{acknowledged_by}</strong> on{' '}
@@ -258,7 +260,11 @@ export const HandoverPage: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="page-title text-text-main">Project Handover Document</h2>
+            <h2 className="page-title text-text-main">
+              {!isDemo && handover.project_name
+                ? `${handover.project_name} • Handover Document`
+                : (handover.project_name ? `${handover.project_name} Handover Document` : 'Project Handover Document')}
+            </h2>
             <ClearanceBadge clearance={handover.clearance_level} size="sm" />
           </div>
           <p className="text-xs text-text-muted mt-1">
@@ -339,7 +345,7 @@ export const HandoverPage: React.FC = () => {
           <CardContent className="space-y-3">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-lg text-xs">
               <div>
-                <span className="text-text-muted block">Project:</span>
+                <span className="text-text-muted block">{!isDemo ? 'Repository:' : 'Project:'}</span>
                 <strong className="text-text-main text-sm">{handover.project_name}</strong>
               </div>
               <div>

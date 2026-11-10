@@ -504,10 +504,11 @@ async def _do_fetch(
                     created_at = pr.get("created_at", "")[:10]
                     body = pr.get("body") or ""
                     pr_comment_count = pr.get("comments", 0)
+                    assignee = pr.get("assignee", {}).get("login") if pr.get("assignee") else "Unassigned"
 
                     chunks.append({
                         "location_label": f"PR #{pr_num}",
-                        "text": f"PR #{pr_num} [{state.upper()}]: {title}\nAuthor: {user} | Created: {created_at}\n\n{body}"
+                        "text": f"PR #{pr_num} [{state.upper()}]: {title}\nAuthor: {user} | Assignee: {assignee} | Created: {created_at}\n\n{body}"
                     })
                     report.prs_imported += 1
 

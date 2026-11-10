@@ -12,6 +12,7 @@ from backend.database import SessionLocal
 from backend.models import Source, Chunk, Claim, Evidence, ConflictLink, Question, ActivityLog
 from backend.ingestion.masking import mask_sensitive_text
 from backend.pipeline.extractor import extract_claims_from_chunk_batch
+from backend.pipeline.ownership import extract_deterministic_owner_claims
 from backend.pipeline.verifier import verify_claim
 from backend.pipeline.conflicts import find_and_link_conflicts
 from backend.pipeline.gaps import detect_gaps_and_generate_questions
@@ -203,11 +204,15 @@ def run_analysis_pipeline_sync(db: Session, role: str = "lead") -> Dict[str, Any
                 pct = 25 + int((completed_batches / max(1, len(batches))) * 15)
                 set_step_status(1, "in_progress", pct, f"Extracted candidate claims ({completed_batches}/{len(batches)} batches)...")
 
+        # Deterministic ownership claims from commit and issue metadata (NO AI)
+        deterministic_owners = extract_deterministic_owner_claims(chunks)
+        raw_extracted_items.extend(deterministic_owners)
+
         # If zero claims extracted across all batches, check if input was too tiny
         if not raw_extracted_items and failed_batches == len(batches):
             raise ValueError("not enough material to extract claims, add more sources")
 
-        details_msg = f"Extracted {len(raw_extracted_items)} candidate claims."
+        details_msg = f"Extracted {len(raw_extracted_items)} candidate claims ({len(deterministic_owners)} deterministic owners)."
         if failed_batches > 0:
             details_msg += f" ({failed_batches} batches skipped due to rate limits)."
         set_step_status(1, "completed", 40, details_msg)

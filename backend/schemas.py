@@ -207,6 +207,7 @@ class AssignSuccessorRequest(BaseModel):
     claim_id: str
 
 class ProjectMembersUpdate(BaseModel):
+    project_name: Optional[str] = None
     departing_member: Optional[str] = None
     successor_name: Optional[str] = None
 

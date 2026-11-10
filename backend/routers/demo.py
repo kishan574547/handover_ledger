@@ -80,7 +80,7 @@ def get_project(db: Session = Depends(get_db)):
 
             first_source = db.query(Source).first()
             source_name = gh_repo or (first_source.name if first_source else "Repository Project")
-            display_name = source_name
+            display_name = (proj.name if (proj and proj.name and proj.name not in ("Campus Connect", "Campus Connect Handover", "default", "Repository Project") and proj.name.strip()) else None) or source_name
             leaver_name = proj.departing_member if (proj.departing_member and "Arjun" not in proj.departing_member) else "Departing Member"
 
     return {
@@ -110,6 +110,8 @@ def update_project_members(
         proj = Project(id="default")
         db.add(proj)
 
+    if payload.project_name is not None and payload.project_name.strip():
+        proj.name = payload.project_name.strip()
     if payload.departing_member is not None:
         proj.departing_member = payload.departing_member.strip()
     if payload.successor_name is not None:
@@ -118,13 +120,14 @@ def update_project_members(
     log = ActivityLog(
         role=current_role,
         action="update_members",
-        target=f"Updated handover members: leaver='{proj.departing_member}', successor='{proj.successor_name}'"
+        target=f"Updated handover members: project='{proj.name}', leaver='{proj.departing_member}', successor='{proj.successor_name}'"
     )
     db.add(log)
     db.commit()
     db.refresh(proj)
     return {
         "status": "ok",
+        "project_name": proj.name,
         "departing_member": proj.departing_member,
         "successor_name": proj.successor_name
     }

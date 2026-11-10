@@ -46,3 +46,4 @@ export function formatLocalDateOnly(dateInput?: string | Date | null): string {
     return date.toLocaleDateString();
   }
 }
+

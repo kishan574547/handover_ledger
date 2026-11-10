@@ -140,7 +140,7 @@ export const api = {
   getGitHubHealth: () => request<GitHubHealthData>('/health/github'),
   loadDemo: () => request<any>('/demo/load', { method: 'POST' }),
   resetDemo: () => request<any>('/demo/reset', { method: 'POST' }),
-  updateProjectMembers: (data: { departing_member?: string; successor_name?: string }) =>
+  updateProjectMembers: (data: { project_name?: string; departing_member?: string; successor_name?: string }) =>
     request<any>('/project/members', {
       method: 'PATCH',
       body: JSON.stringify(data),
