@@ -200,6 +200,15 @@ class HandoverViewOut(BaseModel):
     acknowledged: bool = False
     acknowledged_at: Optional[datetime] = None
     acknowledged_by: Optional[str] = None
+    acknowledged_version_number: Optional[int] = None
+    current_version_number: Optional[int] = None
+
+class AssignSuccessorRequest(BaseModel):
+    claim_id: str
+
+class ProjectMembersUpdate(BaseModel):
+    departing_member: Optional[str] = None
+    successor_name: Optional[str] = None
 
 # --- Leak Check ---
 class LeakFinding(BaseModel):

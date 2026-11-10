@@ -23,6 +23,7 @@ import { useProjectMeta } from '../context/ProjectMetaContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
+import { formatLocalDateTime } from '../utils/date';
 
 export const ReviewApprovePage: React.FC = () => {
   const navigate = useNavigate();
@@ -266,8 +267,8 @@ export const ReviewApprovePage: React.FC = () => {
                     {ver.note || 'No note recorded'}
                   </p>
                   <div className="flex items-center justify-between text-[11px] text-text-muted pt-2 border-t border-border">
-                    <span title={new Date(ver.created_at).toLocaleString()}>
-                      {new Date(ver.created_at).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                    <span title={formatLocalDateTime(ver.created_at).iso} className="cursor-help">
+                      {formatLocalDateTime(ver.created_at).display}
                     </span>
                     {versions.length > 1 && idx < versions.length - 1 && (
                       <Button
@@ -312,10 +313,10 @@ export const ReviewApprovePage: React.FC = () => {
                         v{ver.number}.0
                       </td>
                       <td
-                        className="py-3 px-4 text-xs text-text-muted"
-                        title={new Date(ver.created_at).toLocaleString()}
+                        className="py-3 px-4 text-xs text-text-muted cursor-help"
+                        title={formatLocalDateTime(ver.created_at).iso}
                       >
-                        {new Date(ver.created_at).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                        {formatLocalDateTime(ver.created_at).display}
                       </td>
                       <td className="py-3 px-4 text-xs text-text-main">
                         {ver.note || 'No note recorded'}

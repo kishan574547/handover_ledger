@@ -169,6 +169,8 @@ export interface HandoverViewData {
   acknowledged: boolean;
   acknowledged_at?: string;
   acknowledged_by?: string;
+  acknowledged_version_number?: number;
+  current_version_number?: number;
 }
 
 export interface LeakCheckResult {

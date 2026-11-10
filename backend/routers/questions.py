@@ -103,9 +103,18 @@ def answer_question(
     ).first() is not None
     leaver_owner = "Arjun Mehta (Leaver-attested)" if is_demo else "Departing Member (Leaver-attested)"
 
+    answer_clean = payload.answer.strip()
+    lowered = answer_clean.lower()
+    idk_phrases = ["i don't know", "i dont know", "dont know", "not sure", "no idea", "unknown", "can't remember", "cannot remember"]
+    subj_display = subject_key.replace('_', ' ')
+    if any(p in lowered for p in idk_phrases):
+        claim_text = f"The leaving member could not explain why {subj_display} was chosen ({answer_clean})"
+    else:
+        claim_text = answer_clean
+
     leaver_claim = Claim(
         type=claim_type,
-        text=f"{payload.answer.strip()}",
+        text=claim_text,
         status="inferred",  # Inferred with created_by='leaver', displayed as leaver-attested
         clearance=1,
         owner_name=leaver_owner,
@@ -181,11 +190,20 @@ def unknown_question(
 
     # Creates missing/unknown claim
     subject_key = question.claim.subject_key if question.claim else "exit_interview"
+    subj_display = subject_key.replace('_', ' ')
+    is_demo = db.query(Source).filter(
+        Source.id.like("src-github-campus%") |
+        (Source.id == "src-chat-export") |
+        (Source.name == "GitHub (campus-club/campus-connect)")
+    ).first() is not None
+    leaver_owner = "Arjun Mehta (Leaver-attested)" if is_demo else "Departing Member (Leaver-attested)"
+
     claim = Claim(
-        type=question.claim.type if question.claim else "risk",
-        text=f"Confirmed unrecorded item: {question.text} - leaver unable to provide details.",
+        type=question.claim.type if question.claim else "decision",
+        text=f"The leaving member could not explain why {subj_display} was chosen.",
         status="missing",
         clearance=1,
+        owner_name=leaver_owner,
         subject_key=subject_key,
         review_state="approved",
         created_by="leaver"

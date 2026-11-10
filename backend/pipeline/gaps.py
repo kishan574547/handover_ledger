@@ -30,10 +30,19 @@ def detect_gaps_and_generate_questions(
         if "readme" in label or "runbook" in label:
             readme_and_runbook_text += " " + c.text.lower()
 
-    # Rule 1: Decision without rationale
+    # Rule 1: Decision without rationale (substantive decisions only, skip repo metadata)
+    TRIVIAL_METADATA_SNIPPETS = (
+        "default branch", "main branch", "no description", "initial commit",
+        "repository name", "readme created", "license created", "topics: none", "archived: no"
+    )
+
     for c in claims:
         if c.type == "decision":
             text_lower = c.text.lower()
+            # Noise filter: skip trivial repository metadata
+            if any(tm in text_lower for tm in TRIVIAL_METADATA_SNIPPETS):
+                continue
+
             # If decision mentions dropping or removing or choosing without "because", "due to", "rationale", "reason"
             has_rationale = any(kw in text_lower for kw in ["because", "due to", "since", "reason", "rationale", "in order to", "to prevent"])
             if not has_rationale or "dark mode" in text_lower:
@@ -213,5 +222,14 @@ def detect_gaps_and_generate_questions(
                 )
                 questions.append(q)
 
-    return new_claims, questions
+    # Rank questions by priority: high > medium > low, and cap at 10 most useful questions
+    prio_order = {"high": 3, "medium": 2, "low": 1}
+    questions.sort(key=lambda q: prio_order.get(q.priority, 1), reverse=True)
+    capped_questions = questions[:10]
+
+    # Keep missing claims that correspond to capped questions
+    allowed_claim_ids = {id(q.claim) for q in capped_questions if q.claim}
+    capped_claims = [c for c in new_claims if id(c) in allowed_claim_ids]
+
+    return capped_claims, capped_questions
 

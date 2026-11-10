@@ -29,8 +29,8 @@ export const ProjectMetaProvider: React.FC<{ children: ReactNode }> = ({ childre
   const isOwn = mode === 'own';
   const isEmpty = mode === 'empty';
 
-  const displayName = isDemo ? (data?.display_name || 'Campus Connect') : null;
-  const leaverName = isDemo ? (data?.leaver_name || 'Arjun Mehta') : null;
+  const displayName = isDemo ? (data?.display_name || 'Campus Connect') : (data?.display_name || data?.name || null);
+  const leaverName = isDemo ? (data?.leaver_name || 'Arjun Mehta') : (data?.leaver_name || data?.departing_member || 'Departing Member');
 
   return (
     <ProjectMetaContext.Provider

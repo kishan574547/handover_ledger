@@ -5,6 +5,7 @@ import { api } from '../api/client';
 import { ActivityItem } from '../types';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { TableRowSkeleton } from '../components/common/Skeleton';
+import { formatLocalDateTime } from '../utils/date';
 
 export const ActivityPage: React.FC = () => {
   const [selectedRole, setSelectedRole] = useState<string>('');
@@ -113,10 +114,10 @@ export const ActivityPage: React.FC = () => {
                   logs.map((log) => (
                     <tr key={log.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors">
                       <td
-                        className="py-3 px-5 font-mono text-text-muted whitespace-nowrap"
-                        title={new Date(log.at).toLocaleString()}
+                        className="py-3 px-5 font-mono text-text-muted whitespace-nowrap cursor-help"
+                        title={formatLocalDateTime(log.at).iso}
                       >
-                        {new Date(log.at).toLocaleString([], { dateStyle: 'short', timeStyle: 'medium' })}
+                        {formatLocalDateTime(log.at).display}
                       </td>
                       <td className="py-3 px-4 whitespace-nowrap">
                         <span className="font-semibold text-text-main capitalize bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded border border-border">

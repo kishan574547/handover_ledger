@@ -23,6 +23,7 @@ import { api } from '../api/client';
 import { SourceItem, AnalysisStatusData, ImportReport } from '../types';
 import { useRole } from '../context/RoleContext';
 import { useToast } from '../context/ToastContext';
+import { useProjectMeta } from '../context/ProjectMetaContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
@@ -34,8 +35,31 @@ import { ApiErrorDisplay } from '../components/common/ApiErrorDisplay';
 export const SourcesPage: React.FC = () => {
   const navigate = useNavigate();
   const { canLead, role } = useRole();
+  const { isOwn, isDemo, data: projectData } = useProjectMeta();
   const { success, error } = useToast();
   const queryClient = useQueryClient();
+
+  const [leaverNameInput, setLeaverNameInput] = useState('');
+  const [successorNameInput, setSuccessorNameInput] = useState('');
+  const [isSettingMembers, setIsSettingMembers] = useState(false);
+
+  useEffect(() => {
+    if (projectData) {
+      setLeaverNameInput(projectData.departing_member || 'Departing Member');
+      setSuccessorNameInput(projectData.successor_name || 'Successor');
+    }
+  }, [projectData]);
+
+  const updateMembersMutation = useMutation({
+    mutationFn: (vars: { departing_member?: string; successor_name?: string }) =>
+      api.updateProjectMembers(vars),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['project'] });
+      success('Members Updated', 'Departing member and successor names updated.');
+      setIsSettingMembers(false);
+    },
+    onError: (err: any) => error('Update Failed', err.message),
+  });
 
   // Modals state
   const [showGithubModal, setShowGithubModal] = useState(false);
@@ -239,6 +263,86 @@ export const SourcesPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Lead Member Names Setting Card for Own Projects */}
+      {canLead && !isDemo && (
+        <Card className="bg-slate-50/70 dark:bg-slate-900/40 border-border">
+          <CardHeader className="py-3 px-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+              <div>
+                <CardTitle className="text-sm font-semibold text-text-main">
+                  Set leaver and successor names for the handover document
+                </CardTitle>
+                <p className="text-xs text-text-muted mt-0.5">
+                  Customize the departing team member and successor developer names shown across handover reports and exports.
+                </p>
+              </div>
+              {!isSettingMembers && (
+                <Button variant="outline" size="sm" onClick={() => setIsSettingMembers(true)} className="self-start sm:self-auto">
+                  Edit Names
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          {isSettingMembers ? (
+            <CardContent className="pt-0 pb-4 px-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="block text-xs font-medium text-text-muted mb-1">Departing Member Name</label>
+                  <input
+                    type="text"
+                    value={leaverNameInput}
+                    onChange={(e) => setLeaverNameInput(e.target.value)}
+                    placeholder="e.g. Departing Member"
+                    className="w-full text-xs p-2 rounded-btn border border-border bg-surface text-text-main focus:outline-none focus:ring-1 focus:ring-navy"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-text-muted mb-1">Successor Developer Name</label>
+                  <input
+                    type="text"
+                    value={successorNameInput}
+                    onChange={(e) => setSuccessorNameInput(e.target.value)}
+                    placeholder="e.g. Successor Developer"
+                    className="w-full text-xs p-2 rounded-btn border border-border bg-surface text-text-main focus:outline-none focus:ring-1 focus:ring-navy"
+                  />
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="primary"
+                  isLoading={updateMembersMutation.isPending}
+                  onClick={() =>
+                    updateMembersMutation.mutate({
+                      departing_member: leaverNameInput.trim() || 'Departing Member',
+                      successor_name: successorNameInput.trim() || 'Successor',
+                    })
+                  }
+                >
+                  Save Names
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setIsSettingMembers(false)}>
+                  Cancel
+                </Button>
+              </div>
+            </CardContent>
+          ) : (
+            <CardContent className="pt-0 pb-3 px-4">
+              <div className="flex flex-wrap gap-4 text-xs text-text-main">
+                <div>
+                  <span className="text-text-muted">Departing Member: </span>
+                  <strong>{projectData?.departing_member || 'Departing Member'}</strong>
+                </div>
+                <div>
+                  <span className="text-text-muted">Successor: </span>
+                  <strong>{projectData?.successor_name || 'Successor'}</strong>
+                </div>
+              </div>
+            </CardContent>
+          )}
+        </Card>
+      )}
 
       {/* Sources Table (Desktop) & Stacked Cards (Mobile) */}
       <Card>
@@ -608,7 +712,7 @@ export const SourcesPage: React.FC = () => {
                 }}
                 className="w-full text-sm p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-navy focus:outline-none"
               />
-              <p className="text-[11px] text-slate-400 mt-1">Example: https://github.com/campus-club/campus-connect</p>
+              <p className="text-[11px] text-slate-400 mt-1">Example: https://github.com/owner/repository</p>
             </div>
 
             {githubError && (

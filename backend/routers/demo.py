@@ -1,5 +1,6 @@
 import json
 import logging
+import re
 from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
@@ -7,6 +8,7 @@ from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import Project, Source, Chunk, Claim, Evidence, ConflictLink, Question, Comment, HandoverVersion, Acknowledgement, ActivityLog
 from backend.permissions import get_current_role, require_lead_role
+from backend.schemas import ProjectMembersUpdate
 from backend.config import BACKEND_DIR, settings
 
 router = APIRouter(tags=["demo"])
@@ -70,8 +72,16 @@ def get_project(db: Session = Depends(get_db)):
             leaver_name = "Arjun Mehta"
         else:
             mode = "own"
-            display_name = None
-            leaver_name = None
+            first_gh = db.query(Source).filter(Source.kind == "github").first()
+            gh_repo = None
+            if first_gh:
+                m = re.search(r"GitHub\s*\(([^)]+)\)", first_gh.name)
+                gh_repo = m.group(1).strip() if m else first_gh.name
+
+            first_source = db.query(Source).first()
+            source_name = gh_repo or (first_source.name if first_source else "Repository Project")
+            display_name = source_name
+            leaver_name = proj.departing_member if (proj.departing_member and "Arjun" not in proj.departing_member) else "Departing Member"
 
     return {
         "mode": mode,
@@ -79,13 +89,44 @@ def get_project(db: Session = Depends(get_db)):
         "leaver_name": leaver_name,
         "id": proj.id,
         "name": display_name or ("Your project" if mode == "own" else proj.name),
-        "description": proj.description if mode == "demo" else "",
-        "departing_member": leaver_name if mode == "demo" else None,
-        "lead_name": proj.lead_name if mode == "demo" else None,
-        "successor_name": proj.successor_name if mode == "demo" else None,
-        "coordinator_name": proj.coordinator_name if mode == "demo" else None,
+        "description": proj.description if mode == "demo" else (proj.description or ""),
+        "departing_member": leaver_name if mode == "demo" else (proj.departing_member if (proj.departing_member and "Arjun" not in proj.departing_member) else "Departing Member"),
+        "lead_name": proj.lead_name if mode == "demo" else "Lead",
+        "successor_name": proj.successor_name if mode == "demo" else (proj.successor_name if (proj.successor_name and "Rahul" not in proj.successor_name) else "Successor Developer"),
+        "coordinator_name": proj.coordinator_name if mode == "demo" else "Coordinator",
         "handover_status": proj.handover_status,
         "updated_at": proj.updated_at
+    }
+
+@router.patch("/project/members")
+def update_project_members(
+    payload: ProjectMembersUpdate,
+    db: Session = Depends(get_db),
+    current_role: str = Depends(get_current_role)
+):
+    require_lead_role(current_role)
+    proj = db.query(Project).filter(Project.id == "default").first()
+    if not proj:
+        proj = Project(id="default")
+        db.add(proj)
+
+    if payload.departing_member is not None:
+        proj.departing_member = payload.departing_member.strip()
+    if payload.successor_name is not None:
+        proj.successor_name = payload.successor_name.strip()
+
+    log = ActivityLog(
+        role=current_role,
+        action="update_members",
+        target=f"Updated handover members: leaver='{proj.departing_member}', successor='{proj.successor_name}'"
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(proj)
+    return {
+        "status": "ok",
+        "departing_member": proj.departing_member,
+        "successor_name": proj.successor_name
     }
 
 @router.post("/demo/reset")

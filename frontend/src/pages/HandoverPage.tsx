@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   ShieldCheck,
@@ -15,6 +16,9 @@ import {
   ExternalLink,
   HelpCircle,
   X,
+  Inbox,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { api } from '../api/client';
 import { HandoverViewData, LeakCheckResult, DemoRole, CitationItem } from '../types';
@@ -27,8 +31,10 @@ import { Modal } from '../components/common/Modal';
 import { Drawer } from '../components/common/Drawer';
 import { StatusBadge, ClearanceBadge } from '../components/common/Badge';
 import { TrustLens, TrustLensMode, filterClaimsByTrustLens } from '../components/common/TrustLens';
+import { formatLocalDateTime } from '../utils/date';
 
 export const HandoverPage: React.FC = () => {
+  const navigate = useNavigate();
   const { role, canLead, canAcknowledge, roleConfig } = useRole();
   const { isDemo, displayName, leaverName } = useProjectMeta();
   const { success, error, warning } = useToast();
@@ -37,6 +43,7 @@ export const HandoverPage: React.FC = () => {
   // Lead preview role selector
   const [previewRole, setPreviewRole] = useState<DemoRole>(role);
   const [trustMode, setTrustMode] = useState<TrustLensMode>('everything');
+  const [isRecentChangesOpen, setIsRecentChangesOpen] = useState(false);
 
   // Modals & Drawers state
   const [isLeakCheckOpen, setIsLeakCheckOpen] = useState(false);
@@ -66,6 +73,16 @@ export const HandoverPage: React.FC = () => {
       success('Receipt Acknowledged', `${ack.name} confirmed receipt of this handover document.`);
     },
     onError: (err: any) => error('Acknowledgement Failed', err.message),
+  });
+
+  // Assign successor mutation
+  const assignSuccessorMutation = useMutation({
+    mutationFn: (claimId: string) => api.assignSuccessor(claimId),
+    onSuccess: (data: any) => {
+      queryClient.invalidateQueries({ queryKey: ['handover-view'] });
+      success('Assigned to Successor', `Responsibility reassigned to ${data.owner_name}.`);
+    },
+    onError: (err: any) => error('Assignment Failed', err.message),
   });
 
   // Run Leak Check
@@ -147,17 +164,87 @@ export const HandoverPage: React.FC = () => {
 
   const { sections, acknowledged, acknowledged_at, acknowledged_by } = handover;
 
+  const renderEmptySection = (customMessage?: string) => (
+    <div className="p-3 bg-slate-50/60 dark:bg-slate-900/40 rounded-card border border-dashed border-border-subtle flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs text-text-muted">
+      <div className="flex items-center gap-2">
+        <Inbox className="w-4 h-4 text-text-muted flex-shrink-0" />
+        <span>{customMessage || 'Nothing found in the connected sources for this section.'}</span>
+      </div>
+      {canLead && (
+        <button
+          onClick={() => navigate('/sources')}
+          className="text-[11px] text-navy dark:text-teal hover:underline font-semibold text-left sm:text-right flex-shrink-0"
+        >
+          Add meeting notes or a chat export to improve this section &rarr;
+        </button>
+      )}
+    </div>
+  );
+
+  const renderCitationChip = (claimId: string) => {
+    const cit = Object.values(sections || {})
+      .flatMap((s: any) => s.citations || [])
+      .find((c: any) => c.claim_id === claimId);
+    return (
+      <button
+        key={claimId}
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (cit) setActiveCitation(cit);
+        }}
+        className="inline-flex items-center ml-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold bg-navy/10 dark:bg-teal/20 text-navy dark:text-teal hover:bg-navy/20 dark:hover:bg-teal/30 transition-colors"
+        title="View verifiable source quote"
+      >
+        [#{claimId.slice(0, 6)}]
+      </button>
+    );
+  };
+
   return (
     <div className="space-y-6 pb-20">
       {/* Acknowledged Top Banner */}
-      {acknowledged && (
+      {handover.acknowledged_version_number && (handover.current_version_number ?? 1) > handover.acknowledged_version_number ? (
+        <div className="p-4 bg-amber-50 border border-amber-200 rounded-card flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-3">
+            <Clock className="w-5 h-5 text-amber-600 flex-shrink-0" />
+            <div className="text-xs">
+              <span className="font-bold text-amber-950">Version {handover.acknowledged_version_number} was acknowledged</span>
+              <span className="text-amber-800 ml-2">
+                Confirmed by <strong>{acknowledged_by}</strong> on{' '}
+                {acknowledged_at ? (
+                  <span title={formatLocalDateTime(acknowledged_at).iso} className="cursor-help font-medium">
+                    {formatLocalDateTime(acknowledged_at).display}
+                  </span>
+                ) : (
+                  '—'
+                )}
+                ; <strong>Version {handover.current_version_number} is pending acknowledgement.</strong>
+              </span>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold text-amber-800 bg-amber-100 px-2 py-0.5 rounded">
+            New Version Pending
+          </span>
+        </div>
+      ) : acknowledged ? (
         <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-card flex items-center justify-between shadow-sm">
           <div className="flex items-center gap-3">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
             <div className="text-xs">
-              <span className="font-bold text-emerald-950">Receipt Acknowledged</span>
+              <span className="font-bold text-emerald-950">
+                Version {handover.acknowledged_version_number || 1} Acknowledged
+              </span>
               <span className="text-emerald-800 ml-2">
-                Confirmed by <strong>{acknowledged_by}</strong> on {acknowledged_at && new Date(acknowledged_at).toLocaleString()}
+                Confirmed by <strong>{acknowledged_by}</strong> on{' '}
+                {acknowledged_at ? (
+                  <span title={formatLocalDateTime(acknowledged_at).iso} className="cursor-help font-medium">
+                    {formatLocalDateTime(acknowledged_at).display}
+                  </span>
+                ) : (
+                  '—'
+                )}
               </span>
             </div>
           </div>
@@ -165,7 +252,7 @@ export const HandoverPage: React.FC = () => {
             Official Audit Record
           </span>
         </div>
-      )}
+      ) : null}
 
       {/* Standard Page Header Pattern */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
@@ -241,7 +328,7 @@ export const HandoverPage: React.FC = () => {
         {/* Section 1: Project Snapshot */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">1. Project Snapshot & Overview</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">1. Project Snapshot & Overview</CardTitle>
             {sections.snapshot?.hidden_count > 0 && (
               <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium flex items-center gap-1">
                 <Lock className="w-3 h-3" />
@@ -250,53 +337,50 @@ export const HandoverPage: React.FC = () => {
             )}
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-slate-50 rounded-lg text-xs">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-3 bg-slate-50 dark:bg-slate-900/60 rounded-lg text-xs">
               <div>
-                <span className="text-slate-500 block">Project:</span>
-                <strong className="text-slate-900 text-sm">{handover.project_name}</strong>
+                <span className="text-text-muted block">Project:</span>
+                <strong className="text-text-main text-sm">{handover.project_name}</strong>
               </div>
               <div>
-                <span className="text-slate-500 block">Departing Member:</span>
-                <strong className="text-slate-900">{handover.departing_member}</strong>
+                <span className="text-text-muted block">Departing Member:</span>
+                <strong className="text-text-main">{handover.departing_member}</strong>
               </div>
               <div>
-                <span className="text-slate-500 block">Successor:</span>
-                <strong className="text-slate-900">{handover.successor_name}</strong>
+                <span className="text-text-muted block">Successor:</span>
+                <strong className="text-text-main">{handover.successor_name}</strong>
               </div>
               <div>
-                <span className="text-slate-500 block">Clearance Level:</span>
-                <strong className="text-slate-900">Level {handover.clearance_level}</strong>
+                <span className="text-text-muted block">Clearance Level:</span>
+                <strong className="text-text-main">Level {handover.clearance_level}</strong>
               </div>
             </div>
 
-            <div className="space-y-2 pt-2">
-              {sections.snapshot?.claims.map((claim, idx) => (
-                <div key={claim.id} className="text-sm text-slate-800 leading-relaxed flex items-start gap-2">
-                  <span className="text-slate-400 font-mono text-xs">•</span>
-                  <p className="flex-1">
-                    {claim.text}
-                    {/* Clickable Citation Chip */}
-                    <button
-                      onClick={() => {
-                        const cit = sections.snapshot.citations.find((c) => c.claim_id === claim.id);
-                        if (cit) setActiveCitation(cit);
-                      }}
-                      className="inline-flex items-center ml-1.5 px-1.5 py-0.2 rounded text-[11px] font-mono font-semibold bg-navy/10 text-navy hover:bg-navy hover:text-white transition-colors"
-                      title="View verifiable source quote"
-                    >
-                      [{idx + 1}]
-                    </button>
-                  </p>
-                </div>
-              ))}
-            </div>
+            {(!sections.snapshot?.claims || sections.snapshot.claims.length === 0) ? (
+              renderEmptySection()
+            ) : (
+              <div className="space-y-2 pt-2">
+                {sections.snapshot.claims.map((claim) => (
+                  <div key={claim.id} className="text-sm text-text-main leading-relaxed flex items-start justify-between gap-2">
+                    <div className="flex items-start gap-2">
+                      <span className="text-text-muted font-mono text-xs">•</span>
+                      <p className="flex-1">
+                        {claim.text}
+                        {renderCitationChip(claim.id)}
+                      </p>
+                    </div>
+                    <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
 
         {/* Section 2: Ownership Table */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">2. Ownership & Primary Responsibilities</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">2. Ownership & Primary Responsibilities</CardTitle>
             {sections.ownership?.hidden_count > 0 && (
               <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium flex items-center gap-1">
                 <Lock className="w-3 h-3" />
@@ -305,182 +389,398 @@ export const HandoverPage: React.FC = () => {
             )}
           </CardHeader>
           <CardContent className="p-0 overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 font-semibold uppercase">
-                  <th className="py-2.5 px-4">Subject / Domain</th>
-                  <th className="py-2.5 px-4">Owner / Assignee</th>
-                  <th className="py-2.5 px-4">Claim Statement</th>
-                  <th className="py-2.5 px-4">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {sections.ownership?.claims.map((claim) => (
-                  <tr key={claim.id}>
-                    <td className="py-2.5 px-4 font-semibold text-slate-800 capitalize font-mono">
-                      {claim.subject_key.replace(/_/g, ' ')}
-                    </td>
-                    <td className="py-2.5 px-4 font-medium text-navy">{claim.owner_name || 'Unassigned'}</td>
-                    <td className="py-2.5 px-4 text-slate-700">{claim.text}</td>
-                    <td className="py-2.5 px-4">
-                      <StatusBadge status={claim.status} size="sm" />
-                    </td>
+            {(!sections.ownership?.claims || sections.ownership.claims.length === 0) ? (
+              <div className="p-4">{renderEmptySection()}</div>
+            ) : (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-slate-900/60 border-b border-border text-text-muted font-semibold uppercase">
+                    <th className="py-2.5 px-4">Subject / Domain</th>
+                    <th className="py-2.5 px-4">Owner / Assignee</th>
+                    <th className="py-2.5 px-4">Claim Statement</th>
+                    <th className="py-2.5 px-4">Status</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {sections.ownership.claims.map((claim) => {
+                    const isUnassigned = !claim.owner_name || claim.owner_name.toLowerCase() === 'unassigned';
+                    return (
+                      <tr key={claim.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/40">
+                        <td className="py-2.5 px-4 font-semibold text-text-main capitalize font-mono">
+                          {claim.subject_key.replace(/_/g, ' ')}
+                        </td>
+                        <td className="py-2.5 px-4 font-medium text-navy dark:text-teal">
+                          <div className="flex items-center gap-2">
+                            <span>{claim.owner_name || 'Unassigned'}</span>
+                            {isUnassigned && canLead && (
+                              <button
+                                type="button"
+                                onClick={() => assignSuccessorMutation.mutate(claim.id)}
+                                disabled={assignSuccessorMutation.isPending}
+                                className="px-1.5 py-0.5 text-[10px] rounded bg-navy text-white hover:bg-navy-light font-sans font-semibold transition-colors disabled:opacity-50"
+                                title={`Assign this unassigned item to successor (${handover.successor_name})`}
+                              >
+                                Assign Successor
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-2.5 px-4 text-text-main">
+                          {claim.text}
+                          {renderCitationChip(claim.id)}
+                        </td>
+                        <td className="py-2.5 px-4">
+                          <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            )}
           </CardContent>
         </Card>
 
         {/* Section 3: Key Decisions with Rationale */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">3. Key Decisions & Technical Rationale</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">3. Key Decisions & Technical Rationale</CardTitle>
+            {sections.decisions?.hidden_count > 0 && (
+              <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                <span>{sections.decisions.hidden_count} items hidden</span>
+              </span>
+            )}
           </CardHeader>
           <CardContent className="space-y-3">
-            {sections.decisions?.claims.map((claim) => (
-              <div key={claim.id} className="p-3 bg-slate-50/70 rounded-lg border border-slate-200/80 space-y-1">
-                <div className="flex justify-between items-start">
-                  <p className="text-sm font-semibold text-slate-900">{claim.text}</p>
-                  <StatusBadge status={claim.status} size="sm" />
+            {(!sections.decisions?.claims || sections.decisions.claims.length === 0) ? (
+              renderEmptySection()
+            ) : (
+              sections.decisions.claims.map((claim) => (
+                <div key={claim.id} className="p-3 bg-slate-50/70 dark:bg-slate-900/40 rounded-lg border border-border space-y-1">
+                  <div className="flex justify-between items-start gap-2">
+                    <p className="text-sm font-semibold text-text-main">
+                      {claim.text}
+                      {renderCitationChip(claim.id)}
+                    </p>
+                    <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                  </div>
+                  {claim.event_date && (
+                    <span className="text-[11px] text-text-muted font-mono">Recorded: {claim.event_date}</span>
+                  )}
                 </div>
-                {claim.event_date && (
-                  <span className="text-[11px] text-slate-400 font-mono">Recorded: {claim.event_date}</span>
-                )}
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 
         {/* Section 4: Open Work and Blockers */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">4. Open Work & Active Blockers</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">4. Open Work & Active Blockers</CardTitle>
+            {sections.open_work?.hidden_count > 0 && (
+              <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                <span>{sections.open_work.hidden_count} items hidden</span>
+              </span>
+            )}
           </CardHeader>
           <CardContent className="space-y-2">
-            {sections.open_work?.claims.map((claim) => (
-              <div key={claim.id} className="p-3 rounded-lg border border-slate-200 flex items-start justify-between gap-3 bg-white">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">{claim.text}</p>
-                  <span className="text-xs text-slate-500 font-medium">Assignee: {claim.owner_name || 'Unassigned'}</span>
+            {(!sections.open_work?.claims || sections.open_work.claims.length === 0) ? (
+              renderEmptySection()
+            ) : (
+              sections.open_work.claims.map((claim) => (
+                <div key={claim.id} className="p-3 rounded-lg border border-border flex items-start justify-between gap-3 bg-surface">
+                  <div>
+                    <p className="text-sm font-medium text-text-main">
+                      {claim.text}
+                      {renderCitationChip(claim.id)}
+                    </p>
+                    <span className="text-xs text-text-muted font-medium">Assignee: {claim.owner_name || 'Unassigned'}</span>
+                  </div>
+                  <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
                 </div>
-                <StatusBadge status={claim.status} size="sm" />
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
 
         {/* Section 5: Risks */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">5. Operational & Technical Risks</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">5. Operational & Technical Risks</CardTitle>
+            {sections.risks?.hidden_count > 0 && (
+              <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                <span>{sections.risks.hidden_count} items hidden</span>
+              </span>
+            )}
           </CardHeader>
           <CardContent className="space-y-2">
-            {sections.risks?.claims.map((claim) => (
-              <div key={claim.id} className="p-3 bg-rose-50/40 rounded-lg border border-rose-200 text-xs text-rose-950 font-medium flex justify-between items-center">
-                <span>{claim.text}</span>
-                <ClearanceBadge clearance={claim.clearance} size="sm" />
-              </div>
-            ))}
+            {(!sections.risks?.claims || sections.risks.claims.length === 0) ? (
+              renderEmptySection()
+            ) : (
+              sections.risks.claims.map((claim) => (
+                <div key={claim.id} className="p-3 bg-rose-50/40 dark:bg-rose-950/20 rounded-lg border border-rose-200 dark:border-rose-900 text-xs text-rose-950 dark:text-rose-200 font-medium flex justify-between items-center gap-3">
+                  <div>
+                    <span>{claim.text}</span>
+                    {renderCitationChip(claim.id)}
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <ClearanceBadge clearance={claim.clearance} size="sm" />
+                    <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
         {/* Section 6: Dependencies & Integrations */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">6. Third-Party Dependencies & Integrations</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">6. Third-Party Dependencies & Integrations</CardTitle>
+            {sections.dependencies?.hidden_count > 0 && (
+              <span className="text-xs text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 font-medium flex items-center gap-1">
+                <Lock className="w-3 h-3" />
+                <span>{sections.dependencies.hidden_count} items hidden</span>
+              </span>
+            )}
           </CardHeader>
           <CardContent className="space-y-2">
-            {sections.dependencies?.claims.map((claim) => (
-              <div key={claim.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-800">
-                {claim.text}
-              </div>
-            ))}
+            {(!sections.dependencies?.claims || sections.dependencies.claims.length === 0) ? (
+              renderEmptySection()
+            ) : (
+              sections.dependencies.claims.map((claim) => (
+                <div key={claim.id} className="p-3 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-border text-xs text-text-main flex items-center justify-between gap-3">
+                  <div>
+                    <span>{claim.text}</span>
+                    {renderCitationChip(claim.id)}
+                  </div>
+                  <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
         {/* Section 7: Contacts */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">7. Key Stakeholder & Escalation Contacts</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">7. Key Stakeholder & Escalation Contacts</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {sections.contacts?.claims.map((claim) => (
-              <div key={claim.id} className="p-3 rounded-lg border border-slate-200 text-xs flex justify-between items-center">
-                <span className="font-semibold text-slate-800">{claim.text}</span>
-                <span className="font-mono text-slate-500">{claim.owner_name}</span>
-              </div>
-            ))}
+            {(!sections.contacts?.claims || sections.contacts.claims.length === 0) ? (
+              renderEmptySection()
+            ) : (
+              sections.contacts.claims.map((claim) => (
+                <div key={claim.id} className="p-3 rounded-lg border border-border text-xs flex justify-between items-center gap-3">
+                  <div>
+                    <span className="font-semibold text-text-main">{claim.text}</span>
+                    {renderCitationChip(claim.id)}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-text-muted">{claim.owner_name}</span>
+                    <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                  </div>
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
         {/* Section 8: Recurring Problems */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">8. Recurring Problems & Mitigations</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">8. Recurring Problems & Mitigations</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {sections.recurring_problems?.claims.map((claim) => (
-              <div key={claim.id} className="p-3 bg-amber-50/50 border border-amber-200 rounded-lg text-xs text-amber-950">
-                {claim.text}
-              </div>
-            ))}
+            {(!sections.recurring_problems?.claims || sections.recurring_problems.claims.length === 0) ? (
+              renderEmptySection()
+            ) : (
+              sections.recurring_problems.claims.map((claim) => (
+                <div key={claim.id} className="p-3 bg-amber-50/50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900 rounded-lg text-xs text-amber-950 dark:text-amber-200 flex items-center justify-between gap-3">
+                  <div>
+                    <span>{claim.text}</span>
+                    {renderCitationChip(claim.id)}
+                  </div>
+                  <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
         {/* Section 9: Next Actions */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">9. Immediate Next Actions</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">9. Immediate Next Actions</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {sections.next_actions?.claims.map((claim) => (
-              <div key={claim.id} className="p-3 border border-slate-200 rounded-lg text-xs text-slate-800 font-medium">
-                {claim.text}
-              </div>
-            ))}
+            {(!sections.next_actions?.claims || sections.next_actions.claims.length === 0) ? (
+              renderEmptySection('No next actions found in the sources.')
+            ) : (
+              sections.next_actions.claims.map((claim) => (
+                <div key={claim.id} className="p-3 border border-border rounded-lg text-xs text-text-main font-medium flex items-center justify-between gap-3 bg-surface">
+                  <div>
+                    <span>{claim.text}</span>
+                    {renderCitationChip(claim.id)}
+                    {claim.owner_name && (
+                      <span className="text-[11px] text-text-muted ml-2">Assignee: {claim.owner_name}</span>
+                    )}
+                  </div>
+                  <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                </div>
+              ))
+            )}
           </CardContent>
         </Card>
 
-        {/* Section 10: First-Week Plan (Checklist with checkboxes) */}
+        {/* Recent Changes (Collapsible) */}
+        <Card className="card">
+          <CardHeader className="cursor-pointer select-none" onClick={() => setIsRecentChangesOpen(!isRecentChangesOpen)}>
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-base font-bold text-text-main">Recent Changes</CardTitle>
+                <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-text-muted">
+                  {sections.recent_changes?.claims?.length || 0}
+                </span>
+              </div>
+              <button type="button" className="text-text-muted hover:text-text-main p-1" aria-label="Toggle recent changes">
+                {isRecentChangesOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+          </CardHeader>
+          {isRecentChangesOpen && (
+            <CardContent className="space-y-2 pt-0">
+              {(!sections.recent_changes?.claims || sections.recent_changes.claims.length === 0) ? (
+                renderEmptySection()
+              ) : (
+                sections.recent_changes.claims.slice(0, 15).map((claim) => (
+                  <div key={claim.id} className="p-2.5 rounded-lg border border-border bg-surface flex items-start justify-between gap-3 text-xs">
+                    <div className="flex-1">
+                      <span className="text-text-main">{claim.text}</span>
+                      {renderCitationChip(claim.id)}
+                    </div>
+                    <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                  </div>
+                ))
+              )}
+            </CardContent>
+          )}
+        </Card>
+
+        {/* Section 10: First-Week Plan */}
         <Card className="card">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-slate-900">10. First-Week Onboarding Checklist</CardTitle>
+            <CardTitle className="text-base font-bold text-text-main">10. First-Week Onboarding Checklist</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <h4 className="text-xs font-bold text-navy uppercase tracking-wider">Days 1 - 2: Access & Local Environment</h4>
-              <div className="space-y-1.5 pl-2">
-                {[
-                  'Clone repository and configure local backend with SQLite',
-                  'Verify GitHub permissions and branch protection rules',
-                  'Confirm campus SSO staging authentication domain',
-                ].map((item, idx) => (
-                  <label key={idx} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                    <input type="checkbox" className="rounded border-slate-300 text-navy focus:ring-navy" />
-                    <span>{item}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            {isDemo ? (
+              <>
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-navy dark:text-teal uppercase tracking-wider">Days 1 - 2: Access & Local Environment</h4>
+                  <div className="space-y-1.5 pl-2">
+                    {[
+                      'Clone repository and configure local backend with SQLite',
+                      'Verify GitHub permissions and branch protection rules',
+                      'Confirm campus SSO staging authentication domain',
+                    ].map((item, idx) => (
+                      <label key={idx} className="flex items-center gap-2 text-xs text-text-main cursor-pointer">
+                        <input type="checkbox" className="rounded border-slate-300 text-navy focus:ring-navy" />
+                        <span>{item}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
 
-            <div className="space-y-2 pt-2 border-t border-slate-100">
-              <h4 className="text-xs font-bold text-navy uppercase tracking-wider">Days 3 - 5: Architecture Shadowing & Releases</h4>
-              <div className="space-y-1.5 pl-2">
-                {[
-                  'Run end-to-end integration test on local Docker compose',
-                  isDemo
-                    ? 'Meet with Mr. Kapoor regarding hostel network port forwarding'
-                    : 'Meet with infrastructure contacts regarding port forwarding',
-                  'Review unowned PR #9 (Notification service queue) and assign successor',
-                ].map((item, idx) => (
-                  <label key={idx} className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
-                    <input type="checkbox" className="rounded border-slate-300 text-navy focus:ring-navy" />
-                    <span>{item}</span>
-                  </label>
-                ))}
+                <div className="space-y-2 pt-2 border-t border-border">
+                  <h4 className="text-xs font-bold text-navy dark:text-teal uppercase tracking-wider">Days 3 - 5: Architecture Shadowing & Releases</h4>
+                  <div className="space-y-1.5 pl-2">
+                    {[
+                      'Run end-to-end integration test on local Docker compose',
+                      'Meet with Mr. Kapoor regarding hostel network port forwarding',
+                      'Review unowned PR #9 (Notification service queue) and assign successor',
+                    ].map((item, idx) => (
+                      <label key={idx} className="flex items-center gap-2 text-xs text-text-main cursor-pointer">
+                        <input type="checkbox" className="rounded border-slate-300 text-navy focus:ring-navy" />
+                        <span>{item}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ) : (!sections.first_week_plan?.claims || sections.first_week_plan.claims.length === 0) ? (
+              <div className="p-4 bg-slate-50/60 dark:bg-slate-900/40 rounded-card border border-dashed border-border-subtle space-y-3">
+                <div className="flex items-center gap-2 text-xs text-text-muted font-semibold">
+                  <Inbox className="w-4 h-4 text-text-muted" />
+                  <span>Not enough approved material to build a first-week plan yet</span>
+                </div>
+                <p className="text-xs text-text-muted">
+                  To generate an automated, cited first-week onboarding plan, ensure your project has approved claims under:
+                </p>
+                <ul className="list-disc list-inside text-xs text-text-muted space-y-1 pl-2">
+                  <li>Next actions and TODO items</li>
+                  <li>Open work and active PRs/issues</li>
+                  <li>Operational and technical risks</li>
+                  <li>Component ownership & responsibilities</li>
+                  <li>External dependencies & environment configurations</li>
+                </ul>
+                {canLead && (
+                  <Button variant="outline" size="sm" onClick={() => navigate('/review')} className="mt-2">
+                    Go to Review Ledger &rarr;
+                  </Button>
+                )}
               </div>
-            </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Days 1 - 2 */}
+                <div className="space-y-2">
+                  <h4 className="text-xs font-bold text-navy dark:text-teal uppercase tracking-wider">Days 1 - 2: Access & Environment Foundations</h4>
+                  <div className="space-y-2 pl-2">
+                    {sections.first_week_plan.claims.slice(0, Math.ceil(sections.first_week_plan.claims.length / 2)).map((claim) => (
+                      <label key={claim.id} className="flex items-start gap-2.5 text-xs text-text-main cursor-pointer p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                        <input type="checkbox" className="mt-0.5 rounded border-slate-300 text-navy focus:ring-navy" />
+                        <div className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                          <div>
+                            <span>{claim.text}</span>
+                            {renderCitationChip(claim.id)}
+                            {claim.owner_name && (
+                              <span className="text-[11px] text-text-muted ml-2">({claim.owner_name})</span>
+                            )}
+                          </div>
+                          <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Days 3 - 5 */}
+                {sections.first_week_plan.claims.length > 1 && (
+                  <div className="space-y-2 pt-2 border-t border-border">
+                    <h4 className="text-xs font-bold text-navy dark:text-teal uppercase tracking-wider">Days 3 - 5: Architecture Deep Dive & Open Work</h4>
+                    <div className="space-y-2 pl-2">
+                      {sections.first_week_plan.claims.slice(Math.ceil(sections.first_week_plan.claims.length / 2)).map((claim) => (
+                        <label key={claim.id} className="flex items-start gap-2.5 text-xs text-text-main cursor-pointer p-2 rounded hover:bg-slate-50 dark:hover:bg-slate-800/40 transition-colors">
+                          <input type="checkbox" className="mt-0.5 rounded border-slate-300 text-navy focus:ring-navy" />
+                          <div className="flex-1 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                            <div>
+                              <span>{claim.text}</span>
+                              {renderCitationChip(claim.id)}
+                              {claim.owner_name && (
+                                <span className="text-[11px] text-text-muted ml-2">({claim.owner_name})</span>
+                              )}
+                            </div>
+                            <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -496,17 +796,24 @@ export const HandoverPage: React.FC = () => {
             <p className="text-xs text-amber-800">
               These items represent conflicts, missing documentation, or unverified leaver attestations that require ongoing attention.
             </p>
-            {sections.unresolved?.claims.map((claim) => (
-              <div key={claim.id} className="p-3 bg-white rounded-lg border border-amber-200 shadow-xs flex justify-between items-start gap-3">
-                <div>
-                  <p className="text-xs font-semibold text-slate-900">{claim.text}</p>
-                  <span className="text-[11px] text-slate-500 font-mono mt-0.5 block">
-                    Subject: {claim.subject_key}
-                  </span>
+            {(!sections.unresolved?.claims || sections.unresolved.claims.length === 0) ? (
+              renderEmptySection('No unresolved items or ambiguities flagged for this role.')
+            ) : (
+              sections.unresolved.claims.map((claim) => (
+                <div key={claim.id} className="p-3 bg-surface rounded-lg border border-amber-200 shadow-xs flex justify-between items-start gap-3">
+                  <div>
+                    <p className="text-xs font-semibold text-text-main">
+                      {claim.text}
+                      {renderCitationChip(claim.id)}
+                    </p>
+                    <span className="text-[11px] text-text-muted font-mono mt-0.5 block">
+                      Subject: {claim.subject_key}
+                    </span>
+                  </div>
+                  <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
                 </div>
-                <StatusBadge status={claim.status} isLeaverAttested={claim.created_by === 'leaver'} size="sm" />
-              </div>
-            ))}
+              ))
+            )}
           </CardContent>
         </Card>
       </div>

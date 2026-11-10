@@ -33,7 +33,8 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({
   if (isLeaverAttested) {
     return (
       <span
-        className={`inline-flex items-center gap-1.5 rounded-full bg-status-leaver-bg text-status-leaver-text border border-status-leaver-border ${sizeClasses}`}
+        className={`inline-flex items-center gap-1.5 rounded-full bg-status-leaver-bg text-status-leaver-text border border-status-leaver-border whitespace-nowrap ${sizeClasses}`}
+        style={{ whiteSpace: 'nowrap' }}
       >
         <UserCheck className="w-3.5 h-3.5 flex-shrink-0" />
         <span>Leaver-attested</span>

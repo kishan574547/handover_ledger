@@ -140,6 +140,11 @@ export const api = {
   getGitHubHealth: () => request<GitHubHealthData>('/health/github'),
   loadDemo: () => request<any>('/demo/load', { method: 'POST' }),
   resetDemo: () => request<any>('/demo/reset', { method: 'POST' }),
+  updateProjectMembers: (data: { departing_member?: string; successor_name?: string }) =>
+    request<any>('/project/members', {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
 
   // Dashboard
   getDashboard: () => request<any>('/dashboard'),
@@ -254,8 +259,14 @@ export const api = {
       method: 'POST',
       body: JSON.stringify({ name }),
     }),
+  assignSuccessor: (claimId: string) =>
+    request<any>('/handover/assign-successor', {
+      method: 'POST',
+      body: JSON.stringify({ claim_id: claimId }),
+    }),
   exportHandoverMarkdown: (previewRole?: string) => {
-    const qs = previewRole ? `?role=${previewRole}&format=md` : '?format=md';
+    const tz = encodeURIComponent(Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC');
+    const qs = previewRole ? `?role=${previewRole}&format=md&tz=${tz}` : `?format=md&tz=${tz}`;
     return request<string>(`/handover/export${qs}`);
   },
 

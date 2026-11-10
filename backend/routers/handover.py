@@ -1,6 +1,7 @@
 import json
 import re
 from datetime import datetime, timezone
+import zoneinfo
 from typing import Dict, Any, List, Optional, Tuple
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
@@ -14,7 +15,7 @@ from backend.schemas import (
     HandoverVersionOut, HandoverVersionCreate, HandoverDiffOut,
     HandoverApproveRequest, HandoverSendBackRequest, HandoverViewOut,
     HandoverSection, CitationItem, ClaimOut, LeakCheckResult,
-    AcknowledgementCreate, AcknowledgementOut
+    AcknowledgementCreate, AcknowledgementOut, AssignSuccessorRequest
 )
 from backend.permissions import (
     get_current_role, get_role_max_clearance, require_lead_role,
@@ -50,12 +51,16 @@ def build_role_sections(db: Session, target_role: str) -> Tuple[Dict[str, Handov
         ("recurring_problems", "Recurring Problems & Troubleshooting"),
         ("next_actions", "Immediate Next Actions"),
         ("first_week_plan", "First-Week Onboarding Checklist"),
+        ("recent_changes", "Recent Changes"),
         ("unresolved", "Unresolved Items & Ambiguities"),
     ]
 
     sections: Dict[str, HandoverSection] = {}
     for key, title in section_defs:
         sections[key] = HandoverSection(title=title, key=key, claims=[], hidden_count=0, citations=[])
+
+    # First-week plan candidates (cited items only)
+    first_week_candidates: List[Tuple[int, ClaimOut, CitationItem]] = []
 
     # Map claims to sections
     for c in visible_approved_claims:
@@ -106,13 +111,25 @@ def build_role_sections(db: Session, target_role: str) -> Tuple[Dict[str, Handov
             sections["contacts"].claims.append(c_out)
         elif c.type == "recurring_problem":
             sections["recurring_problems"].claims.append(c_out)
-        elif c.type in ("next_action", "change"):
+        elif c.type == "next_action":
             sections["next_actions"].claims.append(c_out)
-            sections["first_week_plan"].claims.append(c_out)
+        elif c.type == "change":
+            sections["recent_changes"].claims.append(c_out)
+
+        # Build first-week plan strictly from cited items (open work, next actions, risks, ownership, dependencies)
+        if citation and c.type in ("next_action", "open_work", "risk", "dependency", "owner"):
+            prio_map = {"next_action": 0, "open_work": 1, "risk": 2, "dependency": 3, "owner": 4}
+            first_week_candidates.append((prio_map.get(c.type, 9), c_out, citation))
 
         if citation and c.type != "unresolved":
             target_key = c.type if c.type in sections else "snapshot"
             sections[target_key].citations.append(citation)
+
+    # Populate first_week_plan from cited candidates
+    first_week_candidates.sort(key=lambda x: x[0])
+    for _, c_item, cit_item in first_week_candidates[:8]:
+        sections["first_week_plan"].claims.append(c_item)
+        sections["first_week_plan"].citations.append(cit_item)
 
     # Count hidden items per section
     for c in hidden_claims:
@@ -131,9 +148,11 @@ def build_role_sections(db: Session, target_role: str) -> Tuple[Dict[str, Handov
             sections["contacts"].hidden_count += 1
         elif c.type == "recurring_problem":
             sections["recurring_problems"].hidden_count += 1
-        elif c.type in ("next_action", "change"):
+        elif c.type == "next_action":
             sections["next_actions"].hidden_count += 1
             sections["first_week_plan"].hidden_count += 1
+        elif c.type == "change":
+            sections["recent_changes"].hidden_count += 1
 
     return sections, len(visible_approved_claims), len(hidden_claims)
 
@@ -155,8 +174,20 @@ def get_handover_view(
 
     sections, total_visible, total_hidden = build_role_sections(db, effective_role)
 
-    # Check acknowledgement
+    # Check acknowledgement and versions
     ack = db.query(Acknowledgement).filter(Acknowledgement.role == effective_role).order_by(Acknowledgement.at.desc()).first()
+    latest_ver = db.query(HandoverVersion).order_by(HandoverVersion.number.desc()).first()
+    current_ver_num = latest_ver.number if latest_ver else 1
+
+    ack_ver_num = None
+    if ack and ack.version_id:
+        v = db.query(HandoverVersion).filter(HandoverVersion.id == ack.version_id).first()
+        if v:
+            ack_ver_num = v.number
+    elif ack:
+        ack_ver_num = 1
+
+    is_ack_current = (ack is not None) and (ack_ver_num is not None) and (ack_ver_num >= current_ver_num)
 
     is_demo = db.query(Source).filter(
         Source.id.like("src-github-campus%") |
@@ -164,24 +195,37 @@ def get_handover_view(
         (Source.name == "GitHub (campus-club/campus-connect)")
     ).first() is not None
 
-    default_proj_name = "Campus Connect" if is_demo else "Project"
-    default_leaver = "Arjun Mehta" if is_demo else "Departing Member"
-    default_successor = "Rahul Verma" if is_demo else "Successor Developer"
+    first_gh = db.query(Source).filter(Source.kind == "github").first()
+    gh_repo = None
+    if first_gh:
+        m = re.search(r"GitHub\s*\(([^)]+)\)", first_gh.name)
+        gh_repo = m.group(1).strip() if m else first_gh.name
+
+    if is_demo:
+        proj_name = proj.name if proj else "Campus Connect"
+        departing_member = proj.departing_member if proj else "Arjun Mehta"
+        successor_name = proj.successor_name if proj else "Rahul Verma"
+    else:
+        proj_name = gh_repo or (proj.name if (proj and proj.name != "Campus Connect") else "Repository Project")
+        departing_member = proj.departing_member if (proj and proj.departing_member and "Arjun" not in proj.departing_member) else "Departing Member"
+        successor_name = proj.successor_name if (proj and proj.successor_name and "Rahul" not in proj.successor_name) else "Successor Developer"
 
     return HandoverViewOut(
         role=effective_role,
         clearance_level=max_clearance,
         handover_status=handover_status,
-        project_name=proj.name if (proj and is_demo) else default_proj_name,
-        departing_member=proj.departing_member if (proj and is_demo) else default_leaver,
-        successor_name=proj.successor_name if (proj and is_demo) else default_successor,
+        project_name=proj_name,
+        departing_member=departing_member,
+        successor_name=successor_name,
         sections=sections,
         total_visible_claims=total_visible,
         total_hidden_claims=total_hidden,
         released_at=proj.updated_at if handover_status == "approved" else None,
-        acknowledged=ack is not None,
+        acknowledged=is_ack_current,
         acknowledged_at=ack.at if ack else None,
-        acknowledged_by=ack.name if ack else None
+        acknowledged_by=ack.name if ack else None,
+        acknowledged_version_number=ack_ver_num,
+        current_version_number=current_ver_num
     )
 
 @router.post("/leak-check", response_model=LeakCheckResult)
@@ -439,9 +483,35 @@ def acknowledge_handover(
 
     return ack
 
+@router.post("/assign-successor")
+def assign_successor(
+    payload: AssignSuccessorRequest,
+    db: Session = Depends(get_db),
+    current_role: str = Depends(get_current_role)
+):
+    require_lead_role(current_role)
+    claim = db.query(Claim).filter(Claim.id == payload.claim_id).first()
+    if not claim:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Claim not found.")
+
+    proj = db.query(Project).filter(Project.id == "default").first()
+    successor_name = (proj.successor_name if proj and proj.successor_name and "Rahul" not in proj.successor_name else "Successor Developer")
+
+    claim.owner_name = successor_name
+    log = ActivityLog(
+        role=current_role,
+        action="assign_successor",
+        target=f"Assigned claim '{claim.text[:50]}' to {successor_name}"
+    )
+    db.add(log)
+    db.commit()
+    db.refresh(claim)
+    return {"status": "ok", "claim_id": claim.id, "owner_name": successor_name}
+
 @router.get("/export")
 def export_handover(
     role: Optional[str] = Query(None),
+    tz: Optional[str] = Query(None),
     format: str = Query("md"),
     db: Session = Depends(get_db),
     current_role: str = Depends(get_current_role)
@@ -465,9 +535,31 @@ def export_handover(
         (Source.name == "GitHub (campus-club/campus-connect)")
     ).first() is not None
 
-    proj_name = proj.name if (proj and is_demo) else "Project"
-    departing_member = proj.departing_member if (proj and is_demo) else "Departing Member"
-    successor_name = proj.successor_name if (proj and is_demo) else "Successor Developer"
+    first_gh = db.query(Source).filter(Source.kind == "github").first()
+    gh_repo = None
+    if first_gh:
+        m = re.search(r"GitHub\s*\(([^)]+)\)", first_gh.name)
+        gh_repo = m.group(1).strip() if m else first_gh.name
+
+    if is_demo:
+        proj_name = proj.name if proj else "Campus Connect"
+        departing_member = proj.departing_member if proj else "Arjun Mehta"
+        successor_name = proj.successor_name if proj else "Rahul Verma"
+    else:
+        proj_name = gh_repo or (proj.name if (proj and proj.name != "Campus Connect") else "Repository Project")
+        departing_member = proj.departing_member if (proj and proj.departing_member and "Arjun" not in proj.departing_member) else "Departing Member"
+        successor_name = proj.successor_name if (proj and proj.successor_name and "Rahul" not in proj.successor_name) else "Successor Developer"
+
+    # Export timestamp in viewer timezone or UTC
+    export_time_utc = datetime.now(timezone.utc)
+    if tz:
+        try:
+            local_dt = export_time_utc.astimezone(zoneinfo.ZoneInfo(tz))
+            export_time_str = local_dt.strftime("%d %b %Y, %I:%M %p") + f" ({tz})"
+        except Exception:
+            export_time_str = export_time_utc.strftime("%d %b %Y, %H:%M UTC")
+    else:
+        export_time_str = export_time_utc.strftime("%d %b %Y, %H:%M UTC")
 
     # Build Markdown document
     lines = [
@@ -475,7 +567,7 @@ def export_handover(
         f"**Role View**: {target_role.title()} | **Clearance Level**: {get_role_max_clearance(target_role)}",
         f"**Departing Member**: {departing_member}  ",
         f"**Successor**: {successor_name}  ",
-        f"**Exported At**: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}  ",
+        f"**Exported At**: {export_time_str}  ",
         "",
         "---",
         ""
@@ -487,7 +579,12 @@ def export_handover(
             lines.append(f"> *[{sec.hidden_count} items hidden: restricted by your role clearance level]*\n")
 
         if not sec.claims:
-            lines.append("*No items recorded in this section.*\n")
+            if key == "first_week_plan":
+                lines.append("*Not enough approved material to build a first-week plan yet. Approve next actions, open work, or risks in the Review Ledger to generate this plan.*\n")
+            elif key == "next_actions":
+                lines.append("*No next actions found in the sources.*\n")
+            else:
+                lines.append("*Nothing found in the connected sources for this section.*\n")
         else:
             for idx, c in enumerate(sec.claims, 1):
                 owner_tag = f" `[{c.owner_name}]`" if c.owner_name else ""
