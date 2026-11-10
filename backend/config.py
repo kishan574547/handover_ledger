@@ -37,7 +37,16 @@ class Settings(BaseSettings):
 
     @property
     def effective_database_url(self) -> str:
-        url = self.DATABASE_URL
+        url = (self.DATABASE_URL or "").strip()
+        if not url:
+            db_path = self.data_directory / "handoverledger.db"
+            return f"sqlite:///{db_path}"
+
+        # Cloud PostgreSQL providers (e.g. Supabase, Render, Heroku) often provide 'postgres://'
+        # SQLAlchemy 2.0 requires 'postgresql://' or 'postgresql+psycopg://'
+        if url.startswith("postgres://"):
+            url = url.replace("postgres://", "postgresql://", 1)
+
         if url.startswith("sqlite:///./") or url == "sqlite:///handoverledger.db":
             # Direct SQLite database file to data_directory to avoid hot-reloads
             db_path = self.data_directory / "handoverledger.db"
