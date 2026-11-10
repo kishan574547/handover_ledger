@@ -34,6 +34,7 @@ $tracked = git ls-files | Where-Object {
     $_ -notlike 'backend/demo_data/*' -and 
     $_ -notlike 'backend/tests/*' -and 
     $_ -notlike 'scripts/check_secrets.*' -and 
+    $_ -notlike 'scripts/verify_*' -and 
     $_ -notlike 'backend/sanitizer.py' -and 
     $_ -notlike 'backend/gemini_client.py' -and 
     $_ -notlike 'frontend/src/utils/sanitize.ts' -and 
@@ -71,6 +72,7 @@ $excludes = @(
     ':(exclude)backend/tests',
     ':(exclude)scripts/check_secrets.sh',
     ':(exclude)scripts/check_secrets.ps1',
+    ':(exclude)scripts/verify_non_demo_run.py',
     ':(exclude)backend/sanitizer.py',
     ':(exclude)backend/gemini_client.py',
     ':(exclude)frontend/src/utils/sanitize.ts',

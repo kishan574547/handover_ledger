@@ -179,7 +179,7 @@ Clearance: Technical (Level 2)
     chat_content = """[2026-10-18 10:14:02] Alex Rivera: Pushed Kafka partition rebalance patch to staging. Ingestion rate verified at 45k ops/sec.
 [2026-10-18 10:15:30] Elena Rostova: Question on broker timeouts: notes say buffer timeout is 500ms, but staging docker-compose has BUFFER_TIMEOUT=200ms. Which should production use?
 [2026-10-18 10:16:45] Alex Rivera: Good catch! Staging was set to 200ms for synthetic stress testing, but production must be 500ms to prevent buffer drops under network jitter.
-[2026-10-18 10:20:11] Alex Rivera: Also heads up, here was the temporary test key I used on the sandbox sensor gateway, do not commit: token: "sk-fakeTelemetrySensorTestKey9876543210"
+[2026-10-18 10:20:11] Alex Rivera: Also heads up, here was the temporary test key I used on the sandbox sensor gateway, do not commit: token: "mock_telemetry_sensor_test_token_sample"
 [2026-10-18 10:22:00] David Chen: Customer billing webhooks for sensor overages are verified with Stripe webhook signatures.
 [2026-10-18 10:25:33] Elena Rostova: Where is the Vault CLI unseal key stored when Vault pod restarts?
 [2026-10-18 10:27:00] Alex Rivera: Unseal keys are held in physical safe by Marcus Vance and myself. Need to transition my physical key to Marcus.

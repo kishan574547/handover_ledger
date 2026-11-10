@@ -119,3 +119,4 @@ def extract_deterministic_owner_claims(chunks: List[Any]) -> List[ExtractedClaim
 
     logger.info(f"Generated {len(owner_claims)} deterministic ownership claims from chunks.")
     return owner_claims
+

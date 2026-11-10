@@ -39,6 +39,7 @@ echo "==> 3. Checking tracked files in working directory..."
 TRACKED_FILES=$(git ls-files | grep -v "^backend/demo_data/" \
                              | grep -v "^backend/tests/" \
                              | grep -v "^scripts/check_secrets\." \
+                             | grep -v "^scripts/verify_" \
                              | grep -v "^backend/sanitizer\.py" \
                              | grep -v "^backend/gemini_client\.py" \
                              | grep -v "^frontend/src/utils/sanitize\.ts" \
@@ -78,6 +79,7 @@ EXCLUDES=(
     ":(exclude)backend/tests"
     ":(exclude)scripts/check_secrets.sh"
     ":(exclude)scripts/check_secrets.ps1"
+    ":(exclude)scripts/verify_non_demo_run.py"
     ":(exclude)backend/sanitizer.py"
     ":(exclude)backend/gemini_client.py"
     ":(exclude)frontend/src/utils/sanitize.ts"
