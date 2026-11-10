@@ -4,13 +4,19 @@ from sqlalchemy.orm import Session
 from backend.database import get_db
 from backend.models import Source, Chunk
 from backend.permissions import get_current_role, require_lead_role
-from backend.pipeline.runner import get_current_analysis_status, run_analysis_in_background
+from backend.pipeline.runner import get_current_analysis_status, run_analysis_in_background, reset_analysis_status
 from backend.schemas import AnalysisStatusOut
 
 router = APIRouter(prefix="/analysis", tags=["analysis"])
 
+@router.post("/reset", response_model=AnalysisStatusOut)
+def reset_analysis():
+    reset_analysis_status()
+    return get_current_analysis_status()
+
 @router.post("/run", response_model=AnalysisStatusOut)
 def trigger_analysis(
+    force: bool = False,
     db: Session = Depends(get_db),
     role: str = Depends(get_current_role)
 ):
@@ -33,8 +39,11 @@ def trigger_analysis(
         )
 
     current_status = get_current_analysis_status()
-    if current_status.get("is_running"):
+    if current_status.get("is_running") and not force:
         return current_status
+
+    if force:
+        reset_analysis_status()
 
     run_analysis_in_background(role=role)
     return get_current_analysis_status()

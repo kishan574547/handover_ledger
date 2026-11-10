@@ -165,7 +165,8 @@ export const api = {
     request<any>(`/sources/${id}`, { method: 'DELETE' }),
 
   // Analysis
-  triggerAnalysis: () => request<any>('/analysis/run', { method: 'POST' }),
+  triggerAnalysis: (force?: boolean) => request<any>(`/analysis/run${force ? '?force=true' : ''}`, { method: 'POST' }),
+  resetAnalysis: () => request<any>('/analysis/reset', { method: 'POST' }),
   getAnalysisStatus: () => request<any>('/analysis/status'),
 
   // Claims

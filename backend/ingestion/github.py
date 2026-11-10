@@ -237,20 +237,7 @@ async def fetch_github_repository(
     owner, repo = parse_github_url(url)
     cache_key = f"{owner}/{repo}".lower()
 
-    # --- Workspace rate limit ---
-    check_workspace_rate_limit(workspace_id)
-
-    headers = {
-        "Accept": "application/vnd.github+json",
-        "User-Agent": "HandoverLedger-Ingestion/1.0",
-        "X-GitHub-Api-Version": "2022-11-28",
-    }
-    if settings.GITHUB_TOKEN and settings.GITHUB_TOKEN.strip():
-        headers["Authorization"] = f"Bearer {settings.GITHUB_TOKEN.strip()}"
-
-    counter = _CallCounter(budget=150)
-
-    # --- Check cache: within 60 minutes, make NO GitHub calls ---
+    # --- Check cache FIRST: within 60 minutes, make NO GitHub calls ---
     cached = _repo_cache.get(cache_key)
     if cached is not None:
         cached_chunks, cached_report, cached_sha, cached_ts = cached
@@ -263,6 +250,19 @@ async def fetch_github_repository(
             if not any("60-minute cache" in w for w in hit_report.warnings):
                 hit_report.warnings.insert(0, f"Served from 60-minute cache (latest commit {cached_sha[:7]}, 0 GitHub calls).")
             return cached_chunks, hit_report
+
+    # --- Workspace rate limit (only for live uncached imports) ---
+    check_workspace_rate_limit(workspace_id)
+
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "User-Agent": "HandoverLedger-Ingestion/1.0",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    if settings.GITHUB_TOKEN and settings.GITHUB_TOKEN.strip():
+        headers["Authorization"] = f"Bearer {settings.GITHUB_TOKEN.strip()}"
+
+    counter = _CallCounter(budget=150)
 
     # --- Acquire global concurrency semaphore (at most 2 imports at once globally) ---
     try:

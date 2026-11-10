@@ -721,7 +721,8 @@ export const SourcesPage: React.FC = () => {
       <Modal
         isOpen={isAnalysisModalOpen}
         onClose={() => {
-          if (!isPollingAnalysis) setIsAnalysisModalOpen(false);
+          setIsAnalysisModalOpen(false);
+          setIsPollingAnalysis(false);
         }}
         title="AI Analysis Pipeline Progress"
         description="Reconstructing factual claims, fuzzy-matching quotes with rapidfuzz, identifying conflicts and gaps."
@@ -733,7 +734,7 @@ export const SourcesPage: React.FC = () => {
                 <Button
                   variant="primary"
                   size="sm"
-                  onClick={() => triggerAnalysisMutation.mutate()}
+                  onClick={() => triggerAnalysisMutation.mutate(true)}
                   isLoading={triggerAnalysisMutation.isPending}
                   leftIcon={<RefreshCw className="w-3.5 h-3.5" />}
                 >
@@ -754,7 +755,25 @@ export const SourcesPage: React.FC = () => {
                 View Claim Ledger
               </Button>
             </div>
-          ) : undefined
+          ) : (
+            <div className="w-full flex justify-between items-center">
+              <span className="text-xs text-text-muted animate-pulse">Running analysis pipeline in background...</span>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    await api.resetAnalysis();
+                  } catch {}
+                  setIsPollingAnalysis(false);
+                  setIsAnalysisModalOpen(false);
+                  queryClient.invalidateQueries({ queryKey: ['analysis-status'] });
+                }}
+              >
+                Cancel / Reset
+              </Button>
+            </div>
+          )
         }
       >
         <div className="space-y-4 py-2">

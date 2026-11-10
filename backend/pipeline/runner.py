@@ -22,6 +22,8 @@ logger = logging.getLogger(__name__)
 
 # Global analysis status tracker
 analysis_lock = threading.Lock()
+_last_status_update = time.time()
+
 analysis_status: Dict[str, Any] = {
     "is_running": False,
     "current_step": "Ready",
@@ -39,11 +41,30 @@ analysis_status: Dict[str, Any] = {
 }
 
 def get_current_analysis_status() -> Dict[str, Any]:
+    global _last_status_update
     with analysis_lock:
+        # Auto-recover if status has been marked running with no updates for over 120 seconds
+        if analysis_status["is_running"] and (time.time() - _last_status_update > 120):
+            logger.warning("Analysis status was running with no updates for >120s; auto-recovering to False.")
+            analysis_status["is_running"] = False
+            analysis_status["current_step"] = "Ready"
+            analysis_status["percent"] = 100
         return json.loads(json.dumps(analysis_status))
 
-def set_step_status(step_idx: int, status: str, percent: int, details: Optional[str] = None):
+def reset_analysis_status():
+    global _last_status_update
     with analysis_lock:
+        _last_status_update = time.time()
+        analysis_status["is_running"] = False
+        analysis_status["current_step"] = "Ready"
+        analysis_status["percent"] = 100
+        analysis_status["error"] = None
+        analysis_status["error_details"] = None
+
+def set_step_status(step_idx: int, status: str, percent: int, details: Optional[str] = None):
+    global _last_status_update
+    with analysis_lock:
+        _last_status_update = time.time()
         analysis_status["steps"][step_idx]["status"] = status
         analysis_status["steps"][step_idx]["percent"] = percent
         if details:
@@ -162,6 +183,7 @@ def run_analysis_pipeline_sync(db: Session, role: str = "lead") -> Dict[str, Any
                     logger.error(f"Extraction error for batch {idx}: {exc}")
                     raise exc
 
+        completed_batches = 0
         with ThreadPoolExecutor(max_workers=3) as executor:
             future_to_idx = {
                 executor.submit(process_batch, (idx, b)): idx
@@ -169,6 +191,7 @@ def run_analysis_pipeline_sync(db: Session, role: str = "lead") -> Dict[str, Any
             }
             for future in as_completed(future_to_idx):
                 idx = future_to_idx[future]
+                completed_batches += 1
                 try:
                     items = future.result()
                     if items:
@@ -176,6 +199,9 @@ def run_analysis_pipeline_sync(db: Session, role: str = "lead") -> Dict[str, Any
                 except Exception as exc:
                     failed_batches += 1
                     logger.warning(f"Batch {idx} could not be extracted; proceeding with other batches: {exc}")
+
+                pct = 25 + int((completed_batches / max(1, len(batches))) * 15)
+                set_step_status(1, "in_progress", pct, f"Extracted candidate claims ({completed_batches}/{len(batches)} batches)...")
 
         # If zero claims extracted across all batches, check if input was too tiny
         if not raw_extracted_items and failed_batches == len(batches):
@@ -345,6 +371,8 @@ def run_analysis_in_background(role: str = "lead"):
             logger.error(f"Background analysis worker failed: {e}")
         finally:
             db.close()
+            with analysis_lock:
+                analysis_status["is_running"] = False
 
     thread = threading.Thread(target=worker, daemon=True)
     thread.start()
