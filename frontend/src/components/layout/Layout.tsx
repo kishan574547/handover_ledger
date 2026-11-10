@@ -6,6 +6,7 @@ import { BottomNav } from './BottomNav';
 import { CommandPalette } from '../common/CommandPalette';
 import { JudgeGuide } from '../common/JudgeGuide';
 import { AskFloatingButton } from '../common/AskFloatingButton';
+import { OfflineBanner } from '../common/OfflineBanner';
 
 export const Layout: React.FC = () => {
   const [isMobileDrawerOpen, setIsMobileDrawerOpen] = useState(false);
@@ -33,6 +34,7 @@ export const Layout: React.FC = () => {
 
       {/* Main Content Viewport */}
       <div className="flex-1 flex flex-col min-w-0 w-full overflow-x-hidden min-h-[100dvh]">
+        <OfflineBanner />
         <Topbar
           onToggleMobileDrawer={() => setIsMobileDrawerOpen(true)}
           onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
