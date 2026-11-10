@@ -121,20 +121,30 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+def is_origin_allowed(origin: Optional[str]) -> bool:
+    if not origin:
+        return True
+    allowed_origins = settings.cors_origins_list
+    if "*" in allowed_origins or origin in allowed_origins:
+        return True
+    if origin.endswith(".vercel.app") or "localhost" in origin or "127.0.0.1" in origin:
+        return True
+    return False
+
 # Middleware to guarantee CORS headers on every response (including error responses and OPTIONS preflight)
 @app.middleware("http")
 async def cors_and_error_boundary_middleware(request: Request, call_next):
     origin = request.headers.get("origin")
-    allowed_origins = settings.cors_origins_list
+    allowed = is_origin_allowed(origin)
 
     # Handle preflight OPTIONS requests directly
     if request.method == "OPTIONS":
         response = JSONResponse(content={"ok": True}, status_code=200)
-        if origin and (origin in allowed_origins or "*" in allowed_origins):
+        if allowed and origin:
             response.headers["Access-Control-Allow-Origin"] = origin
             response.headers["Access-Control-Allow-Credentials"] = "true"
             response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD"
-            response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Demo-Role, X-Workspace-Id, Authorization, Accept, Origin, User-Agent, X-Requested-With"
+            response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Demo-Role, X-Workspace-Id, Authorization, Accept, Origin, User-Agent, X-Requested-With, *"
             response.headers["Access-Control-Max-Age"] = "86400"
         return response
 
@@ -157,11 +167,11 @@ async def cors_and_error_boundary_middleware(request: Request, call_next):
     logger.info(f"[REQ] {request.method} {request.url.path} - {response.status_code} ({duration_ms:.1f}ms)")
 
     # Attach CORS headers if request origin is authorized
-    if origin and (origin in allowed_origins or "*" in allowed_origins):
+    if allowed and origin:
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD"
-        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Demo-Role, X-Workspace-Id, Authorization, Accept, Origin, User-Agent, X-Requested-With"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type, X-Demo-Role, X-Workspace-Id, Authorization, Accept, Origin, User-Agent, X-Requested-With, *"
         response.headers["Access-Control-Expose-Headers"] = "Content-Disposition, Content-Type, X-Demo-Role, X-Workspace-Id"
 
     ws_id = request.headers.get("x-workspace-id")
@@ -173,10 +183,10 @@ async def cors_and_error_boundary_middleware(request: Request, call_next):
 # CORS configuration outermost
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins_list,
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
-    allow_headers=["Content-Type", "X-Demo-Role", "X-Workspace-Id", "Authorization", "Accept", "Origin", "User-Agent", "X-Requested-With", "*"],
+    allow_headers=["*"],
     expose_headers=["Content-Disposition", "Content-Type", "X-Demo-Role", "X-Workspace-Id"],
 )
 
@@ -253,19 +263,19 @@ async def global_exception_handler(request: Request, exc: Exception):
         }
     )
 
-# Include routers under /api prefix
-api_prefix = "/api"
-app.include_router(demo.router, prefix=api_prefix)
-app.include_router(sources.router, prefix=api_prefix)
-app.include_router(analysis.router, prefix=api_prefix)
-app.include_router(claims.router, prefix=api_prefix)
-app.include_router(timeline.router, prefix=api_prefix)
-app.include_router(questions.router, prefix=api_prefix)
-app.include_router(review.router, prefix=api_prefix)
-app.include_router(handover.router, prefix=api_prefix)
-app.include_router(activity.router, prefix=api_prefix)
-app.include_router(dashboard.router, prefix=api_prefix)
-app.include_router(ask.router, prefix=api_prefix)
+# Include routers under /api prefix and root for maximum client compatibility
+for api_prefix in ["/api", ""]:
+    app.include_router(demo.router, prefix=api_prefix)
+    app.include_router(sources.router, prefix=api_prefix)
+    app.include_router(analysis.router, prefix=api_prefix)
+    app.include_router(claims.router, prefix=api_prefix)
+    app.include_router(timeline.router, prefix=api_prefix)
+    app.include_router(questions.router, prefix=api_prefix)
+    app.include_router(review.router, prefix=api_prefix)
+    app.include_router(handover.router, prefix=api_prefix)
+    app.include_router(activity.router, prefix=api_prefix)
+    app.include_router(dashboard.router, prefix=api_prefix)
+    app.include_router(ask.router, prefix=api_prefix)
 
 if __name__ == "__main__":
     import uvicorn

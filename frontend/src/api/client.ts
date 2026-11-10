@@ -1,7 +1,34 @@
 import { DemoRole, AIHealthData, BackendHealthData, GitHubHealthData, ProjectData } from '../types';
 import { sanitizeSecrets } from '../utils/sanitize';
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+export function resolveApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_URL;
+  let base: string;
+
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim()) {
+    base = envUrl.trim();
+  } else if (
+    typeof window !== 'undefined' &&
+    window.location.hostname &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  ) {
+    // When deployed (e.g. on Vercel), default to the live Render backend URL
+    base = 'https://handover-ledger.onrender.com/api';
+  } else {
+    base = 'http://localhost:8000/api';
+  }
+
+  // Strip trailing slashes
+  base = base.replace(/\/+$/, '');
+  // Normalize: ensure it ends with /api
+  if (!base.endsWith('/api')) {
+    base = `${base}/api`;
+  }
+  return base;
+}
+
+export const API_BASE_URL = resolveApiBaseUrl();
 
 export function getStoredRole(): DemoRole {
   return (localStorage.getItem('handover_demo_role') as DemoRole) || 'lead';

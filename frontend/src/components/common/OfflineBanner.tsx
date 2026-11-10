@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { WifiOff, RefreshCw } from 'lucide-react';
-import { api } from '../../api/client';
+import { api, API_BASE_URL } from '../../api/client';
 
 export const OfflineBanner: React.FC = () => {
   const [isOffline, setIsOffline] = useState(false);
@@ -44,7 +44,7 @@ export const OfflineBanner: React.FC = () => {
         <WifiOff className="w-4 h-4 text-rose-100 flex-shrink-0 animate-pulse" />
         <span>
           <strong>Backend Offline:</strong> Cannot reach the HandoverLedger API at{' '}
-          <code className="bg-rose-700/60 px-1 py-0.5 rounded text-[11px] font-mono">http://localhost:8000/api</code>.
+          <code className="bg-rose-700/60 px-1 py-0.5 rounded text-[11px] font-mono">{API_BASE_URL}</code>.
           Please verify the backend server is running.
         </span>
       </div>
