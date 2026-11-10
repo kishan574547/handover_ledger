@@ -59,3 +59,4 @@ export const OfflineBanner: React.FC = () => {
     </div>
   );
 };
+

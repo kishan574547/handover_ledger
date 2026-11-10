@@ -1,0 +1,26 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="handoverledger",
+    version="1.0.0",
+    description="Antigravity HandoverLedger Backend",
+    packages=find_packages(),
+    py_modules=["main", "run_backend"],
+    install_requires=[
+        "fastapi>=0.115.0",
+        "uvicorn[standard]>=0.30.0",
+        "sqlalchemy>=2.0.0",
+        "pydantic>=2.8.0",
+        "pydantic-settings>=2.4.0",
+        "httpx>=0.27.0",
+        "google-genai>=0.1.0",
+        "rapidfuzz>=3.9.0",
+        "pypdf>=3.17.0",
+        "python-multipart>=0.0.9",
+        "pytest>=8.0.0",
+        "python-dotenv>=1.0.0",
+        "psycopg2-binary>=2.9.9",
+    ],
+    python_requires=">=3.10",
+)
+

@@ -36,18 +36,20 @@ def free_port_if_in_use(port: int):
         pass
 
 if __name__ == "__main__":
+    is_prod = os.environ.get("ENVIRONMENT", "").lower() == "production" or os.environ.get("RENDER") is not None
+
     parser = argparse.ArgumentParser(description="Run HandoverLedger FastAPI Backend")
     parser.add_argument("--port", type=int, default=int(os.environ.get("PORT", 8000)), help="Port to run backend on")
-    parser.add_argument("--host", type=str, default="0.0.0.0", help="Host address to bind")
-    parser.add_argument("--reload", action="store_true", default=True, help="Enable auto-reload")
-    parser.add_argument("--stable", "--no-reload", action="store_true", default=False, help="Run in stable mode without reload (recommended for tests/demos)")
+    parser.add_argument("--host", type=str, default=os.environ.get("HOST", "0.0.0.0"), help="Host address to bind")
+    parser.add_argument("--reload", action="store_true", default=not is_prod, help="Enable auto-reload (default for development)")
+    parser.add_argument("--stable", "--no-reload", action="store_true", default=is_prod, help="Run in stable mode without reload (default in production/Render)")
     args, unknown = parser.parse_known_args()
 
-    use_reload = args.reload and not args.stable
+    use_reload = args.reload and not args.stable and not is_prod
 
     free_port_if_in_use(args.port)
-    mode_str = "stable mode (no reload)" if not use_reload else "development mode (auto-reload enabled for backend/ only)"
-    print(f"==> Starting HandoverLedger Backend on http://localhost:{args.port} ({mode_str})...")
+    mode_str = "stable mode (production / no-reload)" if not use_reload else "development mode (auto-reload enabled)"
+    print(f"==> Starting HandoverLedger Backend on http://{args.host}:{args.port} ({mode_str})...")
 
     if use_reload:
         uvicorn.run(
