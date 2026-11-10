@@ -290,6 +290,11 @@ export interface AskResponseData {
   verification_summary: string;
   restricted_notice?: string | null;
   question_created_id?: string | null;
+  reason_code?: string | null;
+  claims_considered?: number;
+  claims_cited?: number;
+  model_used?: string | null;
+  from_cache?: boolean;
 }
 
 // --- Project Meta Types ---

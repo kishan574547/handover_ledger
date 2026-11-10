@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   MessageSquareQuote,
   Send,
@@ -14,11 +14,12 @@ import {
   Lock,
   Layers,
   HelpCircle,
+  RefreshCw,
 } from 'lucide-react';
 import { api } from '../api/client';
 import { useRole } from '../context/RoleContext';
 import { useToast } from '../context/ToastContext';
-import { AskResponseData, ClaimItem } from '../types';
+import { AskResponseData, ClaimItem, DashboardData } from '../types';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
 import { Drawer } from '../components/common/Drawer';
@@ -51,12 +52,32 @@ export const AskHandoverPage: React.FC = () => {
   const [selectedClaim, setSelectedClaim] = useState<any | null>(null);
   const [isEvidenceDrawerOpen, setIsEvidenceDrawerOpen] = useState(false);
 
-  const starterChips = [
-    { label: 'First Week Plan', q: 'What should I focus on during my first week?' },
-    { label: 'Architectural Risks', q: 'What are the major architectural risks and failure modes?' },
-    { label: 'Payment Gateway Ownership', q: 'Who owns payment gateway integration and Razorpay keys?' },
-    { label: 'Stalled Issues & Blockers', q: 'Are there any stalled issues or open blockers?' },
-  ];
+  const { data: dashboardData } = useQuery<DashboardData>({
+    queryKey: ['dashboard'],
+    queryFn: api.getDashboard,
+  });
+
+  const starterChips = React.useMemo(() => {
+    const chips: { label: string; q: string }[] = [];
+    chips.push({ label: 'First Week Priorities', q: 'What should I focus on during my first week?' });
+    chips.push({ label: 'Biggest Risks', q: 'What are the biggest risks I should be aware of?' });
+
+    if (dashboardData?.top_risks && dashboardData.top_risks.length > 0) {
+      const topRisk = dashboardData.top_risks[0];
+      const riskSubject = (topRisk?.subject_key || '').replace(/_/g, ' ');
+      if (riskSubject && !['payment_gateway', 'razorpay', 'campus', 'demo'].some(d => riskSubject.toLowerCase().includes(d))) {
+        chips.push({ label: `Risk: ${riskSubject}`, q: `What is the risk related to ${riskSubject}?` });
+      }
+    }
+
+    if (dashboardData?.next_actions && dashboardData.next_actions.length > 0) {
+      chips.push({ label: 'Open Actions', q: 'Are there stalled items or open blockers?' });
+    }
+
+    chips.push({ label: 'Ownership Map', q: 'Who owns what in this project?' });
+
+    return chips.slice(0, 4);
+  }, [dashboardData]);
 
   const helpStarterChips = [
     { label: 'Clearances & Roles', q: 'What are the 3 clearance levels and what does each role see?' },
@@ -162,7 +183,7 @@ export const AskHandoverPage: React.FC = () => {
         </div>
         <p className="text-sm text-text-muted mt-1 leading-relaxed">
           {activeTab === 'handover'
-            ? `Ask questions in natural language. Answers are constructed strictly using verified claims within your role clearance (${role}). Every sentence includes exact citations.`
+            ? `Ask questions in natural language. Answers are grounded strictly on approved claims within your role's clearance (${role}). Every sentence includes exact citations.`
             : 'Interactive user guide for HandoverLedger. Ask anything about clearances, verification rules, roles, leak checks, or features.'}
         </p>
 
@@ -349,21 +370,36 @@ export const AskHandoverPage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Not Found: "Send to Leaver" Button */}
+                  {/* Not Found: distinct message per reason_code */}
                   {!item.response.found && (
-                    <div className="pt-2 border-t border-border flex items-center justify-between">
-                      <p className="text-xs text-text-muted">
-                        This information is missing from the handover ledger.
-                      </p>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => sendToLeaverMutation.mutate(item.q)}
-                        isLoading={sendToLeaverMutation.isPending}
-                        leftIcon={<UserPlus className="w-3.5 h-3.5" />}
-                      >
-                        Send this question to the leaver
-                      </Button>
+                    <div className="pt-2 border-t border-border space-y-2">
+                      {item.response.reason_code === 'no_approved_claims' ? (
+                        <div className="flex items-center gap-2 text-xs text-amber-700 dark:text-amber-300">
+                          <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                          <span>{item.response.answer}</span>
+                        </div>
+                      ) : item.response.reason_code === 'ai_error' ? (
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-rose-600 dark:text-rose-400 flex items-center gap-1.5">
+                            <AlertTriangle className="w-3.5 h-3.5" />
+                            {item.response.answer}
+                          </span>
+                          <Button variant="secondary" size="sm" onClick={() => handleAsk(item.q)} leftIcon={<RefreshCw className="w-3 h-3" />}>Retry</Button>
+                        </div>
+                      ) : item.response.reason_code === 'not_found' ? (
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <p className="text-xs text-text-muted">This information is missing from the handover ledger.</p>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => sendToLeaverMutation.mutate(item.q)}
+                            isLoading={sendToLeaverMutation.isPending}
+                            leftIcon={<UserPlus className="w-3.5 h-3.5" />}
+                          >
+                            Send this question to the leaver
+                          </Button>
+                        </div>
+                      ) : null}
                     </div>
                   )}
 
@@ -394,6 +430,24 @@ export const AskHandoverPage: React.FC = () => {
                         ))}
                       </div>
                     </div>
+                  )}
+
+                  {/* Transparency: How this was answered */}
+                  {((item.response.claims_considered ?? 0) > 0 || Boolean(item.response.model_used)) && (
+                    <details className="pt-2 border-t border-border">
+                      <summary className="text-[10px] text-text-muted cursor-pointer hover:text-text-main flex items-center gap-1 select-none">
+                        <Layers className="w-3 h-3" />
+                        How this was answered
+                      </summary>
+                      <div className="mt-1.5 text-[11px] text-text-muted space-y-0.5 pl-4">
+                        {(item.response.claims_considered ?? 0) > 0 && (
+                          <p>Claims considered: {item.response.claims_considered} · Claims cited: {item.response.claims_cited}</p>
+                        )}
+                        {item.response.model_used && (
+                          <p>Model: {item.response.model_used}{item.response.from_cache ? ' · (cached response)' : ''}</p>
+                        )}
+                      </div>
+                    </details>
                   )}
                 </>
               )}

@@ -310,6 +310,11 @@ class AskResponse(BaseModel):
     verification_summary: str = "No evidence found"
     restricted_notice: Optional[str] = None
     question_created_id: Optional[str] = None
+    reason_code: Optional[str] = None  # found | not_found | no_approved_claims | restricted | ai_error
+    claims_considered: int = 0
+    claims_cited: int = 0
+    model_used: Optional[str] = None
+    from_cache: bool = False
 
 class CreateQuestionFromAsk(BaseModel):
     question: str
