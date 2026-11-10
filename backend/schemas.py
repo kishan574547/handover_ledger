@@ -24,12 +24,33 @@ class SourceOut(SourceBase):
     item_count: int
     masked_count: int
     content_hash: Optional[str] = None
+    state: str = "ready"
+    error_message: Optional[str] = None
     added_at: datetime
     import_report: Optional[ImportReport] = None
     model_config = ConfigDict(from_attributes=True)
 
 class SourceCreateGithub(BaseModel):
     url: str
+
+class SourceGithubCreateResponse(BaseModel):
+    source_id: str
+    job_id: str
+    repository: str
+    status: str = "importing"
+    message: str = "GitHub import started."
+
+class ImportJobStatusOut(BaseModel):
+    job_id: str
+    source_id: Optional[str] = None
+    repository: Optional[str] = None
+    status: str = "queued"  # queued, importing, completed, failed, cancelled
+    stage: str = "metadata"  # metadata, readme, commits, issues, prs, docs, saving, done
+    progress: int = 0
+    counts: Dict[str, int] = Field(default_factory=dict)
+    report: Optional[ImportReport] = None
+    error_message: Optional[str] = None
+    error_code: Optional[str] = None
 
 class SourceUpdateClearance(BaseModel):
     clearance: int = Field(..., ge=1, le=3)

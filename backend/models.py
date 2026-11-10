@@ -38,6 +38,8 @@ class Source(Base):
     item_count = Column(Integer, default=0)
     masked_count = Column(Integer, default=0)
     content_hash = Column(String(64), nullable=True, index=True)
+    state = Column(String(50), default="ready")  # ready, importing, failed
+    error_message = Column(Text, nullable=True)
     added_at = Column(DateTime, default=utc_now)
 
     chunks = relationship("Chunk", back_populates="source", cascade="all, delete-orphan")

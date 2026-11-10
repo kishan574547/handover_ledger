@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     GEMINI_FALLBACK_MODELS: str = "gemini-flash-lite-latest,gemini-3.8-flash"
     GITHUB_TOKEN: Optional[str] = None
     DATABASE_URL: str = "sqlite:///./handoverledger.db"
+    DATA_DIR: Optional[str] = None
     SUPABASE_URL: Optional[str] = None
     SUPABASE_SERVICE_ROLE_KEY: Optional[str] = None
     SUPABASE_PUBLISHABLE_KEY: Optional[str] = None
@@ -22,6 +23,26 @@ class Settings(BaseSettings):
         env_file_encoding="utf-8",
         extra="ignore"
     )
+
+    @property
+    def data_directory(self) -> Path:
+        if self.DATA_DIR and self.DATA_DIR.strip():
+            d = Path(self.DATA_DIR.strip()).resolve()
+        else:
+            d = BACKEND_DIR / "data"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "uploads").mkdir(parents=True, exist_ok=True)
+        (d / "logs").mkdir(parents=True, exist_ok=True)
+        return d
+
+    @property
+    def effective_database_url(self) -> str:
+        url = self.DATABASE_URL
+        if url.startswith("sqlite:///./") or url == "sqlite:///handoverledger.db":
+            # Direct SQLite database file to data_directory to avoid hot-reloads
+            db_path = self.data_directory / "handoverledger.db"
+            return f"sqlite:///{db_path}"
+        return url
 
     @property
     def fallback_models_list(self) -> List[str]:

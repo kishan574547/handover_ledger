@@ -1,4 +1,6 @@
+import os
 import sys
+import time
 from pathlib import Path
 
 # Ensure repository root is in sys.path so 'import backend' works from any working directory
@@ -56,7 +58,34 @@ async def lifespan(app: FastAPI):
     # 1. Database check and initialization
     db_type = "postgresql" if "postgres" in settings.DATABASE_URL.lower() else "sqlite"
     Base.metadata.create_all(bind=engine)
-    logger.info(f"Database: Connected and initialized successfully ({db_type}).")
+    
+    # Startup banner
+    has_gemini = "yes" if bool(settings.GEMINI_API_KEY and settings.GEMINI_API_KEY.strip()) else "no"
+    has_github = "yes" if bool(settings.GITHUB_TOKEN and settings.GITHUB_TOKEN.strip()) else "no"
+    port_str = os.environ.get("PORT", "8000")
+    logger.info("=" * 60)
+    logger.info("   HandoverLedger Backend Initializing")
+    logger.info(f"   Port:            {port_str}")
+    logger.info(f"   Database Type:   {db_type}")
+    logger.info(f"   Data Directory:  {settings.data_directory}")
+    logger.info(f"   Gemini API Key:  {has_gemini}")
+    logger.info(f"   GitHub Token:    {has_github}")
+    logger.info("=" * 60)
+
+    # Clean up any interrupted GitHub import jobs left from previous server runs
+    try:
+        from sqlalchemy.orm import Session
+        from backend.models import Source
+        with Session(engine) as db:
+            stuck_sources = db.query(Source).filter(Source.state == "importing").all()
+            for s in stuck_sources:
+                s.state = "failed"
+                s.error_message = "Server restarted during import. Please retry."
+            if stuck_sources:
+                db.commit()
+                logger.info(f"Cleaned up {len(stuck_sources)} interrupted GitHub import(s) from previous run.")
+    except Exception as e:
+        logger.warning(f"Could not clean up stale imports on startup: {e}")
     
     # 2. Startup AI check and logging
     try:
@@ -109,6 +138,7 @@ async def cors_and_error_boundary_middleware(request: Request, call_next):
             response.headers["Access-Control-Max-Age"] = "86400"
         return response
 
+    start_time = time.perf_counter()
     try:
         response = await call_next(request)
     except Exception as exc:
@@ -122,6 +152,9 @@ async def cors_and_error_boundary_middleware(request: Request, call_next):
                 "detail": "An internal server error occurred. Details have been safely logged."
             }
         )
+
+    duration_ms = (time.perf_counter() - start_time) * 1000
+    logger.info(f"[REQ] {request.method} {request.url.path} - {response.status_code} ({duration_ms:.1f}ms)")
 
     # Attach CORS headers if request origin is authorized
     if origin and (origin in allowed_origins or "*" in allowed_origins):
