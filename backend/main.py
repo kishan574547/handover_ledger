@@ -2,6 +2,7 @@ import os
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 # Ensure repository root is in sys.path so 'import backend' works from any working directory
 CURRENT_DIR = Path(__file__).resolve().parent

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -22,6 +22,7 @@ import { useRole } from '../context/RoleContext';
 import { useToast } from '../context/ToastContext';
 import { Card, CardHeader, CardTitle, CardContent } from '../components/common/Card';
 import { Button } from '../components/common/Button';
+import { Modal } from '../components/common/Modal';
 import { ProgressRing } from '../components/common/ProgressRing';
 import { EmptyState } from '../components/common/EmptyState';
 import { Skeleton, CardSkeleton } from '../components/common/Skeleton';
@@ -32,6 +33,7 @@ export const DashboardPage: React.FC = () => {
   const { role, canLead, roleConfig } = useRole();
   const { success, error } = useToast();
   const queryClient = useQueryClient();
+  const [showConfirmLoadDemo, setShowConfirmLoadDemo] = useState(false);
 
   const { data, isLoading } = useQuery<DashboardData>({
     queryKey: ['dashboard'],
@@ -67,20 +69,55 @@ export const DashboardPage: React.FC = () => {
     return (
       <div className="py-8">
         <EmptyState
-          icon={<Database className="w-8 h-8 text-navy" />}
+          icon={<Database className="w-8 h-8 text-navy dark:text-teal" />}
           title="No Project Knowledge Extracted Yet"
           description="HandoverLedger reconstructs project state into verifiable claims from GitHub repos, meeting notes, and chat logs."
-          actionText="Load Demo Project"
-          onAction={() => loadDemoMutation.mutate()}
-          actionIcon={<Play className="w-4 h-4" />}
+          actionText="Connect Sources"
+          onAction={() => navigate('/sources')}
+          actionIcon={<ArrowRight className="w-4 h-4" />}
           secondaryAction={
             canLead ? (
-              <Button variant="outline" onClick={() => navigate('/sources')}>
-                Connect Sources
+              <Button variant="outline" onClick={() => setShowConfirmLoadDemo(true)}>
+                Load Demo Project
               </Button>
             ) : undefined
           }
         />
+
+        {/* Confirm Load Demo Modal */}
+        <Modal
+          isOpen={showConfirmLoadDemo}
+          onClose={() => setShowConfirmLoadDemo(false)}
+          title="Load Synthetic Demo Project?"
+          description="This will import the synthetic 'Campus Connect' demonstration dataset into your workspace."
+          footer={
+            <>
+              <Button variant="outline" size="sm" onClick={() => setShowConfirmLoadDemo(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                isLoading={loadDemoMutation.isPending}
+                onClick={() => {
+                  setShowConfirmLoadDemo(false);
+                  loadDemoMutation.mutate();
+                }}
+              >
+                Load Demo Project
+              </Button>
+            </>
+          }
+        >
+          <div className="space-y-2 text-xs text-text-muted">
+            <p>
+              Are you sure you want to load synthetic demo data for <strong>Campus Connect</strong>?
+            </p>
+            <p>
+              To work with your own repository or team notes instead, click <strong>Cancel</strong> and click <strong>Connect Sources</strong>.
+            </p>
+          </div>
+        </Modal>
       </div>
     );
   }

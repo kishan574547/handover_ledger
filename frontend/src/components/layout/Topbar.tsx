@@ -138,12 +138,12 @@ export const Topbar: React.FC<TopbarProps> = ({
 
       {/* 2. Main Top Bar */}
       <div className="h-16 px-3 sm:px-6 flex items-center justify-between gap-2 sm:gap-4">
-        {/* Left: Hamburger (mobile/tablet < 1024px) + Page Title + Project Chip */}
+        {/* Left: Hamburger (mobile/tablet < 1024px) + Page Title + Project Chip (desktop >= 1280px) */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           {/* Hamburger button for screens below 1024px */}
           <button
             onClick={onToggleMobileDrawer}
-            className="lg:hidden p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="lg:hidden p-2 min-w-[44px] min-h-[44px] flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors flex-shrink-0"
             title="Open navigation menu"
             aria-label="Open navigation menu"
           >
@@ -151,39 +151,39 @@ export const Topbar: React.FC<TopbarProps> = ({
           </button>
 
           {/* Current Page Title */}
-          <h1 className="text-base sm:text-lg font-bold text-text-main truncate max-w-[140px] sm:max-w-[220px] md:max-w-none">
+          <h1 className="text-sm sm:text-base md:text-lg font-bold text-text-main truncate max-w-[110px] xs:max-w-[150px] sm:max-w-[200px] md:max-w-none">
             {pageTitle}
           </h1>
 
-          {/* Project Chip: hidden in empty mode or on mobile (< 640px) */}
+          {/* Project Chip: visible on xl (>= 1280px), accessible in overflow menu on smaller screens */}
           {!isEmpty && (
-            <div className="hidden sm:flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 border border-border px-2.5 py-1 rounded-btn text-xs">
+            <div className="hidden xl:flex items-center gap-2 bg-slate-100 dark:bg-slate-800/80 border border-border px-2.5 py-1 rounded-btn text-xs h-7 flex-shrink-0">
               {isDemo ? (
                 <>
                   <span className="font-semibold text-text-main">Campus Connect</span>
                   <span className="text-text-muted">•</span>
-                  <span className="text-text-muted truncate max-w-[120px] md:max-w-none">
+                  <span className="text-text-muted truncate max-w-[120px] 2xl:max-w-none">
                     Arjun Mehta (Tech Lead)
                   </span>
                 </>
               ) : (
-                <span className="font-semibold text-text-main">Your project</span>
+                <span className="font-semibold text-text-main">{project?.display_name || project?.name || 'Your project'}</span>
               )}
             </div>
           )}
 
-          {/* Handover Status Chip */}
+          {/* Handover Status Chip: visible on xl (>= 1280px), accessible in overflow menu on smaller screens */}
           <div
-            className={`hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${currentStatus.bg} ${currentStatus.text}`}
+            className={`hidden xl:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold h-7 flex-shrink-0 ${currentStatus.bg} ${currentStatus.text}`}
           >
             {currentStatus.label}
           </div>
         </div>
 
-        {/* Right: Role Switcher + Theme Toggle + Overflow Menu */}
-        <div className="flex items-center gap-1.5 sm:gap-2.5">
+        {/* Right: Role Switcher + Quick start + Search + Theme Toggle + Overflow Menu */}
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* A. Role Switcher: Segmented Control on >= 1024px */}
-          <div className="hidden lg:flex items-center bg-slate-100 dark:bg-slate-800 border border-border p-1 rounded-btn">
+          <div className="hidden lg:flex items-center bg-slate-100 dark:bg-slate-800 border border-border p-1 rounded-btn h-10">
             <span className="text-[10px] font-bold text-text-muted uppercase px-2 tracking-wider">
               Role:
             </span>
@@ -223,7 +223,7 @@ export const Topbar: React.FC<TopbarProps> = ({
             <select
               value={role}
               onChange={(e) => setRole(e.target.value as DemoRole)}
-              className="appearance-none bg-slate-100 dark:bg-slate-800 border border-border rounded-btn pl-2.5 pr-7 py-1.5 text-xs font-medium text-text-main min-h-[44px] focus:outline-none focus:ring-1 focus:ring-navy"
+              className="appearance-none bg-slate-100 dark:bg-slate-800 border border-border rounded-btn pl-2.5 pr-7 py-1 text-xs font-medium text-text-main h-10 min-h-[40px] focus:outline-none focus:ring-1 focus:ring-navy"
               aria-label="Switch active demo role"
             >
               {rolesList.map((r) => {
@@ -238,10 +238,10 @@ export const Topbar: React.FC<TopbarProps> = ({
             <ChevronDown className="w-3.5 h-3.5 pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-text-muted" />
           </div>
 
-          {/* Quick start Button: fixed 40px height, flex row with 8px gaps, single 20px progress ring */}
+          {/* Quick start Button: fixed 40px height, single flex row with 8px gaps, exactly ONE 20px progress ring */}
           <button
             onClick={toggleGuide}
-            className="h-10 min-h-[40px] px-2.5 flex items-center gap-2 rounded-btn bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-border text-text-main transition-colors focus-visible:ring-2 focus-visible:ring-navy flex-shrink-0 motion-safe:transition-transform"
+            className="h-10 min-h-[40px] max-h-[40px] min-w-[44px] sm:min-w-0 px-2.5 flex items-center justify-center gap-2 rounded-btn bg-slate-100 hover:bg-slate-200/80 dark:bg-slate-800 dark:hover:bg-slate-700/80 border border-border text-text-main transition-colors focus-visible:ring-2 focus-visible:ring-navy flex-shrink-0"
             title={`Quick start: ${completedCount}/${totalSteps} steps completed. Click to open checklist.`}
             aria-label={`Quick start, ${completedCount} of ${totalSteps} steps done`}
           >
@@ -249,17 +249,24 @@ export const Topbar: React.FC<TopbarProps> = ({
             <Compass className="hidden lg:inline-block w-4 h-4 text-navy dark:text-teal flex-shrink-0" />
 
             {/* Exactly ONE progress indicator: small 20px ring (no text inside) */}
-            <ProgressRing progress={progressPercent} size={20} strokeWidth={3} color="#0F766E" className="flex-shrink-0" />
+            <ProgressRing
+              progress={progressPercent}
+              size={20}
+              strokeWidth={3}
+              color="#0F766E"
+              showPercent={false}
+              className="flex-shrink-0"
+            />
 
-            {/* Label: >= 1024px */}
+            {/* Label: visible on >= 1024px */}
             <span className="hidden lg:inline text-xs font-semibold whitespace-nowrap">
               Quick start
             </span>
 
-            {/* Counter chip / Done: >= 640px */}
+            {/* Counter chip / Done: visible on >= 640px */}
             <div className="hidden sm:inline-flex items-center">
               {isAllStepsDone ? (
-                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-semibold motion-safe:animate-fade-in">
+                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 text-[11px] font-semibold motion-safe:animate-fade-in motion-reduce:animate-none">
                   <Check className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                   Done
                 </span>
@@ -271,10 +278,10 @@ export const Topbar: React.FC<TopbarProps> = ({
             </div>
           </button>
 
-          {/* Search / Command Palette Button */}
+          {/* Search / Command Palette Button (hidden on narrow screens < 640px, in overflow) */}
           <button
             onClick={onOpenCommandPalette}
-            className="p-2 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-navy"
+            className="hidden sm:flex p-2 min-w-[40px] min-h-[40px] h-10 w-10 items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-navy flex-shrink-0"
             title="Search & Command Palette (Ctrl+K)"
             aria-label="Open command palette"
           >
@@ -284,7 +291,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           {/* Theme Toggle Button (Light <-> Dark) */}
           <button
             onClick={cycleTheme}
-            className="p-2 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-navy"
+            className="p-2 min-w-[40px] min-h-[40px] h-10 w-10 flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-navy flex-shrink-0"
             title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
             aria-label={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} mode`}
           >
@@ -299,7 +306,7 @@ export const Topbar: React.FC<TopbarProps> = ({
           <div className="relative" ref={overflowRef}>
             <button
               onClick={() => setShowOverflowMenu(!showOverflowMenu)}
-              className="p-2 min-w-[40px] min-h-[40px] sm:min-w-[44px] sm:min-h-[44px] flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-navy"
+              className="p-2 min-w-[40px] min-h-[40px] h-10 w-10 flex items-center justify-center text-text-muted hover:text-text-main rounded-btn hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors focus-visible:ring-2 focus-visible:ring-navy flex-shrink-0"
               title="More actions"
               aria-label="More actions"
               aria-expanded={showOverflowMenu}
@@ -309,13 +316,38 @@ export const Topbar: React.FC<TopbarProps> = ({
 
             {/* Dropdown Popover */}
             {showOverflowMenu && (
-              <div className="absolute right-0 mt-1 w-52 bg-surface rounded-card border border-border shadow-card py-1 z-modal text-sm">
+              <div className="absolute right-0 mt-1 w-56 bg-surface rounded-card border border-border shadow-card py-1 z-modal text-sm">
+                {/* Secondary items for screens < 1280px */}
+                <div className="xl:hidden px-3.5 py-2 border-b border-border bg-slate-50/70 dark:bg-slate-900/40 text-xs">
+                  <div className="font-semibold text-text-main truncate">
+                    {isDemo ? 'Campus Connect' : (project?.display_name || project?.name || 'Your project')}
+                  </div>
+                  <div className="flex items-center justify-between mt-1 text-[11px]">
+                    <span className="text-text-muted">Status:</span>
+                    <span className={`px-2 py-0.5 rounded-full font-semibold ${currentStatus.bg} ${currentStatus.text}`}>
+                      {currentStatus.label}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Command palette on mobile */}
+                <button
+                  onClick={() => {
+                    setShowOverflowMenu(false);
+                    if (onOpenCommandPalette) onOpenCommandPalette();
+                  }}
+                  className="sm:hidden w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-text-main hover:bg-slate-100 dark:hover:bg-slate-800 text-left min-h-[40px]"
+                >
+                  <Search className="w-3.5 h-3.5 text-text-muted" />
+                  <span>Command Palette (Ctrl+K)</span>
+                </button>
+
                 <button
                   onClick={() => {
                     setShowOverflowMenu(false);
                     toggleGuide();
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-text-main hover:bg-slate-100 dark:hover:bg-slate-800 text-left min-h-[44px] sm:min-h-0"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-text-main hover:bg-slate-100 dark:hover:bg-slate-800 text-left min-h-[40px]"
                 >
                   <Compass className="w-3.5 h-3.5 text-navy dark:text-teal" />
                   <span>Quick-Start Guide ({completedCount}/{totalSteps})</span>
@@ -325,7 +357,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                     setShowOverflowMenu(false);
                     setShowResetModal(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-left min-h-[44px] sm:min-h-0"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-left min-h-[40px]"
                 >
                   <RefreshCw className="w-3.5 h-3.5" />
                   <span>Reset Demo Data</span>
@@ -335,7 +367,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                     setShowOverflowMenu(false);
                     navigate('/settings');
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-text-main hover:bg-slate-100 dark:hover:bg-slate-800 text-left min-h-[44px] sm:min-h-0"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-text-main hover:bg-slate-100 dark:hover:bg-slate-800 text-left min-h-[40px]"
                 >
                   <SettingsIcon className="w-3.5 h-3.5 text-text-muted" />
                   <span>Settings & Preferences</span>
@@ -345,7 +377,7 @@ export const Topbar: React.FC<TopbarProps> = ({
                     setShowOverflowMenu(false);
                     setShowShortcutsModal(true);
                   }}
-                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-text-main hover:bg-slate-100 dark:hover:bg-slate-800 text-left min-h-[44px] sm:min-h-0"
+                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-medium text-text-main hover:bg-slate-100 dark:hover:bg-slate-800 text-left min-h-[40px]"
                 >
                   <Command className="w-3.5 h-3.5 text-text-muted" />
                   <span>Keyboard Shortcuts</span>

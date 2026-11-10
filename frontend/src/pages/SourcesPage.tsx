@@ -78,6 +78,7 @@ export const SourcesPage: React.FC = () => {
   }, []);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [showConfirmLoadDemo, setShowConfirmLoadDemo] = useState(false);
   const [uploadKind, setUploadKind] = useState<'notes' | 'chat'>('notes');
   const [uploadClearance, setUploadClearance] = useState<number>(1);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -220,17 +221,10 @@ export const SourcesPage: React.FC = () => {
         </div>
 
         {canLead && (
-          <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <div className="flex flex-wrap items-center gap-2.5 self-start sm:self-auto">
+            {/* Primary Action: Add GitHub Repository */}
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => loadDemoMutation.mutate()}
-              isLoading={loadDemoMutation.isPending}
-            >
-              Load Demo Project
-            </Button>
-            <Button
-              variant="outline"
+              variant="primary"
               size="sm"
               onClick={() => {
                 setGithubError(null);
@@ -240,8 +234,10 @@ export const SourcesPage: React.FC = () => {
             >
               Add GitHub Repository
             </Button>
+
+            {/* Upload Meeting Notes */}
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={() => {
                 setUploadKind('notes');
@@ -251,8 +247,10 @@ export const SourcesPage: React.FC = () => {
             >
               Upload Meeting Notes
             </Button>
+
+            {/* Upload Chat Export */}
             <Button
-              variant="secondary"
+              variant="outline"
               size="sm"
               onClick={() => {
                 setUploadKind('chat');
@@ -261,6 +259,17 @@ export const SourcesPage: React.FC = () => {
               leftIcon={<MessageSquare className="w-4 h-4" />}
             >
               Upload Chat Export
+            </Button>
+
+            {/* Optional / Demo Action: Opens confirmation modal */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowConfirmLoadDemo(true)}
+              className="text-text-muted hover:text-text-main text-xs"
+              leftIcon={<Database className="w-3.5 h-3.5" />}
+            >
+              Load Demo Project
             </Button>
           </div>
         )}
@@ -382,10 +391,55 @@ export const SourcesPage: React.FC = () => {
                 </div>
               ))
             ) : totalSourcesCount === 0 ? (
-              <div className="py-12 text-center text-text-muted">
-                <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                <p className="text-sm font-medium text-text-main">No sources connected yet.</p>
-                <p className="text-xs text-text-muted mt-1">Connect a GitHub repo or upload meeting notes to begin.</p>
+              <div className="py-10 px-4 text-center">
+                <Database className="w-9 h-9 mx-auto mb-2.5 text-text-muted opacity-40" />
+                <p className="text-sm font-semibold text-text-main">No sources connected yet</p>
+                <p className="text-xs text-text-muted mt-1 max-w-sm mx-auto">
+                  Connect your GitHub repo or upload meeting notes and chat logs to begin.
+                </p>
+                {canLead && (
+                  <div className="mt-5 flex flex-col gap-2 max-w-xs mx-auto">
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      onClick={() => {
+                        setGithubError(null);
+                        setShowGithubModal(true);
+                      }}
+                      leftIcon={<Github className="w-4 h-4" />}
+                    >
+                      Add GitHub Repository
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setUploadKind('notes');
+                        setShowUploadModal(true);
+                      }}
+                      leftIcon={<FileText className="w-4 h-4" />}
+                    >
+                      Upload Meeting Notes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setUploadKind('chat');
+                        setShowUploadModal(true);
+                      }}
+                      leftIcon={<MessageSquare className="w-4 h-4" />}
+                    >
+                      Upload Chat Export
+                    </Button>
+                    <button
+                      onClick={() => setShowConfirmLoadDemo(true)}
+                      className="text-[11px] text-teal hover:underline font-medium mt-2 py-1"
+                    >
+                      Or explore with Demo Project
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               sources!.map((src) => (
@@ -479,10 +533,55 @@ export const SourcesPage: React.FC = () => {
                   Array.from({ length: 4 }).map((_, i) => <TableRowSkeleton key={i} cols={6} />)
                 ) : totalSourcesCount === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center text-text-muted">
-                      <Database className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                      <p className="text-sm font-medium text-text-main">No sources connected yet.</p>
-                      <p className="text-xs text-text-muted mt-1">Connect a GitHub repo or upload meeting notes to begin.</p>
+                    <td colSpan={6} className="py-12 px-4 text-center">
+                      <Database className="w-10 h-10 mx-auto mb-3 text-text-muted opacity-40" />
+                      <p className="text-sm font-semibold text-text-main">No sources connected yet</p>
+                      <p className="text-xs text-text-muted mt-1 max-w-md mx-auto">
+                        Connect a GitHub repository or upload meeting notes and chat logs to reconstruct the factual project state.
+                      </p>
+                      {canLead && (
+                        <div className="mt-5 flex items-center justify-center gap-3">
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            onClick={() => {
+                              setGithubError(null);
+                              setShowGithubModal(true);
+                            }}
+                            leftIcon={<Github className="w-4 h-4" />}
+                          >
+                            Add GitHub Repository
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setUploadKind('notes');
+                              setShowUploadModal(true);
+                            }}
+                            leftIcon={<FileText className="w-4 h-4" />}
+                          >
+                            Upload Meeting Notes
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setUploadKind('chat');
+                              setShowUploadModal(true);
+                            }}
+                            leftIcon={<MessageSquare className="w-4 h-4" />}
+                          >
+                            Upload Chat Export
+                          </Button>
+                          <button
+                            onClick={() => setShowConfirmLoadDemo(true)}
+                            className="text-xs text-teal hover:underline font-medium ml-2"
+                          >
+                            Or load Demo Project
+                          </button>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ) : (
@@ -936,6 +1035,41 @@ export const SourcesPage: React.FC = () => {
               </details>
             </div>
           )}
+        </div>
+      </Modal>
+
+      {/* Confirm Load Demo Modal */}
+      <Modal
+        isOpen={showConfirmLoadDemo}
+        onClose={() => setShowConfirmLoadDemo(false)}
+        title="Load Synthetic Demo Project?"
+        description="This will import the synthetic 'Campus Connect' demonstration dataset into your workspace."
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setShowConfirmLoadDemo(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="primary"
+              size="sm"
+              isLoading={loadDemoMutation.isPending}
+              onClick={() => {
+                setShowConfirmLoadDemo(false);
+                loadDemoMutation.mutate();
+              }}
+            >
+              Load Demo Project
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-2 text-xs text-text-muted">
+          <p>
+            You are about to load the synthetic demonstration dataset for <strong>Campus Connect</strong> (including sample GitHub commits, meeting notes, team chats, and verified claims).
+          </p>
+          <p>
+            If you want to create a real handover ledger for your own software project instead, click <strong>Cancel</strong> and use <strong>Add GitHub Repository</strong> or <strong>Upload Meeting Notes</strong>.
+          </p>
         </div>
       </Modal>
     </div>

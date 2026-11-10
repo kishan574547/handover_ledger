@@ -3,7 +3,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from backend.database import Base, get_db
+from backend.database import Base, get_db, engine as backend_engine
 from backend.main import app
 
 # Use in-memory SQLite for tests
@@ -18,6 +18,10 @@ TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engin
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_db():
     Base.metadata.create_all(bind=engine)
+    try:
+        Base.metadata.create_all(bind=backend_engine)
+    except Exception:
+        pass
     yield
     Base.metadata.drop_all(bind=engine)
 
